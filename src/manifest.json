@@ -15,13 +15,13 @@
     "default_title": "Therp Timer",
     "default_popup": "popup.html"
   },
-  "devtools_page": "/devtools/devtools-page.html",
   "background": {
     "scripts": [
       "/js/lib/browser-polyfill.js",
       "/js/lib/jquery-3.6.0.min.js",
       "/js/background.js"
-    ]
+    ],
+    "service_worker": "/js/background.js"
   },
   "options_ui": {
     "page": "options_main_page.html"
