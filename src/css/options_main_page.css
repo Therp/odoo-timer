@@ -3,9 +3,7 @@ body {
     padding: 0;
     min-width: 700px;
     background-color: #FFF;
-    font-size: 0.9em;
     font-family: 'Open Sans', sans-serif;
-    font-size: 75%;
     cursor: default;
     -webkit-user-select: none;
     max-height: 700px;
@@ -355,3 +353,26 @@ hr {
     caption-side: top;
     text-align: center;
 }
+
+/* OWL rewrite additions */
+.pointer{cursor:pointer;}
+.hide{display:none !important;}
+.app-root{min-height:100%;}
+#loader-container{display:flex;align-items:center;justify-content:center;height:180px;}
+.remote-link{display:block;color:inherit;text-decoration:none;}
+.readmore-inline{display:inline;}
+.text-muted-soft{opacity:.75;}
+.remote-row-actions i{margin-right:8px;}
+.login button.login{border:none;}
+.current-source-chip{display:inline-block;padding:2px 8px;border-radius:999px;background:#eef3ff;margin-left:6px;font-size:11px;}
+.footer-btns i,.footer-btns a{margin-right:10px;}
+.issue-desc-cell{max-width:280px;}
+#searchIssue{width:78%;display:inline-block;}
+#limitTo{width:20%;display:inline-block;margin-left:2%;}
+.pass-viewer{position:absolute;right:18px;top:11px;cursor:pointer;}
+.login .form{position:relative;}
+.remotes-table-info .fa{cursor:pointer;}
+.inline-help{font-size:12px;opacity:.8;margin-top:8px;}
+.small-note{font-size:12px;opacity:.8;}
+.timesheet-download-link{display:inline-block;margin-right:8px;color:inherit;}
+.no-remotes-set{padding-left:0;}
