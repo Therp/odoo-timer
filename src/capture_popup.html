@@ -1,0 +1,24 @@
+<!doctype html><html><head><meta charset='utf-8'><script>
+window.__compiled = [];
+const OrigFunction = window.Function;
+window.Function = function(...args){
+  if (args.length >= 1) {
+    const body = args[args.length-1];
+    if (typeof body === 'string' && body.includes('Template name:')) {
+      window.__compiled.push({args: args.slice(0,-1), body});
+    }
+  }
+  return OrigFunction.apply(this, args);
+};
+window.Function.prototype = OrigFunction.prototype;
+window.addEventListener('error', e => { console.log('ERR', e.message); });
+window.addEventListener('unhandledrejection', e => { console.log('REJ', e.reason && e.reason.message || e.reason); });
+</script></head><body><div id='app'></div>
+<script src='/js/owl.iife.js'></script>
+<script type='module' src='/js/popup-app.js'></script>
+<script>
+setTimeout(()=>{
+ document.body.insertAdjacentHTML('beforeend','<pre id="compiled">'+JSON.stringify(window.__compiled).replace(/[&<>]/g, s=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[s]))+'</pre>');
+}, 3000);
+</script>
+</body></html>
