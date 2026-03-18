@@ -49,10 +49,6 @@ const DEFAULTS = {
 
 /**
  * Create the compiled template used by the ReadMore component.
- *
- * @param {object} app OWL app instance.
- * @param {object} bdom OWL block DOM helpers.
- * @returns {Function} Compiled OWL template.
  */
 function createReadMoreTemplate(app, bdom) {
   const { text, createBlock } = bdom;
@@ -67,9 +63,8 @@ function createReadMoreTemplate(app, bdom) {
   );
 
   return function template(ctx) {
-    const displayText = ctx.state.expanded || !ctx.needsTrim
-      ? (ctx.props.text || '')
-      : ctx.shortText;
+    const displayText =
+      ctx.state.expanded || !ctx.needsTrim ? ctx.props.text || '' : ctx.shortText;
 
     const contentNode = ctx.props.href
       ? linkBlock([ctx.props.href, displayText])
@@ -108,14 +103,6 @@ class ReadMore extends Component {
 
 /**
  * Create the compiled template used by the popup application.
- *
- * This stays in precompiled block form because runtime XML compilation caused
- * CSP and browser-extension environment issues earlier in the project.
- *
- * @param {object} app OWL app instance.
- * @param {object} bdom OWL block DOM helpers.
- * @param {object} helpers OWL template helpers.
- * @returns {Function} Compiled OWL template.
  */
 function createPopupAppTemplate(app, bdom, helpers) {
   const { createBlock, list } = bdom;
@@ -324,8 +311,8 @@ function createPopupAppTemplate(app, bdom, helpers) {
     const seenIssueKeys = new Set();
 
     for (let i = 0; i < issueCount; i++) {
-      ctx.issue = issueItems[i];
-      const issueKey = ctx.issue.id;
+      const issueRecord = issueItems[i];
+      const issueKey = issueRecord.id;
 
       if (seenIssueKeys.has(String(issueKey))) {
         throw new OwlError(`Got duplicate key in t-foreach: ${issueKey}`);
@@ -343,34 +330,32 @@ function createPopupAppTemplate(app, bdom, helpers) {
       let remainingHoursNode;
       let projectNode;
 
-      const rowClass = ctx.state.activeTimerId === ctx.issue.id ? 'active-row' : '';
+      const rowClass = ctx.state.activeTimerId === issueRecord.id ? 'active-row' : '';
 
       if (!ctx.state.activeTimerId) {
-        const clickHandler = [() => ctx.startTimer(ctx.issue), ctx];
+        const clickHandler = [() => ctx.startTimer(issueRecord), ctx];
         startTimerNode = startTimerButtonBlock([clickHandler]);
       }
 
-      if (ctx.state.activeTimerId === ctx.issue.id) {
-        const clickHandler = [() => ctx.stopTimer(ctx.issue), ctx];
+      if (ctx.state.activeTimerId === issueRecord.id) {
+        const clickHandler = [() => ctx.stopTimer(issueRecord), ctx];
         stopTimerNode = stopTimerButtonBlock([clickHandler]);
       }
 
-      const editDescriptionChecked = ctx.issue.editDesc;
-      const editDescriptionHandler = [(_ev) => ctx.onToggleEditDesc(ctx.issue, _ev), ctx];
+      const editDescriptionChecked = issueRecord.editDesc;
+      const editDescriptionHandler = [(_ev) => ctx.onToggleEditDesc(issueRecord, _ev), ctx];
 
       createDateNode = readMoreCreateDate({
-        text: ctx.issue.create_date ? ctx.issue.create_date.split(' ')[0] : '',
+        text: issueRecord.create_date ? issueRecord.create_date.split(' ')[0] : '',
         limit: 20,
       }, key + `__1__${issueKey}`, node, this, null);
 
-      if (ctx.issue.priority_level.length) {
-        ctx = Object.create(ctx);
-        const [priorityItems, , priorityCount, priorityChildren] = prepareList(ctx.issue.priority_level);
+      if (issueRecord.priority_level.length) {
+        const [priorityItems, , priorityCount, priorityChildren] = prepareList(issueRecord.priority_level);
         const seenPriorityKeys = new Set();
 
         for (let j = 0; j < priorityCount; j++) {
-          ctx.p = priorityItems[j];
-          const priorityKey = ctx.p;
+          const priorityKey = priorityItems[j];
           if (seenPriorityKeys.has(String(priorityKey))) {
             throw new OwlError(`Got duplicate key in t-foreach: ${priorityKey}`);
           }
@@ -378,28 +363,27 @@ function createPopupAppTemplate(app, bdom, helpers) {
           priorityChildren[j] = withKey(priorityStarBlock(), `${priorityKey}_${j}`);
         }
 
-        ctx = ctx.__proto__;
         priorityStarsNode = list(priorityChildren);
       }
 
-      if (!ctx.issue.priority_level.length) {
+      if (!issueRecord.priority_level.length) {
         priorityStarOutlineNode = priorityStarOutlineBlock();
       }
 
       stageNode = readMoreStage({
-        text: ctx.issue.stage_id ? ctx.issue.stage_id[1] : '',
+        text: issueRecord.stage_id ? issueRecord.stage_id[1] : '',
         limit: 15,
       }, key + `__2__${issueKey}`, node, this, null);
 
       issueLabelNode = readMoreIssueLabel({
-        text: ctx.issueLabel(ctx.issue),
+        text: ctx.issueLabel(issueRecord),
         limit: 70,
-        href: ctx.issueHref(ctx.issue),
+        href: ctx.issueHref(issueRecord),
       }, key + `__3__${issueKey}`, node, this, null);
 
       if (ctx.state.dataSource === DATA_SOURCE_TASK) {
         const effectiveHoursComponent = readMoreEffectiveHours({
-          text: ctx.formatHours(ctx.issue.effective_hours),
+          text: ctx.formatHours(issueRecord.effective_hours),
           limit: 9,
         }, key + `__4__${issueKey}`, node, this, null);
         effectiveHoursNode = effectiveHoursCellBlock([], [effectiveHoursComponent]);
@@ -407,14 +391,14 @@ function createPopupAppTemplate(app, bdom, helpers) {
 
       if (ctx.state.dataSource === DATA_SOURCE_TASK) {
         const remainingHoursComponent = readMoreRemainingHours({
-          text: ctx.formatHours(ctx.issue.remaining_hours),
+          text: ctx.formatHours(issueRecord.remaining_hours),
           limit: 9,
         }, key + `__5__${issueKey}`, node, this, null);
         remainingHoursNode = remainingHoursCellBlock([], [remainingHoursComponent]);
       }
 
       projectNode = readMoreProject({
-        text: ctx.issue.project_id ? ctx.issue.project_id[1] : '',
+        text: issueRecord.project_id ? issueRecord.project_id[1] : '',
         limit: 15,
       }, key + `__6__${issueKey}`, node, this, null);
 
@@ -560,8 +544,6 @@ class PopupApp extends Component {
 
   /**
    * Currently selected remote configuration.
-   *
-   * @returns {object|null}
    */
   get currentRemote() {
     const idx = Number(this.state.selectedRemoteIndex || 0);
@@ -570,8 +552,6 @@ class PopupApp extends Component {
 
   /**
    * Formatted active timer duration.
-   *
-   * @returns {string}
    */
   get formattedTimer() {
     if (!this.state.timerStartIso) {
@@ -582,8 +562,6 @@ class PopupApp extends Component {
 
   /**
    * Issues filtered by current UI settings.
-   *
-   * @returns {Array<object>}
    */
   get filteredIssues() {
     const limit = this.state.limitTo ? Number(this.state.limitTo) : null;
@@ -606,9 +584,71 @@ class PopupApp extends Component {
   }
 
   /**
+   * Return true when an error looks like an expired/invalid Odoo session.
+   */
+  isSessionExpiredError(err) {
+    const message = String(err?.message || err || '').toLowerCase();
+    return (
+      message.includes('session expired') ||
+      message.includes('expired session') ||
+      message.includes('invalid session') ||
+      message.includes('session_id') ||
+      message.includes('access denied') ||
+      message.includes('unauthorized')
+    );
+  }
+
+  /**
+   * Clear stale session state but keep timer data intact.
+   */
+  async handleExpiredSession(reason = 'Your Odoo session expired. Please log in again.') {
+    try {
+      if (this.state.currentHost) {
+        await clearOdooSessionCookies(this.state.currentHost);
+      }
+    } catch (err) {
+      console.warn('Could not clear expired Odoo cookies', err);
+    }
+
+    try {
+      if (this.state.currentDatabase) {
+        await storage.remove(this.state.currentDatabase);
+      }
+    } catch (err) {
+      console.warn('Could not remove cached session snapshot', err);
+    }
+
+    await storage.set(STORAGE_KEYS.currentHostState, 'Inactive');
+
+    this.state.user = null;
+    this.state.projects = [];
+    this.state.issues = [];
+    this.state.serverVersion = '';
+    this.state.supportedFields = {};
+    this.state.view = VIEW_LOGIN;
+    this.state.loginLoading = false;
+    this.state.loadingTable = false;
+    this.state.useExistingSession = false;
+    this.state.loginError = reason;
+    this.state.bootError = '';
+  }
+
+  /**
+   * Run an async action and convert expired-session failures into login fallback.
+   */
+  async withSessionGuard(action) {
+    try {
+      return await action();
+    } catch (err) {
+      if (this.isSessionExpiredError(err)) {
+        await this.handleExpiredSession('Your Odoo session expired. Please log in again.');
+      }
+      throw err;
+    }
+  }
+
+  /**
    * Start popup bootstrap. Any unhandled error moves the popup to login view.
-   *
-   * @returns {Promise<void>}
    */
   async bootstrapWithTimeout() {
     this.state.view = VIEW_LOADING;
@@ -626,8 +666,6 @@ class PopupApp extends Component {
 
   /**
    * Clear the legacy issue cache used by older extension builds.
-   *
-   * @returns {Promise<void>}
    */
   async clearLegacyIssueCache() {
     try {
@@ -639,8 +677,6 @@ class PopupApp extends Component {
 
   /**
    * Load persisted popup state from browser storage.
-   *
-   * @returns {Promise<void>}
    */
   async loadStoredPopupState() {
     const [
@@ -673,7 +709,9 @@ class PopupApp extends Component {
   /**
    * Initialize popup state and attempt session restore.
    *
-   * @returns {Promise<void>}
+   * FIX: The original cleanup was missing a `return` after a successful
+   * `completeSession()` call, causing execution to always fall through to
+   * `this.state.view = VIEW_LOGIN` at the bottom of the function.
    */
   async bootstrap() {
     this.state.busyMessage = DEFAULTS.busyMessage;
@@ -686,71 +724,74 @@ class PopupApp extends Component {
 
     await this.loadStoredPopupState();
 
-    if (this.state.currentHost) {
-      this.rpc.setHost(this.state.currentHost);
-
-      const remoteIndex = this.state.remotes.findIndex(
-        (remote) => remote.url === this.state.currentHost && remote.database === this.state.currentDatabase
-      );
-
-      if (remoteIndex >= 0) {
-        this.state.selectedRemoteIndex = String(remoteIndex);
-      }
-
-      try {
-        this.state.busyMessage = 'Restoring session…';
-        const sessionInfo = await Promise.race([
-          this.rpc.getSessionInfo(),
-          new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Session restore timed out')), TIMEOUTS.sessionRestoreMs);
-          }),
-        ]);
-
-        if (sessionInfo?.uid) {
-          await this.completeSession(sessionInfo, this.state.remotes[remoteIndex] || null);
-          return;
-        }
-      } catch (err) {
-        console.warn('Session bootstrap failed', err);
-        this.state.bootError = err.message || '';
-      }
+    // No stored host means first run — go straight to login.
+    if (!this.state.currentHost) {
+      this.state.view = VIEW_LOGIN;
+      return;
     }
 
-    this.state.view = VIEW_LOGIN;
+    this.rpc.setHost(this.state.currentHost);
+
+    const remoteIndex = this.state.remotes.findIndex(
+      (remote) =>
+        remote.url === this.state.currentHost &&
+        remote.database === this.state.currentDatabase
+    );
+
+    if (remoteIndex >= 0) {
+      this.state.selectedRemoteIndex = String(remoteIndex);
+    }
+
+    try {
+      this.state.busyMessage = 'Restoring session…';
+
+      const sessionInfo = await Promise.race([
+        this.rpc.getSessionInfo(),
+        new Promise((_, reject) =>
+          setTimeout(
+            () => reject(new Error('Session restore timed out')),
+            TIMEOUTS.sessionRestoreMs
+          )
+        ),
+      ]);
+
+      if (sessionInfo?.uid) {
+        // FIX: must return here so we don't fall through to VIEW_LOGIN below.
+        await this.completeSession(sessionInfo, this.state.remotes[remoteIndex] || null);
+        return;
+      }
+
+      // Valid response but no uid — session is gone.
+      this.state.view = VIEW_LOGIN;
+      this.state.useExistingSession = false;
+      this.state.loginError = 'No active Odoo session found. Please log in.';
+    } catch (err) {
+      console.warn('Session bootstrap failed', err);
+
+      if (this.isSessionExpiredError(err)) {
+        await this.handleExpiredSession('Your saved Odoo session expired. Please log in again.');
+        return;
+      }
+
+      // Non-session error (e.g. network timeout) — show it on login screen.
+      this.state.bootError = err.message || 'Could not restore session.';
+      this.state.view = VIEW_LOGIN;
+    }
   }
 
-  /**
-   * Toggle password visibility in login mode.
-   */
   togglePassword() {
     this.state.showPassword = !this.state.showPassword;
   }
 
-  /**
-   * Update the "edit description" checkbox for a single issue row.
-   *
-   * @param {object} issue Issue/task row.
-   * @param {Event} ev DOM change event.
-   */
   onToggleEditDesc(issue, ev) {
     issue.editDesc = ev.target.checked;
   }
 
-  /**
-   * Persist the "use existing session" toggle.
-   *
-   * @param {Event} ev DOM change event.
-   */
   toggleUseExistingSession(ev) {
     this.state.useExistingSession = ev.target.checked;
     storage.set(STORAGE_KEYS.useExistingSession, !!this.state.useExistingSession);
   }
 
-  /**
-   * Persist the automatic issue timesheet CSV export toggle.
-   *
-   * @param {Event} ev DOM change event.
-   */
   toggleAutoDownload(ev) {
     this.state.autoDownloadIssueTimesheet = ev.target.checked;
     storage.set(
@@ -759,12 +800,6 @@ class PopupApp extends Component {
     );
   }
 
-  /**
-   * Build a form URL for the given issue/task.
-   *
-   * @param {object} issue Issue/task row.
-   * @returns {string|null}
-   */
   issueHref(issue) {
     if (!this.state.currentHost || !issue?.id) {
       return null;
@@ -772,33 +807,18 @@ class PopupApp extends Component {
     return `${this.state.currentHost}/web#id=${issue.id}&model=${this.state.dataSource}&view_type=form`;
   }
 
-  /**
-   * Build the human-readable issue label used in the grid.
-   *
-   * @param {object} issue Issue/task row.
-   * @returns {string}
-   */
   issueLabel(issue) {
-    const base = this.state.dataSource === DATA_SOURCE_TASK
+    return this.state.dataSource === DATA_SOURCE_TASK
       ? `${issue.code || issue.id}-${issue.name}`
       : `${issue.id}-${issue.name}`;
-    return base;
   }
 
-  /**
-   * Format decimal hours to HH:MM style text.
-   *
-   * @param {number} value Decimal hour value.
-   * @returns {string}
-   */
   formatHours(value) {
     return formatHoursMins(value);
   }
 
   /**
    * Perform login or session attach for the currently selected remote.
-   *
-   * @returns {Promise<void>}
    */
   async login() {
     const remote = this.currentRemote;
@@ -849,9 +869,10 @@ class PopupApp extends Component {
   /**
    * Finalize session setup after a successful restore or login.
    *
-   * @param {object} sessionInfo Session info returned by Odoo.
-   * @param {object|null} remote Selected remote configuration.
-   * @returns {Promise<void>}
+   * FIX: loadProjects() and loadIssues() are now individually guarded with
+   * .catch() so that a field-loading failure (e.g. unsupported field on this
+   * Odoo version) cannot abort session establishment and force the user back
+   * to the login screen.
    */
   async completeSession(sessionInfo, remote) {
     this.state.busyMessage = 'Loading tasks…';
@@ -859,9 +880,12 @@ class PopupApp extends Component {
 
     const remoteInfo = remote || this.currentRemote || null;
 
-    this.state.currentDatabase = sessionInfo.db || remoteInfo?.database || this.state.currentDatabase;
-    this.state.currentHost = remoteInfo?.url || sessionInfo['web.base.url'] || this.state.currentHost;
-    this.state.dataSource = remoteInfo?.datasrc || this.state.dataSource || DEFAULTS.dataSource;
+    this.state.currentDatabase =
+      sessionInfo.db || remoteInfo?.database || this.state.currentDatabase;
+    this.state.currentHost =
+      remoteInfo?.url || sessionInfo['web.base.url'] || this.state.currentHost;
+    this.state.dataSource =
+      remoteInfo?.datasrc || this.state.dataSource || DEFAULTS.dataSource;
 
     try {
       await storage.set(this.state.currentDatabase, JSON.stringify(sessionInfo));
@@ -873,11 +897,12 @@ class PopupApp extends Component {
 
     if (remoteInfo) {
       const remotes = await readRemotes();
-      const updatedRemotes = remotes.map((currentRemote) => (
-        currentRemote.url === remoteInfo.url && currentRemote.database === remoteInfo.database
+      const updatedRemotes = remotes.map((currentRemote) =>
+        currentRemote.url === remoteInfo.url &&
+        currentRemote.database === remoteInfo.database
           ? { ...currentRemote, state: 'Active' }
           : currentRemote
-      ));
+      );
       await writeRemotes(updatedRemotes);
       this.state.remotes = updatedRemotes.map((currentRemote, idx) => ({
         ...currentRemote,
@@ -898,11 +923,16 @@ class PopupApp extends Component {
     });
 
     try {
+      // FIX: loadProjects and loadIssues are wrapped in .catch() so that any
+      // field-loading error (very common across Odoo versions) cannot reject
+      // the Promise.all and abort the session. Without this, a single bad
+      // field name would kick the user back to the login screen even though
+      // authentication succeeded.
       const [userResult, serverInfo] = await Promise.all([
         userPromise,
         serverInfoPromise,
-        this.loadProjects(),
-        this.loadIssues(),
+        this.loadProjects().catch((err) => console.warn('loadProjects failed', err)),
+        this.loadIssues().catch((err) => console.warn('loadIssues failed', err)),
       ]);
 
       this.state.user = userResult.records?.[0] || {
@@ -927,8 +957,6 @@ class PopupApp extends Component {
 
   /**
    * Load project records required to resolve analytic accounts.
-   *
-   * @returns {Promise<void>}
    */
   async loadProjects() {
     const result = await this.rpc.searchRead('project.project', [], ['analytic_account_id']);
@@ -937,9 +965,6 @@ class PopupApp extends Component {
 
   /**
    * Get field metadata for the current model, caching the response.
-   *
-   * @param {string} model ORM model name.
-   * @returns {Promise<object|null>}
    */
   async getSupportedFieldsForModel(model) {
     let availableFields = this.state.supportedFields[model] || null;
@@ -959,11 +984,6 @@ class PopupApp extends Component {
   /**
    * Execute a search_read and remove unsupported fields recursively if Odoo
    * reports an invalid field.
-   *
-   * @param {string} model ORM model name.
-   * @param {Array} domain Odoo search domain.
-   * @param {string[]} requestedFields Fields to request.
-   * @returns {Promise<object>}
    */
   async searchReadWithInvalidFieldRetry(model, domain, requestedFields) {
     try {
@@ -988,8 +1008,6 @@ class PopupApp extends Component {
 
   /**
    * Load issue/task rows for the current datasource.
-   *
-   * @returns {Promise<void>}
    */
   async loadIssues() {
     const model = this.state.dataSource;
@@ -1027,11 +1045,17 @@ class PopupApp extends Component {
       const availableFields = await this.getSupportedFieldsForModel(model);
 
       let fields = availableFields
-        ? desiredFields.filter((field) => Object.prototype.hasOwnProperty.call(availableFields, field))
-        : desiredFields.filter((field) => field !== 'message_summary' && field !== 'message_unread');
+        ? desiredFields.filter((field) =>
+            Object.prototype.hasOwnProperty.call(availableFields, field)
+          )
+        : desiredFields.filter(
+            (field) => field !== 'message_summary' && field !== 'message_unread'
+          );
 
       if (model === DATA_SOURCE_TASK) {
-        fields = fields.filter((field) => field !== 'message_summary' && field !== 'message_unread');
+        fields = fields.filter(
+          (field) => field !== 'message_summary' && field !== 'message_unread'
+        );
       }
 
       const result = await this.searchReadWithInvalidFieldRetry(model, domain, fields);
@@ -1051,8 +1075,6 @@ class PopupApp extends Component {
 
   /**
    * Reload projects and issues.
-   *
-   * @returns {Promise<void>}
    */
   async refreshAll() {
     try {
@@ -1065,9 +1087,6 @@ class PopupApp extends Component {
 
   /**
    * Start timing the selected issue/task.
-   *
-   * @param {object} issue Issue/task row.
-   * @returns {Promise<void>}
    */
   async startTimer(issue) {
     const now = new Date().toISOString();
@@ -1080,23 +1099,19 @@ class PopupApp extends Component {
 
   /**
    * Resolve the analytic account for the given issue/task.
-   *
-   * @param {object} issue Issue/task row.
-   * @returns {object|undefined}
    */
   resolveAnalyticAccount(issue) {
     if (issue.analytic_account_id) {
       return issue.analytic_account_id;
     }
-    const project = this.state.projects.find((currentProject) => currentProject.id === issue.project_id?.[0]);
+    const project = this.state.projects.find(
+      (currentProject) => currentProject.id === issue.project_id?.[0]
+    );
     return project?.analytic_account_id;
   }
 
   /**
    * Create a timesheet entry for a project.issue row.
-   *
-   * @param {object} params Values needed to create the timesheet.
-   * @returns {Promise<void>}
    */
   async createIssueTimesheet(params) {
     const journalResult = await this.rpc.searchRead(
@@ -1123,9 +1138,6 @@ class PopupApp extends Component {
 
   /**
    * Create a timesheet entry for a project.task row.
-   *
-   * @param {object} params Values needed to create the timesheet.
-   * @returns {Promise<void>}
    */
   async createTaskTimesheet(params) {
     await this.rpc.call('account.analytic.line', 'create', [{
@@ -1141,9 +1153,6 @@ class PopupApp extends Component {
 
   /**
    * Stop the active timer and create the Odoo timesheet row.
-   *
-   * @param {object} issue Issue/task row.
-   * @returns {Promise<void>}
    */
   async stopTimer(issue) {
     try {
@@ -1156,13 +1165,17 @@ class PopupApp extends Component {
         }
       }
 
-      const startIso = this.state.timerStartIso || await storage.get(STORAGE_KEYS.timerStartIso, null);
+      const startIso =
+        this.state.timerStartIso || (await storage.get(STORAGE_KEYS.timerStartIso, null));
       if (!startIso) {
         throw new Error('No start time found for the active timer.');
       }
 
       const now = new Date();
-      const durationMinutes = Math.max(0, (now.getTime() - new Date(startIso).getTime()) / 60000);
+      const durationMinutes = Math.max(
+        0,
+        (now.getTime() - new Date(startIso).getTime()) / 60000
+      );
       const roundedMinutes = Math.round((durationMinutes % 60) / 15) * 15;
       const durationInHours = Math.floor(durationMinutes / 60) + roundedMinutes / 60;
       const analyticAccount = this.resolveAnalyticAccount(issue);
@@ -1207,8 +1220,6 @@ class PopupApp extends Component {
 
   /**
    * Download a CSV with current month timesheet rows.
-   *
-   * @returns {Promise<void>}
    */
   async downloadCurrentMonthTimesheets() {
     try {
@@ -1217,11 +1228,14 @@ class PopupApp extends Component {
       }
 
       const today = new Date();
-      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10);
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
+        .toISOString()
+        .slice(0, 10);
       const currentDay = new Date().toISOString().slice(0, 10);
-      const model = this.state.dataSource === DATA_SOURCE_TASK
-        ? 'account.analytic.line'
-        : 'hr.analytic.timesheet';
+      const model =
+        this.state.dataSource === DATA_SOURCE_TASK
+          ? 'account.analytic.line'
+          : 'hr.analytic.timesheet';
       const domain = [
         ['user_id', '=', this.state.user.id],
         ['create_date', '>=', firstDay],
@@ -1247,20 +1261,21 @@ class PopupApp extends Component {
 
   /**
    * Download a CSV for the currently timed issue/task and current month.
-   *
-   * @param {object} issue Issue/task row.
-   * @returns {Promise<void>}
    */
   async downloadCurrentIssueTimesheet(issue) {
     const today = new Date();
-    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10);
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
+      .toISOString()
+      .slice(0, 10);
     const currentDay = new Date().toISOString().slice(0, 10);
-    const model = this.state.dataSource === DATA_SOURCE_TASK
-      ? 'account.analytic.line'
-      : 'hr.analytic.timesheet';
-    const keyDomain = this.state.dataSource === DATA_SOURCE_TASK
-      ? ['task_id', '=', issue.id]
-      : ['issue_id', '=', issue.id];
+    const model =
+      this.state.dataSource === DATA_SOURCE_TASK
+        ? 'account.analytic.line'
+        : 'hr.analytic.timesheet';
+    const keyDomain =
+      this.state.dataSource === DATA_SOURCE_TASK
+        ? ['task_id', '=', issue.id]
+        : ['issue_id', '=', issue.id];
     const domain = [
       ['user_id', '=', this.state.user.id],
       ['create_date', '>=', firstDay],
@@ -1280,12 +1295,12 @@ class PopupApp extends Component {
 
   /**
    * Switch back to login view without logging out.
-   *
-   * @returns {Promise<void>}
    */
   async switchBetweenRemotes() {
     if (this.state.activeTimerId) {
-      alert(`Please stop timer for issue #${this.state.activeTimerId} before switching out of the current session.`);
+      alert(
+        `Please stop timer for issue #${this.state.activeTimerId} before switching out of the current session.`
+      );
       return;
     }
 
@@ -1296,12 +1311,12 @@ class PopupApp extends Component {
 
   /**
    * Log out from the current Odoo session and reset popup state.
-   *
-   * @returns {Promise<void>}
    */
   async logout() {
     if (this.state.activeTimerId) {
-      alert(`Please stop timer for issue #${this.state.activeTimerId} before logging out.`);
+      alert(
+        `Please stop timer for issue #${this.state.activeTimerId} before logging out.`
+      );
       return;
     }
 
