@@ -1,255 +1,495 @@
-
 import {
-  OdooRpc, storage, readRemotes, writeRemotes,
-  sendTimerStateToBackground, clearOdooSessionCookies, toCSV, downloadTextFile,
-  formatDuration, formatHoursMins, priorityStars, matchesIssue, extractMessageSummary
+  OdooRpc,
+  storage,
+  readRemotes,
+  writeRemotes,
+  sendTimerStateToBackground,
+  clearOdooSessionCookies,
+  toCSV,
+  downloadTextFile,
+  formatDuration,
+  formatHoursMins,
+  priorityStars,
+  matchesIssue,
+  extractMessageSummary,
 } from './common.js';
 
-const { Component, mount, useState, onMounted, onWillUnmount, __info__ } = owl;
-let owl_info = JSON.stringify(__info__, null, 2)
-console.log(owl_info);
+const { Component, mount, useState, onMounted, onWillUnmount } = owl;
 
-function ReadMoreTemplate(app, bdom, helpers) {
+const VIEW_LOADING = 'loading';
+const VIEW_LOGIN = 'login';
+const VIEW_MAIN = 'main';
+
+const DATA_SOURCE_ISSUE = 'project.issue';
+const DATA_SOURCE_TASK = 'project.task';
+
+const STORAGE_KEYS = {
+  useExistingSession: 'useExistingSession',
+  autoDownloadIssueTimesheet: 'auto_download_issue_timesheet',
+  timerStartIso: 'start_date_time',
+  activeTimerId: 'active_timer_id',
+  currentHost: 'current_host',
+  currentDatabase: 'current_host_db',
+  currentDataSource: 'current_host_datasrc',
+  currentHostState: 'current_host_state',
+  usersIssues: 'users_issues',
+  serverVersionInfo: 'server_version_info',
+};
+
+const TIMEOUTS = {
+  sessionRestoreMs: 4000,
+};
+
+const DEFAULTS = {
+  selectedRemoteIndex: '0',
+  searchLimit: '5',
+  busyMessage: 'Loading…',
+  dataSource: DATA_SOURCE_ISSUE,
+};
+
+/**
+ * Create the compiled template used by the ReadMore component.
+ *
+ * @param {object} app OWL app instance.
+ * @param {object} bdom OWL block DOM helpers.
+ * @returns {Function} Compiled OWL template.
+ */
+function createReadMoreTemplate(app, bdom) {
   const { text, createBlock } = bdom;
-  const linkBlock = createBlock(`<a block-attribute-0="href" class="remote-link" target="_blank" rel="noreferrer"><block-text-1/></a>`);
-  const wrapBlock = createBlock(`<span class="readmore-inline"><block-child-0/><block-child-1/></span>`);
-  const toggleBlock = createBlock(`<a href="#" class="hmMoreClass" block-handler-0="click"><block-text-1/></a>`);
-  return function template(ctx, node, key = "") {
-    const display = ctx.state.expanded || !ctx.needsTrim ? (ctx.props.text || '') : ctx.shortText;
-    const content = ctx.props.href ? linkBlock([ctx.props.href, display]) : text(display);
-    let toggle = null;
+  const linkBlock = createBlock(
+    `<a block-attribute-0="href" class="remote-link" target="_blank" rel="noreferrer"><block-text-1/></a>`
+  );
+  const wrapperBlock = createBlock(
+    `<span class="readmore-inline"><block-child-0/><block-child-1/></span>`
+  );
+  const toggleBlock = createBlock(
+    `<a href="#" class="hmMoreClass" block-handler-0="click"><block-text-1/></a>`
+  );
+
+  return function template(ctx) {
+    const displayText = ctx.state.expanded || !ctx.needsTrim
+      ? (ctx.props.text || '')
+      : ctx.shortText;
+
+    const contentNode = ctx.props.href
+      ? linkBlock([ctx.props.href, displayText])
+      : text(displayText);
+
+    let toggleNode = null;
     if (ctx.needsTrim) {
-      const h = ["prevent", ctx.toggle, ctx];
-      toggle = toggleBlock([h, ctx.state.expanded ? ' ▲' : ' ...']);
+      const clickHandler = ['prevent', ctx.toggle, ctx];
+      toggleNode = toggleBlock([clickHandler, ctx.state.expanded ? ' ▲' : ' ...']);
     }
-    return wrapBlock([], [content, toggle]);
+
+    return wrapperBlock([], [contentNode, toggleNode]);
   };
 }
 
 class ReadMore extends Component {
   static props = ['text', 'limit?', 'href?', 'title?'];
   static template = 'ReadMore';
-  setup() { this.state = useState({ expanded: false }); }
-  get needsTrim() { return (this.props.text || '').length > (this.props.limit || 40); }
-  get shortText() { return (this.props.text || '').slice(0, this.props.limit || 40); }
-  toggle() { this.state.expanded = !this.state.expanded; }
-}
 
-function PopupAppTemplate(app, bdom, helpers) {
-  let { text, createBlock, list } = bdom;
-  let { prepareList, OwlError, withKey } = helpers;
-  const comp1 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
-  const comp2 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
-  const comp3 = app.createComponent(`ReadMore`, true, false, false, ["text","limit","href"]);
-  const comp4 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
-  const comp5 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
-  const comp6 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
+  setup() {
+    this.state = useState({ expanded: false });
+  }
 
-  let block1 = createBlock(`<div class="app-root"><div id="loader-container" block-attribute-0="class"><i class="fa fa-cog fa-spin fa-5x"/></div><div id="login" class="login-view" block-attribute-1="class"><div class="popup-login-shell"><div class="form"><div class="logo"><img src="/img/logo.png"/></div><block-child-0/><block-child-1/><block-child-2/></div></div><div class="cta forgotpwd footer-app-opts login-footer-bar"><a href="options_main_page.html"><i class="fa fa-cogs"/> Options</a></div></div><div id="wrapper" block-attribute-2="class"><div class="toolbar-row"><input id="searchIssue" type="text" placeholder="Search for Issue by ID, Name, user, priority, Stage..." block-property-3="value" block-handler-4="input"/><select id="limitTo" block-property-5="value" block-handler-6="change"><option value="5">5</option><option value="10">10</option><option value="15">15</option><option value="">All</option></select></div><div class="container footer top-actions"><div class="auto_download_timesheet" title="Store timesheet locally when you stop timer on a specific issue"><input id="auto_download_timesheet_input" type="checkbox" block-property-7="checked" block-handler-8="change"/> Auto Download Issue Timesheet </div><div class="row"><div class="mx-3 col-md-12 footer-btns pointer"><i class="fa fa-download fa-2x" title="Download current month timesheet" block-handler-9="click"/><i class="fa fa-hand-o-left fa-2x" title="Switch between remotes" block-handler-10="click"/><i class="fa fa-refresh fa-2x" title="Refresh employee issues" block-handler-11="click"/><i class="fa fa-sign-out fa-2x" title="Log out" block-handler-12="click"/><a href="options_main_page.html" class="options-btn" title="Go To options"><i class="fa fa-cogs fa-2x"/></a></div></div></div><div class="table-scroll"><table class="table table-responsive-sm table-bordered table-fixed" id="table-task-issues"><thead><tr><th><div><block-child-3/></div><block-child-4/></th><th>Edit Desc</th><th>Create Date</th><th>Priority</th><th>Stage</th><th><block-text-13/> [<block-text-14/>] <span class="allIssues"><input id="showAllIssues" type="checkbox" block-property-15="checked" block-handler-16="input"/> Show for Everyone</span></th><block-child-5/><block-child-6/><th>Project</th></tr></thead><tbody><block-child-7/><block-child-8/></tbody></table></div><div class="container footer info-footer"><div class="row"><div class="remote-info-block col-md-12"><span><b>Odoo:</b> <block-text-17/></span><br/><span><b>Host:</b> <block-text-18/></span><br/><span><b>Database:</b> <block-text-19/></span><br/><span><b>Current User:</b> <block-text-20/></span><br/></div></div></div></div></div>`);
-  let block2 = createBlock(`<div><p class="odooError"><block-text-0/></p></div>`);
-  let block3 = createBlock(`<div class="container no-remotes-set"><div class="alert alert-warning">Hello <span class="fun-man">😉</span>, you have not configured any remotes. Open <b><i class="fa fa-cogs"/> Options</b> below and add one.</div></div>`);
-  let block4 = createBlock(`<form block-handler-0="submit.prevent"><block-child-0/><block-child-1/><div class="password-field"><block-child-2/><block-child-3/></div><select id="remote-selection" class="form-control" block-handler-1="change"><block-child-4/></select><div class="checkbox"><label><input type="checkbox" block-property-2="checked" block-handler-3="change"/> Use Existing Session</label></div><button class="login" type="submit">Login <block-child-5/></button><block-child-6/></form>`);
-  let block5 = createBlock(`<p class="odooError"><block-text-0/></p>`);
-  let block6 = createBlock(`<input type="text" placeholder="Username" block-property-0="value" block-handler-1="input"/>`);
-  let block7 = createBlock(`<input block-attribute-0="type" id="unique-password" placeholder="Password" block-property-1="value" block-handler-2="input"/>`);
-  let block8 = createBlock(`<span class="pass-viewer" block-handler-0="click"><i class="fa" block-attribute-1="class"/></span>`);
-  let block10 = createBlock(`<option block-attribute-0="value" block-attribute-1="selected"><block-text-2/></option>`);
-  let block11 = createBlock(`<i class="fa fa-cog fa-spin"/>`);
-  let block12 = createBlock(`<div class="remote-info small-note">Host: <block-text-0/> <span class="current-source-chip"><block-text-1/></span></div>`);
-  let block13 = createBlock(`<span class="active-timer-running"><i class="fa fa-clock-o"/> #<block-text-0/></span>`);
-  let block14 = createBlock(`<span class="startTimeCount"><block-text-0/></span>`);
-  let block15 = createBlock(`<th>Hours Spent</th>`);
-  let block16 = createBlock(`<th>Remaining Hours</th>`);
-  let block18 = createBlock(`<tr block-attribute-0="class"><td class="text-center px-3 td-btn"><block-child-0/><block-child-1/></td><td class="text-center"><input type="checkbox" block-property-1="checked" block-handler-2="change"/></td><td><block-child-2/></td><td><block-child-3/><block-child-3/><block-child-4/></td><td class="issue-desc-cell"><block-child-5/></td><td class="issue-desc-cell"><block-child-6/></td><block-child-7/><block-child-8/><td><block-child-9/></td></tr>`);
-  let block19 = createBlock(`<i class="fa fa-play-circle action-btn pointer" title="Start the timer for the selected issue" block-handler-0="click"/>`);
-  let block20 = createBlock(`<i class="text-danger fa fa-stop-circle action-btn pointer" title="Stop timer and record the time to Odoo timesheets" block-handler-0="click"/>`);
-  let block23 = createBlock(`<span class="fa fa-star checked"/>`);
-  let block24 = createBlock(`<i class="fa fa-star-o"/>`);
-  let block27 = createBlock(`<td><block-child-0/></td>`);
-  let block29 = createBlock(`<td><block-child-0/></td>`);
-  let block32 = createBlock(`<tr><td block-attribute-0="colspan" class="text-center text-danger">No issues available currently assigned to you</td></tr>`);
+  get needsTrim() {
+    return (this.props.text || '').length > (this.props.limit || 40);
+  }
 
-  return function template(ctx, node, key = "") {
-    let b2, b3, b4, b13, b14, b15, b16, b17, b32;
-    let attr1 = ctx['state'].view==='loading'?'':'hide';
-    let attr2 = ctx['state'].view==='login'?'':'hide';
-    if (ctx['state'].bootError) {
-      let txt1 = ctx['state'].bootError;
-      b2 = block2([txt1]);
-    }
-    if (!ctx['state'].remotes.length) {
-      b3 = block3();
-    }
-    if (ctx['state'].remotes.length) {
-      let b5, b6, b7, b8, b9, b11, b12;
-      let hdlr1 = ["prevent", ctx['login'], ctx];
-      if (ctx['state'].loginError) {
-        let txt2 = ctx['state'].loginError;
-        b5 = block5([txt2]);
-      }
-      if (!ctx['state'].useExistingSession) {
-        const bExpr1 = ctx['state'];
-        const expr1 = 'username';
-        let prop1 = bExpr1[expr1];
-        let hdlr2 = [(ev) => { bExpr1[expr1] = ev.target.value; }];
-        b6 = block6([prop1, hdlr2]);
-      }
-      if (!ctx['state'].useExistingSession) {
-        let attr3 = ctx['state'].showPassword?'text':'password';
-        const bExpr2 = ctx['state'];
-        const expr2 = 'password';
-        let prop2 = bExpr2[expr2];
-        let hdlr3 = [(ev) => { bExpr2[expr2] = ev.target.value; }];
-        b7 = block7([attr3, prop2, hdlr3]);
-      }
-      if (!ctx['state'].useExistingSession) {
-        let hdlr4 = [ctx['togglePassword'], ctx];
-        let attr4 = ctx['state'].showPassword?'fa-eye-slash':'fa-eye';
-        b8 = block8([hdlr4, attr4]);
-      }
-      const bExpr3 = ctx['state'];
-      const expr3 = 'selectedRemoteIndex';
-      const bValue1 = bExpr3[expr3];
-      let hdlr5 = [(ev) => { bExpr3[expr3] = ev.target.value; }];
-      ctx = Object.create(ctx);
-      const [k_block9, v_block9, l_block9, c_block9] = prepareList(ctx['state'].remotes);
-      const keys9 = new Set();
-      for (let i1 = 0; i1 < l_block9; i1++) {
-        ctx[`remote`] = k_block9[i1];
-        const key1 = ctx['remote'].database+ctx['remote'].url;
-        if (keys9.has(String(key1))) { throw new OwlError(`Got duplicate key in t-foreach: ${key1}`)}
-        keys9.add(String(key1));
-        let attr5 = String(ctx['remote'].__index);
-        let attr6 = bValue1 === String(ctx['remote'].__index);
-        let txt3 = ctx['remote'].name;
-        c_block9[i1] = withKey(block10([attr5, attr6, txt3]), key1);
-      }
-      ctx = ctx.__proto__;
-      b9 = list(c_block9);
-      let prop3 = (ctx['state'].useExistingSession);
-      let hdlr6 = [ctx['toggleUseExistingSession'], ctx];
-      if (ctx['state'].loginLoading) {
-        b11 = block11();
-      }
-      if (ctx['currentRemote']) {
-        let txt4 = ctx['currentRemote'].url;
-        let txt5 = ctx['currentRemote'].datasrc||'project.issue';
-        b12 = block12([txt4, txt5]);
-      }
-      b4 = block4([hdlr1, hdlr5, prop3, hdlr6], [b5, b6, b7, b8, b9, b11, b12]);
-    }
-    let attr7 = ctx['state'].view==='main'?'':'hide';
-    const bExpr4 = ctx['state'];
-    const expr4 = 'searchQuery';
-    let prop4 = bExpr4[expr4];
-    let hdlr7 = [(ev) => { bExpr4[expr4] = ev.target.value; }];
-    const bExpr5 = ctx['state'];
-    const expr5 = 'limitTo';
-    let prop5 = bExpr5[expr5];
-    let hdlr8 = [(ev) => { bExpr5[expr5] = ev.target.value; }];
-    let prop6 = (ctx['state'].autoDownloadIssueTimesheet);
-    let hdlr9 = [ctx['toggleAutoDownload'], ctx];
-    let hdlr10 = [ctx['downloadCurrentMonthTimesheets'], ctx];
-    let hdlr11 = [ctx['switchBetweenRemotes'], ctx];
-    let hdlr12 = [ctx['refreshAll'], ctx];
-    let hdlr13 = [ctx['logout'], ctx];
-    if (ctx['state'].activeTimerId && ctx['state'].timerStartIso) {
-      let txt6 = ctx['state'].activeTimerId;
-      b13 = block13([txt6]);
-    }
-    if (ctx['state'].timerStartIso) {
-      let txt7 = ctx['formattedTimer'];
-      b14 = block14([txt7]);
-    }
-    let txt8 = ctx['state'].dataSource==='project.task'?'Tasks':'Issues';
-    let txt9 = ctx['filteredIssues'].length;
-    const bExpr6 = ctx['state'];
-    const expr6 = 'allIssues';
-    let prop7 = bExpr6[expr6];
-    let hdlr14 = [(ev) => { bExpr6[expr6] = ev.target.checked; }];
-    if (ctx['state'].dataSource==='project.task') {
-      b15 = block15();
-    }
-    if (ctx['state'].dataSource==='project.task') {
-      b16 = block16();
-    }
-    ctx = Object.create(ctx);
-    const [k_block17, v_block17, l_block17, c_block17] = prepareList(ctx['filteredIssues']);
-    const keys17 = new Set();
-    for (let i1 = 0; i1 < l_block17; i1++) {
-      ctx[`issue`] = k_block17[i1];
-      const key1 = ctx['issue'].id;
-      if (keys17.has(String(key1))) { throw new OwlError(`Got duplicate key in t-foreach: ${key1}`)}
-      keys17.add(String(key1));
-      let b19, b20, b21, b22, b24, b25, b26, b27, b29, b31;
-      let attr8 = ctx['state'].activeTimerId===ctx['issue'].id?'active-row':'';
-      if (!ctx['state'].activeTimerId) {
-        const v1 = ctx['startTimer'];
-        const v2 = ctx['issue'];
-        let hdlr15 = [()=>v1(v2), ctx];
-        b19 = block19([hdlr15]);
-      }
-      if (ctx['state'].activeTimerId===ctx['issue'].id) {
-        const v3 = ctx['stopTimer'];
-        const v4 = ctx['issue'];
-        let hdlr16 = [()=>v3(v4), ctx];
-        b20 = block20([hdlr16]);
-      }
-      let prop8 = (ctx['issue'].editDesc);
-      const v5 = ctx['onToggleEditDesc'];
-      const v6 = ctx['issue'];
-      let hdlr17 = [(_ev)=>v5(v6,_ev), ctx];
-      const props1 = {text: ctx['issue'].create_date?ctx['issue'].create_date.split(' ')[0]:'',limit: 20};
-      b21 = comp1(props1, key + `__1__${key1}`, node, this, null);
-      if (ctx['issue'].priority_level.length) {
-        ctx = Object.create(ctx);
-        const [k_block22, v_block22, l_block22, c_block22] = prepareList(ctx['issue'].priority_level);
-        const keys22 = new Set();
-        for (let i2 = 0; i2 < l_block22; i2++) {
-          ctx[`p`] = k_block22[i2];
-          const key2 = ctx['p'];
-          if (keys22.has(String(key2))) { throw new OwlError(`Got duplicate key in t-foreach: ${key2}`)}
-          keys22.add(String(key2));
-          c_block22[i2] = withKey(block23(), key2 + '_' + i2);
-        }
-        ctx = ctx.__proto__;
-        b22 = list(c_block22);
-      }
-      if (!ctx['issue'].priority_level.length) {
-        b24 = block24();
-      }
-      const props2 = {text: ctx['issue'].stage_id?ctx['issue'].stage_id[1]:'',limit: 15};
-      b25 = comp2(props2, key + `__2__${key1}`, node, this, null);
-      const props3 = {text: ctx['issueLabel'](ctx['issue']),limit: 70,href: ctx['issueHref'](ctx['issue'])};
-      b26 = comp3(props3, key + `__3__${key1}`, node, this, null);
-      if (ctx['state'].dataSource==='project.task') {
-        const props4 = {text: ctx['formatHours'](ctx['issue'].effective_hours),limit: 9};
-        const b28 = comp4(props4, key + `__4__${key1}`, node, this, null);
-        b27 = block27([], [b28]);
-      }
-      if (ctx['state'].dataSource==='project.task') {
-        const props5 = {text: ctx['formatHours'](ctx['issue'].remaining_hours),limit: 9};
-        const b30 = comp5(props5, key + `__5__${key1}`, node, this, null);
-        b29 = block29([], [b30]);
-      }
-      const props6 = {text: ctx['issue'].project_id?ctx['issue'].project_id[1]:'',limit: 15};
-      b31 = comp6(props6, key + `__6__${key1}`, node, this, null);
-      c_block17[i1] = withKey(block18([attr8, prop8, hdlr17], [b19, b20, b21, b22, b24, b25, b26, b27, b29, b31]), key1);
-    }
-    ctx = ctx.__proto__;
-    b17 = list(c_block17);
-    if (!ctx['filteredIssues'].length) {
-      let attr9 = ctx['state'].dataSource==='project.task'?9:7;
-      b32 = block32([attr9]);
-    }
-    let txt10 = ctx['state'].serverVersion||'Unknown';
-    let txt11 = ctx['state'].currentHost||'-';
-    let txt12 = ctx['state'].currentDatabase||'-';
-    let txt13 = ctx['state'].user?ctx['state'].user.display_name:'-';
-    return block1([attr1, attr2, attr7, prop4, hdlr7, prop5, hdlr8, prop6, hdlr9, hdlr10, hdlr11, hdlr12, hdlr13, txt8, txt9, prop7, hdlr14, txt10, txt11, txt12, txt13], [b2, b3, b4, b13, b14, b15, b16, b17, b32]);
+  get shortText() {
+    return (this.props.text || '').slice(0, this.props.limit || 40);
+  }
+
+  toggle() {
+    this.state.expanded = !this.state.expanded;
   }
 }
 
+/**
+ * Create the compiled template used by the popup application.
+ *
+ * This stays in precompiled block form because runtime XML compilation caused
+ * CSP and browser-extension environment issues earlier in the project.
+ *
+ * @param {object} app OWL app instance.
+ * @param {object} bdom OWL block DOM helpers.
+ * @param {object} helpers OWL template helpers.
+ * @returns {Function} Compiled OWL template.
+ */
+function createPopupAppTemplate(app, bdom, helpers) {
+  const { createBlock, list } = bdom;
+  const { prepareList, OwlError, withKey } = helpers;
+
+  const readMoreCreateDate = app.createComponent('ReadMore', true, false, false, ['text', 'limit']);
+  const readMoreStage = app.createComponent('ReadMore', true, false, false, ['text', 'limit']);
+  const readMoreIssueLabel = app.createComponent('ReadMore', true, false, false, ['text', 'limit', 'href']);
+  const readMoreEffectiveHours = app.createComponent('ReadMore', true, false, false, ['text', 'limit']);
+  const readMoreRemainingHours = app.createComponent('ReadMore', true, false, false, ['text', 'limit']);
+  const readMoreProject = app.createComponent('ReadMore', true, false, false, ['text', 'limit']);
+
+  const rootBlock = createBlock(
+    `<div class="app-root"><div id="loader-container" block-attribute-0="class"><i class="fa fa-cog fa-spin fa-5x"/></div><div id="login" class="login-view" block-attribute-1="class"><div class="popup-login-shell"><div class="form"><div class="logo"><img src="/img/logo.png"/></div><block-child-0/><block-child-1/><block-child-2/></div></div><div class="cta forgotpwd footer-app-opts login-footer-bar"><a href="options_main_page.html"><i class="fa fa-cogs"/> Options</a></div></div><div id="wrapper" block-attribute-2="class"><div class="toolbar-row"><input id="searchIssue" type="text" placeholder="Search for Issue by ID, Name, user, priority, Stage..." block-property-3="value" block-handler-4="input"/><select id="limitTo" block-property-5="value" block-handler-6="change"><option value="5">5</option><option value="10">10</option><option value="15">15</option><option value="">All</option></select></div><div class="container footer top-actions"><div class="auto_download_timesheet" title="Store timesheet locally when you stop timer on a specific issue"><input id="auto_download_timesheet_input" type="checkbox" block-property-7="checked" block-handler-8="change"/> Auto Download Issue Timesheet </div><div class="row"><div class="mx-3 col-md-12 footer-btns pointer"><i class="fa fa-download fa-2x" title="Download current month timesheet" block-handler-9="click"/><i class="fa fa-hand-o-left fa-2x" title="Switch between remotes" block-handler-10="click"/><i class="fa fa-refresh fa-2x" title="Refresh employee issues" block-handler-11="click"/><i class="fa fa-sign-out fa-2x" title="Log out" block-handler-12="click"/><a href="options_main_page.html" class="options-btn" title="Go To options"><i class="fa fa-cogs fa-2x"/></a></div></div></div><div class="table-scroll"><table class="table table-responsive-sm table-bordered table-fixed" id="table-task-issues"><thead><tr><th><div><block-child-3/></div><block-child-4/></th><th>Edit Desc</th><th>Create Date</th><th>Priority</th><th>Stage</th><th><block-text-13/> [<block-text-14/>] <span class="allIssues"><input id="showAllIssues" type="checkbox" block-property-15="checked" block-handler-16="input"/> Show for Everyone</span></th><block-child-5/><block-child-6/><th>Project</th></tr></thead><tbody><block-child-7/><block-child-8/></tbody></table></div><div class="container footer info-footer"><div class="row"><div class="remote-info-block col-md-12"><span><b>Odoo:</b> <block-text-17/></span><br/><span><b>Host:</b> <block-text-18/></span><br/><span><b>Database:</b> <block-text-19/></span><br/><span><b>Current User:</b> <block-text-20/></span><br/></div></div></div></div></div>`
+  );
+  const bootErrorBlock = createBlock(`<div><p class="odooError"><block-text-0/></p></div>`);
+  const noRemotesBlock = createBlock(
+    `<div class="container no-remotes-set"><div class="alert alert-warning">Hello <span class="fun-man">😉</span>, you have not configured any remotes. Open <b><i class="fa fa-cogs"/> Options</b> below and add one.</div></div>`
+  );
+  const loginFormBlock = createBlock(
+    `<form block-handler-0="submit.prevent"><block-child-0/><block-child-1/><div class="password-field"><block-child-2/><block-child-3/></div><select id="remote-selection" class="form-control" block-handler-1="change"><block-child-4/></select><div class="checkbox"><label><input type="checkbox" block-property-2="checked" block-handler-3="change"/> Use Existing Session</label></div><button class="login" type="submit">Login <block-child-5/></button><block-child-6/></form>`
+  );
+  const loginErrorBlock = createBlock(`<p class="odooError"><block-text-0/></p>`);
+  const usernameInputBlock = createBlock(
+    `<input type="text" placeholder="Username" block-property-0="value" block-handler-1="input"/>`
+  );
+  const passwordInputBlock = createBlock(
+    `<input block-attribute-0="type" id="unique-password" placeholder="Password" block-property-1="value" block-handler-2="input"/>`
+  );
+  const passwordToggleBlock = createBlock(
+    `<span class="pass-viewer" block-handler-0="click"><i class="fa" block-attribute-1="class"/></span>`
+  );
+  const remoteOptionBlock = createBlock(
+    `<option block-attribute-0="value" block-attribute-1="selected"><block-text-2/></option>`
+  );
+  const loginSpinnerBlock = createBlock(`<i class="fa fa-cog fa-spin"/>`);
+  const remoteInfoBlock = createBlock(
+    `<div class="remote-info small-note">Host: <block-text-0/> <span class="current-source-chip"><block-text-1/></span></div>`
+  );
+  const activeTimerBadgeBlock = createBlock(
+    `<span class="active-timer-running"><i class="fa fa-clock-o"/> #<block-text-0/></span>`
+  );
+  const activeTimerDurationBlock = createBlock(`<span class="startTimeCount"><block-text-0/></span>`);
+  const hoursSpentHeaderBlock = createBlock(`<th>Hours Spent</th>`);
+  const remainingHoursHeaderBlock = createBlock(`<th>Remaining Hours</th>`);
+  const issueRowBlock = createBlock(
+    `<tr block-attribute-0="class"><td class="text-center px-3 td-btn"><block-child-0/><block-child-1/></td><td class="text-center"><input type="checkbox" block-property-1="checked" block-handler-2="change"/></td><td><block-child-2/></td><td><block-child-3/><block-child-3/><block-child-4/></td><td class="issue-desc-cell"><block-child-5/></td><td class="issue-desc-cell"><block-child-6/></td><block-child-7/><block-child-8/><td><block-child-9/></td></tr>`
+  );
+  const startTimerButtonBlock = createBlock(
+    `<i class="fa fa-play-circle action-btn pointer" title="Start the timer for the selected issue" block-handler-0="click"/>`
+  );
+  const stopTimerButtonBlock = createBlock(
+    `<i class="text-danger fa fa-stop-circle action-btn pointer" title="Stop timer and record the time to Odoo timesheets" block-handler-0="click"/>`
+  );
+  const priorityStarBlock = createBlock(`<span class="fa fa-star checked"/>`);
+  const priorityStarOutlineBlock = createBlock(`<i class="fa fa-star-o"/>`);
+  const effectiveHoursCellBlock = createBlock(`<td><block-child-0/></td>`);
+  const remainingHoursCellBlock = createBlock(`<td><block-child-0/></td>`);
+  const emptyIssuesRowBlock = createBlock(
+    `<tr><td block-attribute-0="colspan" class="text-center text-danger">No issues available currently assigned to you</td></tr>`
+  );
+
+  return function template(ctx, node, key = '') {
+    let bootErrorNode;
+    let noRemotesNode;
+    let loginFormNode;
+    let activeTimerNode;
+    let timerDurationNode;
+    let hoursSpentHeaderNode;
+    let remainingHoursHeaderNode;
+    let issuesListNode;
+    let emptyIssuesNode;
+
+    const loaderClass = ctx.state.view === VIEW_LOADING ? '' : 'hide';
+    const loginClass = ctx.state.view === VIEW_LOGIN ? '' : 'hide';
+    const wrapperClass = ctx.state.view === VIEW_MAIN ? '' : 'hide';
+
+    if (ctx.state.bootError) {
+      bootErrorNode = bootErrorBlock([ctx.state.bootError]);
+    }
+
+    if (!ctx.state.remotes.length) {
+      noRemotesNode = noRemotesBlock();
+    }
+
+    if (ctx.state.remotes.length) {
+      let loginErrorNode;
+      let usernameInputNode;
+      let passwordInputNode;
+      let passwordToggleNode;
+      let remoteOptionsNode;
+      let loginSpinnerNode;
+      let remoteInfoNode;
+
+      const submitHandler = ['prevent', ctx.login, ctx];
+
+      if (ctx.state.loginError) {
+        loginErrorNode = loginErrorBlock([ctx.state.loginError]);
+      }
+
+      if (!ctx.state.useExistingSession) {
+        const stateRef = ctx.state;
+        const fieldName = 'username';
+        const fieldValue = stateRef[fieldName];
+        const inputHandler = [(ev) => { stateRef[fieldName] = ev.target.value; }];
+        usernameInputNode = usernameInputBlock([fieldValue, inputHandler]);
+      }
+
+      if (!ctx.state.useExistingSession) {
+        const inputType = ctx.state.showPassword ? 'text' : 'password';
+        const stateRef = ctx.state;
+        const fieldName = 'password';
+        const fieldValue = stateRef[fieldName];
+        const inputHandler = [(ev) => { stateRef[fieldName] = ev.target.value; }];
+        passwordInputNode = passwordInputBlock([inputType, fieldValue, inputHandler]);
+      }
+
+      if (!ctx.state.useExistingSession) {
+        const clickHandler = [ctx.togglePassword, ctx];
+        const iconClass = ctx.state.showPassword ? 'fa-eye-slash' : 'fa-eye';
+        passwordToggleNode = passwordToggleBlock([clickHandler, iconClass]);
+      }
+
+      const selectedRemoteIndex = ctx.state.selectedRemoteIndex;
+      const remoteSelectHandler = [(ev) => { ctx.state.selectedRemoteIndex = ev.target.value; }];
+
+      ctx = Object.create(ctx);
+      const [remoteItems, , remoteCount, remoteChildren] = prepareList(ctx.state.remotes);
+      const seenRemoteKeys = new Set();
+
+      for (let i = 0; i < remoteCount; i++) {
+        ctx.remote = remoteItems[i];
+        const remoteKey = ctx.remote.database + ctx.remote.url;
+        if (seenRemoteKeys.has(String(remoteKey))) {
+          throw new OwlError(`Got duplicate key in t-foreach: ${remoteKey}`);
+        }
+        seenRemoteKeys.add(String(remoteKey));
+        const optionValue = String(ctx.remote.__index);
+        const optionSelected = selectedRemoteIndex === String(ctx.remote.__index);
+        const optionText = ctx.remote.name;
+        remoteChildren[i] = withKey(remoteOptionBlock([optionValue, optionSelected, optionText]), remoteKey);
+      }
+
+      ctx = ctx.__proto__;
+      remoteOptionsNode = list(remoteChildren);
+
+      const useExistingSessionChecked = ctx.state.useExistingSession;
+      const useExistingSessionHandler = [ctx.toggleUseExistingSession, ctx];
+
+      if (ctx.state.loginLoading) {
+        loginSpinnerNode = loginSpinnerBlock();
+      }
+
+      if (ctx.currentRemote) {
+        remoteInfoNode = remoteInfoBlock([
+          ctx.currentRemote.url,
+          ctx.currentRemote.datasrc || DATA_SOURCE_ISSUE,
+        ]);
+      }
+
+      loginFormNode = loginFormBlock(
+        [submitHandler, remoteSelectHandler, useExistingSessionChecked, useExistingSessionHandler],
+        [
+          loginErrorNode,
+          usernameInputNode,
+          passwordInputNode,
+          passwordToggleNode,
+          remoteOptionsNode,
+          loginSpinnerNode,
+          remoteInfoNode,
+        ]
+      );
+    }
+
+    const searchQueryValue = ctx.state.searchQuery;
+    const searchQueryHandler = [(ev) => { ctx.state.searchQuery = ev.target.value; }];
+    const limitValue = ctx.state.limitTo;
+    const limitHandler = [(ev) => { ctx.state.limitTo = ev.target.value; }];
+    const autoDownloadChecked = ctx.state.autoDownloadIssueTimesheet;
+    const autoDownloadHandler = [ctx.toggleAutoDownload, ctx];
+    const downloadTimesheetHandler = [ctx.downloadCurrentMonthTimesheets, ctx];
+    const switchRemotesHandler = [ctx.switchBetweenRemotes, ctx];
+    const refreshHandler = [ctx.refreshAll, ctx];
+    const logoutHandler = [ctx.logout, ctx];
+
+    if (ctx.state.activeTimerId && ctx.state.timerStartIso) {
+      activeTimerNode = activeTimerBadgeBlock([ctx.state.activeTimerId]);
+    }
+
+    if (ctx.state.timerStartIso) {
+      timerDurationNode = activeTimerDurationBlock([ctx.formattedTimer]);
+    }
+
+    const issueHeaderLabel = ctx.state.dataSource === DATA_SOURCE_TASK ? 'Tasks' : 'Issues';
+    const filteredIssuesCount = ctx.filteredIssues.length;
+    const showAllIssuesChecked = ctx.state.allIssues;
+    const showAllIssuesHandler = [(ev) => { ctx.state.allIssues = ev.target.checked; }];
+
+    if (ctx.state.dataSource === DATA_SOURCE_TASK) {
+      hoursSpentHeaderNode = hoursSpentHeaderBlock();
+      remainingHoursHeaderNode = remainingHoursHeaderBlock();
+    }
+
+    ctx = Object.create(ctx);
+    const [issueItems, , issueCount, issueChildren] = prepareList(ctx.filteredIssues);
+    const seenIssueKeys = new Set();
+
+    for (let i = 0; i < issueCount; i++) {
+      ctx.issue = issueItems[i];
+      const issueKey = ctx.issue.id;
+
+      if (seenIssueKeys.has(String(issueKey))) {
+        throw new OwlError(`Got duplicate key in t-foreach: ${issueKey}`);
+      }
+      seenIssueKeys.add(String(issueKey));
+
+      let startTimerNode;
+      let stopTimerNode;
+      let createDateNode;
+      let priorityStarsNode;
+      let priorityStarOutlineNode;
+      let stageNode;
+      let issueLabelNode;
+      let effectiveHoursNode;
+      let remainingHoursNode;
+      let projectNode;
+
+      const rowClass = ctx.state.activeTimerId === ctx.issue.id ? 'active-row' : '';
+
+      if (!ctx.state.activeTimerId) {
+        const clickHandler = [() => ctx.startTimer(ctx.issue), ctx];
+        startTimerNode = startTimerButtonBlock([clickHandler]);
+      }
+
+      if (ctx.state.activeTimerId === ctx.issue.id) {
+        const clickHandler = [() => ctx.stopTimer(ctx.issue), ctx];
+        stopTimerNode = stopTimerButtonBlock([clickHandler]);
+      }
+
+      const editDescriptionChecked = ctx.issue.editDesc;
+      const editDescriptionHandler = [(_ev) => ctx.onToggleEditDesc(ctx.issue, _ev), ctx];
+
+      createDateNode = readMoreCreateDate({
+        text: ctx.issue.create_date ? ctx.issue.create_date.split(' ')[0] : '',
+        limit: 20,
+      }, key + `__1__${issueKey}`, node, this, null);
+
+      if (ctx.issue.priority_level.length) {
+        ctx = Object.create(ctx);
+        const [priorityItems, , priorityCount, priorityChildren] = prepareList(ctx.issue.priority_level);
+        const seenPriorityKeys = new Set();
+
+        for (let j = 0; j < priorityCount; j++) {
+          ctx.p = priorityItems[j];
+          const priorityKey = ctx.p;
+          if (seenPriorityKeys.has(String(priorityKey))) {
+            throw new OwlError(`Got duplicate key in t-foreach: ${priorityKey}`);
+          }
+          seenPriorityKeys.add(String(priorityKey));
+          priorityChildren[j] = withKey(priorityStarBlock(), `${priorityKey}_${j}`);
+        }
+
+        ctx = ctx.__proto__;
+        priorityStarsNode = list(priorityChildren);
+      }
+
+      if (!ctx.issue.priority_level.length) {
+        priorityStarOutlineNode = priorityStarOutlineBlock();
+      }
+
+      stageNode = readMoreStage({
+        text: ctx.issue.stage_id ? ctx.issue.stage_id[1] : '',
+        limit: 15,
+      }, key + `__2__${issueKey}`, node, this, null);
+
+      issueLabelNode = readMoreIssueLabel({
+        text: ctx.issueLabel(ctx.issue),
+        limit: 70,
+        href: ctx.issueHref(ctx.issue),
+      }, key + `__3__${issueKey}`, node, this, null);
+
+      if (ctx.state.dataSource === DATA_SOURCE_TASK) {
+        const effectiveHoursComponent = readMoreEffectiveHours({
+          text: ctx.formatHours(ctx.issue.effective_hours),
+          limit: 9,
+        }, key + `__4__${issueKey}`, node, this, null);
+        effectiveHoursNode = effectiveHoursCellBlock([], [effectiveHoursComponent]);
+      }
+
+      if (ctx.state.dataSource === DATA_SOURCE_TASK) {
+        const remainingHoursComponent = readMoreRemainingHours({
+          text: ctx.formatHours(ctx.issue.remaining_hours),
+          limit: 9,
+        }, key + `__5__${issueKey}`, node, this, null);
+        remainingHoursNode = remainingHoursCellBlock([], [remainingHoursComponent]);
+      }
+
+      projectNode = readMoreProject({
+        text: ctx.issue.project_id ? ctx.issue.project_id[1] : '',
+        limit: 15,
+      }, key + `__6__${issueKey}`, node, this, null);
+
+      issueChildren[i] = withKey(
+        issueRowBlock([rowClass, editDescriptionChecked, editDescriptionHandler], [
+          startTimerNode,
+          stopTimerNode,
+          createDateNode,
+          priorityStarsNode,
+          priorityStarOutlineNode,
+          stageNode,
+          issueLabelNode,
+          effectiveHoursNode,
+          remainingHoursNode,
+          projectNode,
+        ]),
+        issueKey
+      );
+    }
+
+    ctx = ctx.__proto__;
+    issuesListNode = list(issueChildren);
+
+    if (!ctx.filteredIssues.length) {
+      const colspan = ctx.state.dataSource === DATA_SOURCE_TASK ? 9 : 7;
+      emptyIssuesNode = emptyIssuesRowBlock([colspan]);
+    }
+
+    const serverVersionText = ctx.state.serverVersion || 'Unknown';
+    const currentHostText = ctx.state.currentHost || '-';
+    const currentDatabaseText = ctx.state.currentDatabase || '-';
+    const currentUserText = ctx.state.user ? ctx.state.user.display_name : '-';
+
+    return rootBlock(
+      [
+        loaderClass,
+        loginClass,
+        wrapperClass,
+        searchQueryValue,
+        searchQueryHandler,
+        limitValue,
+        limitHandler,
+        autoDownloadChecked,
+        autoDownloadHandler,
+        downloadTimesheetHandler,
+        switchRemotesHandler,
+        refreshHandler,
+        logoutHandler,
+        issueHeaderLabel,
+        filteredIssuesCount,
+        showAllIssuesChecked,
+        showAllIssuesHandler,
+        serverVersionText,
+        currentHostText,
+        currentDatabaseText,
+        currentUserText,
+      ],
+      [
+        bootErrorNode,
+        noRemotesNode,
+        loginFormNode,
+        activeTimerNode,
+        timerDurationNode,
+        hoursSpentHeaderNode,
+        remainingHoursHeaderNode,
+        issuesListNode,
+        emptyIssuesNode,
+      ]
+    );
+  };
+}
+
+/**
+ * Main popup application component.
+ */
 class PopupApp extends Component {
   static components = { ReadMore };
   static template = 'PopupApp';
@@ -257,9 +497,9 @@ class PopupApp extends Component {
   setup() {
     this.rpc = new OdooRpc();
     this.state = useState({
-      view: 'loading',
+      view: VIEW_LOADING,
       remotes: [],
-      selectedRemoteIndex: '0',
+      selectedRemoteIndex: DEFAULTS.selectedRemoteIndex,
       useExistingSession: true,
       username: '',
       password: '',
@@ -271,7 +511,7 @@ class PopupApp extends Component {
       projects: [],
       issues: [],
       searchQuery: '',
-      limitTo: '5',
+      limitTo: DEFAULTS.searchLimit,
       allIssues: false,
       autoDownloadIssueTimesheet: false,
       activeTimerId: null,
@@ -279,10 +519,10 @@ class PopupApp extends Component {
       timerNow: Date.now(),
       currentHost: '',
       currentDatabase: '',
-      dataSource: 'project.issue',
+      dataSource: DEFAULTS.dataSource,
       serverVersion: '',
       supportedFields: {},
-      busyMessage: 'Loading…',
+      busyMessage: DEFAULTS.busyMessage,
       loadingTable: false,
     });
 
@@ -312,58 +552,97 @@ class PopupApp extends Component {
     });
 
     onWillUnmount(() => {
-      if (this._timerHandle) clearInterval(this._timerHandle);
+      if (this._timerHandle) {
+        clearInterval(this._timerHandle);
+      }
     });
   }
 
+  /**
+   * Currently selected remote configuration.
+   *
+   * @returns {object|null}
+   */
+  get currentRemote() {
+    const idx = Number(this.state.selectedRemoteIndex || 0);
+    return this.state.remotes[idx] || null;
+  }
+
+  /**
+   * Formatted active timer duration.
+   *
+   * @returns {string}
+   */
+  get formattedTimer() {
+    if (!this.state.timerStartIso) {
+      return '00:00:00';
+    }
+    return formatDuration(this.state.timerNow - new Date(this.state.timerStartIso).getTime());
+  }
+
+  /**
+   * Issues filtered by current UI settings.
+   *
+   * @returns {Array<object>}
+   */
+  get filteredIssues() {
+    const limit = this.state.limitTo ? Number(this.state.limitTo) : null;
+    let issues = [...this.state.issues];
+
+    issues.sort((a, b) => {
+      if (a.id === this.state.activeTimerId) return -1;
+      if (b.id === this.state.activeTimerId) return 1;
+      return a.id - b.id;
+    });
+
+    if (!this.state.allIssues && this.state.user?.id) {
+      issues = issues.filter(
+        (issue) => issue.id === this.state.activeTimerId || issue.user_id?.[0] === this.state.user.id
+      );
+    }
+
+    issues = issues.filter((issue) => matchesIssue(issue, this.state.searchQuery));
+    return limit ? issues.slice(0, limit) : issues;
+  }
+
+  /**
+   * Start popup bootstrap. Any unhandled error moves the popup to login view.
+   *
+   * @returns {Promise<void>}
+   */
   async bootstrapWithTimeout() {
-    this.state.view = 'loading';
+    this.state.view = VIEW_LOADING;
     this.state.bootError = '';
-    this.state.busyMessage = 'Loading…';
+    this.state.busyMessage = DEFAULTS.busyMessage;
 
     try {
       await this.bootstrap();
     } catch (err) {
       console.warn('Bootstrap fallback:', err);
       this.state.bootError = err.message || 'Startup took too long. Please log in manually.';
-      this.state.view = 'login';
+      this.state.view = VIEW_LOGIN;
     }
   }
 
-  get currentRemote() {
-    const idx = Number(this.state.selectedRemoteIndex || 0);
-    return this.state.remotes[idx] || null;
-  }
-  get formattedTimer() {
-    if (!this.state.timerStartIso) return '00:00:00';
-    return formatDuration(this.state.timerNow - new Date(this.state.timerStartIso).getTime());
-  }
-  get filteredIssues() {
-    const limit = this.state.limitTo ? Number(this.state.limitTo) : null;
-    let issues = [...this.state.issues];
-    issues.sort((a, b) => {
-      if (a.id === this.state.activeTimerId) return -1;
-      if (b.id === this.state.activeTimerId) return 1;
-      return a.id - b.id;
-    });
-    if (!this.state.allIssues && this.state.user?.id) {
-      issues = issues.filter((issue) => issue.id === this.state.activeTimerId || issue.user_id?.[0] === this.state.user.id);
-    }
-    issues = issues.filter((issue) => matchesIssue(issue, this.state.searchQuery));
-    return limit ? issues.slice(0, limit) : issues;
-  }
-
-  async bootstrap() {
-    this.state.busyMessage = 'Loading…';
-
+  /**
+   * Clear the legacy issue cache used by older extension builds.
+   *
+   * @returns {Promise<void>}
+   */
+  async clearLegacyIssueCache() {
     try {
-      await storage.remove('users_issues');
+      await storage.remove(STORAGE_KEYS.usersIssues);
     } catch (err) {
       console.warn('Could not clear legacy users_issues cache', err);
     }
+  }
 
-    this.state.remotes = (await readRemotes()).map((r, idx) => ({ ...r, __index: idx }));
-
+  /**
+   * Load persisted popup state from browser storage.
+   *
+   * @returns {Promise<void>}
+   */
+  async loadStoredPopupState() {
     const [
       useExisting,
       autoDownloadIssueTimesheet,
@@ -373,13 +652,13 @@ class PopupApp extends Component {
       currentDb,
       currentSrc,
     ] = await Promise.all([
-      storage.get('useExistingSession', true),
-      storage.get('auto_download_issue_timesheet', false),
-      storage.get('start_date_time', null),
-      storage.get('active_timer_id', null),
-      storage.get('current_host', ''),
-      storage.get('current_host_db', ''),
-      storage.get('current_host_datasrc', 'project.issue'),
+      storage.get(STORAGE_KEYS.useExistingSession, true),
+      storage.get(STORAGE_KEYS.autoDownloadIssueTimesheet, false),
+      storage.get(STORAGE_KEYS.timerStartIso, null),
+      storage.get(STORAGE_KEYS.activeTimerId, null),
+      storage.get(STORAGE_KEYS.currentHost, ''),
+      storage.get(STORAGE_KEYS.currentDatabase, ''),
+      storage.get(STORAGE_KEYS.currentDataSource, DEFAULTS.dataSource),
     ]);
 
     this.state.useExistingSession = !!useExisting;
@@ -388,30 +667,47 @@ class PopupApp extends Component {
     this.state.activeTimerId = activeTimerIdRaw ? Number(activeTimerIdRaw) : null;
     this.state.currentHost = currentHost || '';
     this.state.currentDatabase = currentDb || '';
-    this.state.dataSource = currentSrc || 'project.issue';
+    this.state.dataSource = currentSrc || DEFAULTS.dataSource;
+  }
 
-    if (currentHost) {
-      this.rpc.setHost(currentHost);
+  /**
+   * Initialize popup state and attempt session restore.
+   *
+   * @returns {Promise<void>}
+   */
+  async bootstrap() {
+    this.state.busyMessage = DEFAULTS.busyMessage;
+    await this.clearLegacyIssueCache();
 
-      const idx = this.state.remotes.findIndex(
-        (r) => r.url === currentHost && r.database === currentDb
+    this.state.remotes = (await readRemotes()).map((remote, idx) => ({
+      ...remote,
+      __index: idx,
+    }));
+
+    await this.loadStoredPopupState();
+
+    if (this.state.currentHost) {
+      this.rpc.setHost(this.state.currentHost);
+
+      const remoteIndex = this.state.remotes.findIndex(
+        (remote) => remote.url === this.state.currentHost && remote.database === this.state.currentDatabase
       );
-      if (idx >= 0) {
-        this.state.selectedRemoteIndex = String(idx);
+
+      if (remoteIndex >= 0) {
+        this.state.selectedRemoteIndex = String(remoteIndex);
       }
 
       try {
         this.state.busyMessage = 'Restoring session…';
-
-        const session = await Promise.race([
+        const sessionInfo = await Promise.race([
           this.rpc.getSessionInfo(),
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Session restore timed out')), 4000)
-          ),
+          new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Session restore timed out')), TIMEOUTS.sessionRestoreMs);
+          }),
         ]);
 
-        if (session?.uid) {
-          await this.completeSession(session, this.state.remotes[idx] || null);
+        if (sessionInfo?.uid) {
+          await this.completeSession(sessionInfo, this.state.remotes[remoteIndex] || null);
           return;
         }
       } catch (err) {
@@ -420,70 +716,143 @@ class PopupApp extends Component {
       }
     }
 
-    this.state.view = 'login';
+    this.state.view = VIEW_LOGIN;
   }
 
-  togglePassword() { this.state.showPassword = !this.state.showPassword; }
-  onToggleEditDesc(issue, ev) { issue.editDesc = ev.target.checked; }
+  /**
+   * Toggle password visibility in login mode.
+   */
+  togglePassword() {
+    this.state.showPassword = !this.state.showPassword;
+  }
 
+  /**
+   * Update the "edit description" checkbox for a single issue row.
+   *
+   * @param {object} issue Issue/task row.
+   * @param {Event} ev DOM change event.
+   */
+  onToggleEditDesc(issue, ev) {
+    issue.editDesc = ev.target.checked;
+  }
+
+  /**
+   * Persist the "use existing session" toggle.
+   *
+   * @param {Event} ev DOM change event.
+   */
   toggleUseExistingSession(ev) {
     this.state.useExistingSession = ev.target.checked;
-    storage.set('useExistingSession', !!this.state.useExistingSession);
+    storage.set(STORAGE_KEYS.useExistingSession, !!this.state.useExistingSession);
   }
 
+  /**
+   * Persist the automatic issue timesheet CSV export toggle.
+   *
+   * @param {Event} ev DOM change event.
+   */
   toggleAutoDownload(ev) {
     this.state.autoDownloadIssueTimesheet = ev.target.checked;
-    storage.set('auto_download_issue_timesheet', !!this.state.autoDownloadIssueTimesheet);
+    storage.set(
+      STORAGE_KEYS.autoDownloadIssueTimesheet,
+      !!this.state.autoDownloadIssueTimesheet
+    );
   }
 
+  /**
+   * Build a form URL for the given issue/task.
+   *
+   * @param {object} issue Issue/task row.
+   * @returns {string|null}
+   */
   issueHref(issue) {
-    if (!this.state.currentHost || !issue?.id) return null;
-    const model = this.state.dataSource;
-    return `${this.state.currentHost}/web#id=${issue.id}&model=${model}&view_type=form`;
+    if (!this.state.currentHost || !issue?.id) {
+      return null;
+    }
+    return `${this.state.currentHost}/web#id=${issue.id}&model=${this.state.dataSource}&view_type=form`;
   }
-  issueLabel(issue) {
-    const base = this.state.dataSource === 'project.task' ? `${issue.code || issue.id}-${issue.name}` : `${issue.id}-${issue.name}`;
-    return base;
-    //return issue.message_summary ? `${base} ----> (${issue.message_summary})` : base;
-  }
-  formatHours(v) { return formatHoursMins(v); }
 
+  /**
+   * Build the human-readable issue label used in the grid.
+   *
+   * @param {object} issue Issue/task row.
+   * @returns {string}
+   */
+  issueLabel(issue) {
+    const base = this.state.dataSource === DATA_SOURCE_TASK
+      ? `${issue.code || issue.id}-${issue.name}`
+      : `${issue.id}-${issue.name}`;
+    return base;
+  }
+
+  /**
+   * Format decimal hours to HH:MM style text.
+   *
+   * @param {number} value Decimal hour value.
+   * @returns {string}
+   */
+  formatHours(value) {
+    return formatHoursMins(value);
+  }
+
+  /**
+   * Perform login or session attach for the currently selected remote.
+   *
+   * @returns {Promise<void>}
+   */
   async login() {
     const remote = this.currentRemote;
     if (!remote) {
       this.state.loginError = 'Please configure a remote first.';
       return;
     }
+
     this.state.loginLoading = true;
     this.state.loginError = '';
     this.rpc.setHost(remote.url);
     this.state.currentHost = remote.url;
     this.state.currentDatabase = remote.database;
-    this.state.dataSource = remote.datasrc || 'project.issue';
-    await storage.set('current_host', remote.url);
-    await storage.set('current_host_db', remote.database);
-    await storage.set('current_host_datasrc', this.state.dataSource);
+    this.state.dataSource = remote.datasrc || DEFAULTS.dataSource;
+
+    await storage.set(STORAGE_KEYS.currentHost, remote.url);
+    await storage.set(STORAGE_KEYS.currentDatabase, remote.database);
+    await storage.set(STORAGE_KEYS.currentDataSource, this.state.dataSource);
+
     try {
-      let session;
+      let sessionInfo;
       if (this.state.useExistingSession) {
-        session = await this.rpc.getSessionInfo();
-        if (!session?.uid) throw new Error('No active Odoo session found for this remote. Turn off "Use Existing Session" to log in manually.');
+        sessionInfo = await this.rpc.getSessionInfo();
+        if (!sessionInfo?.uid) {
+          throw new Error(
+            'No active Odoo session found for this remote. Turn off "Use Existing Session" to log in manually.'
+          );
+        }
       } else {
-        if (!this.state.username || !this.state.password) throw new Error('Username or password is missing');
-        session = await this.rpc.login(remote.database, this.state.username, this.state.password);
+        if (!this.state.username || !this.state.password) {
+          throw new Error('Username or password is missing');
+        }
+        sessionInfo = await this.rpc.login(remote.database, this.state.username, this.state.password);
       }
-      await this.completeSession(session, remote);
+
+      await this.completeSession(sessionInfo, remote);
       this.state.username = '';
       this.state.password = '';
     } catch (err) {
       console.error(err);
       this.state.loginError = err.message || 'Login failed';
-      this.state.view = 'login';
+      this.state.view = VIEW_LOGIN;
     } finally {
       this.state.loginLoading = false;
     }
   }
 
+  /**
+   * Finalize session setup after a successful restore or login.
+   *
+   * @param {object} sessionInfo Session info returned by Odoo.
+   * @param {object|null} remote Selected remote configuration.
+   * @returns {Promise<void>}
+   */
   async completeSession(sessionInfo, remote) {
     this.state.busyMessage = 'Loading tasks…';
     this.state.loadingTable = true;
@@ -492,7 +861,7 @@ class PopupApp extends Component {
 
     this.state.currentDatabase = sessionInfo.db || remoteInfo?.database || this.state.currentDatabase;
     this.state.currentHost = remoteInfo?.url || sessionInfo['web.base.url'] || this.state.currentHost;
-    this.state.dataSource = remoteInfo?.datasrc || this.state.dataSource || 'project.issue';
+    this.state.dataSource = remoteInfo?.datasrc || this.state.dataSource || DEFAULTS.dataSource;
 
     try {
       await storage.set(this.state.currentDatabase, JSON.stringify(sessionInfo));
@@ -500,17 +869,20 @@ class PopupApp extends Component {
       console.warn('Could not persist session snapshot', err);
     }
 
-    await storage.set('current_host_state', 'Active');
+    await storage.set(STORAGE_KEYS.currentHostState, 'Active');
 
     if (remoteInfo) {
       const remotes = await readRemotes();
-      const updated = remotes.map((r) =>
-        (r.url === remoteInfo.url && r.database === remoteInfo.database)
-          ? { ...r, state: 'Active' }
-          : r
-      );
-      await writeRemotes(updated);
-      this.state.remotes = updated.map((r, idx) => ({ ...r, __index: idx }));
+      const updatedRemotes = remotes.map((currentRemote) => (
+        currentRemote.url === remoteInfo.url && currentRemote.database === remoteInfo.database
+          ? { ...currentRemote, state: 'Active' }
+          : currentRemote
+      ));
+      await writeRemotes(updatedRemotes);
+      this.state.remotes = updatedRemotes.map((currentRemote, idx) => ({
+        ...currentRemote,
+        __index: idx,
+      }));
     }
 
     const userPromise = this.rpc
@@ -533,30 +905,92 @@ class PopupApp extends Component {
         this.loadIssues(),
       ]);
 
-      this.state.user =
-        userResult.records?.[0] ||
-        { id: sessionInfo.uid, display_name: sessionInfo.username || 'Unknown' };
+      this.state.user = userResult.records?.[0] || {
+        id: sessionInfo.uid,
+        display_name: sessionInfo.username || 'Unknown',
+      };
 
       if (serverInfo) {
         this.state.serverVersion = serverInfo.server_version || '';
         try {
-          await storage.set('server_version_info', JSON.stringify(serverInfo));
+          await storage.set(STORAGE_KEYS.serverVersionInfo, JSON.stringify(serverInfo));
         } catch (err) {
           console.warn('Could not cache version info', err);
         }
       }
 
-      this.state.view = 'main';
+      this.state.view = VIEW_MAIN;
     } finally {
       this.state.loadingTable = false;
     }
   }
 
+  /**
+   * Load project records required to resolve analytic accounts.
+   *
+   * @returns {Promise<void>}
+   */
   async loadProjects() {
-    const res = await this.rpc.searchRead('project.project', [], ['analytic_account_id']);
-    this.state.projects = res.records || [];
+    const result = await this.rpc.searchRead('project.project', [], ['analytic_account_id']);
+    this.state.projects = result.records || [];
   }
 
+  /**
+   * Get field metadata for the current model, caching the response.
+   *
+   * @param {string} model ORM model name.
+   * @returns {Promise<object|null>}
+   */
+  async getSupportedFieldsForModel(model) {
+    let availableFields = this.state.supportedFields[model] || null;
+
+    if (!availableFields) {
+      try {
+        availableFields = await this.rpc.fieldsGet(model, ['type', 'string']);
+        this.state.supportedFields[model] = availableFields || {};
+      } catch (err) {
+        console.warn(`Could not inspect supported fields for ${model}`, err);
+      }
+    }
+
+    return availableFields;
+  }
+
+  /**
+   * Execute a search_read and remove unsupported fields recursively if Odoo
+   * reports an invalid field.
+   *
+   * @param {string} model ORM model name.
+   * @param {Array} domain Odoo search domain.
+   * @param {string[]} requestedFields Fields to request.
+   * @returns {Promise<object>}
+   */
+  async searchReadWithInvalidFieldRetry(model, domain, requestedFields) {
+    try {
+      return await this.rpc.searchRead(model, domain, requestedFields);
+    } catch (err) {
+      const message = String(err?.message || '');
+      const invalidFieldMatch = message.match(/Invalid field ['"]([^'"]+)['"]/i);
+      if (!invalidFieldMatch) {
+        throw err;
+      }
+
+      const invalidField = invalidFieldMatch[1];
+      const narrowedFields = requestedFields.filter((field) => field !== invalidField);
+      if (!narrowedFields.length || narrowedFields.length === requestedFields.length) {
+        throw err;
+      }
+
+      console.warn(`Retrying ${model} search_read without unsupported field: ${invalidField}`);
+      return this.searchReadWithInvalidFieldRetry(model, domain, narrowedFields);
+    }
+  }
+
+  /**
+   * Load issue/task rows for the current datasource.
+   *
+   * @returns {Promise<void>}
+   */
   async loadIssues() {
     const model = this.state.dataSource;
     this.state.loadingTable = true;
@@ -570,7 +1004,7 @@ class PopupApp extends Component {
         ['stage_id.name', 'not ilike', '%Done%'],
         '&',
         ['stage_id.name', 'not ilike', '%Cancel%'],
-        ['stage_id.name', 'not ilike', '%Hold%']
+        ['stage_id.name', 'not ilike', '%Hold%'],
       ];
 
       const baseFields = [
@@ -581,57 +1015,28 @@ class PopupApp extends Component {
         'stage_id',
         'priority',
         'create_date',
-        'analytic_account_id'
+        'analytic_account_id',
       ];
 
       const extraFieldsByModel = {
-        'project.issue': ['working_hours_open', 'message_summary', 'message_unread', 'description'],
-        'project.task': ['effective_hours', 'remaining_hours', 'code', 'description', 'display_name'],
+        [DATA_SOURCE_ISSUE]: ['working_hours_open', 'message_summary', 'message_unread', 'description'],
+        [DATA_SOURCE_TASK]: ['effective_hours', 'remaining_hours', 'code', 'description', 'display_name'],
       };
 
       const desiredFields = [...baseFields, ...(extraFieldsByModel[model] || [])];
+      const availableFields = await this.getSupportedFieldsForModel(model);
 
-      let available = this.state.supportedFields[model] || null;
-
-      if (!available) {
-        try {
-          available = await this.rpc.fieldsGet(model, ['type', 'string']);
-          this.state.supportedFields[model] = available || {};
-        } catch (err) {
-          console.warn(`Could not inspect supported fields for ${model}`, err);
-        }
-      }
-
-      let fields = available
-        ? desiredFields.filter((field) => Object.prototype.hasOwnProperty.call(available, field))
+      let fields = availableFields
+        ? desiredFields.filter((field) => Object.prototype.hasOwnProperty.call(availableFields, field))
         : desiredFields.filter((field) => field !== 'message_summary' && field !== 'message_unread');
 
-      if (model === 'project.task') {
+      if (model === DATA_SOURCE_TASK) {
         fields = fields.filter((field) => field !== 'message_summary' && field !== 'message_unread');
       }
 
-      const retryWithoutInvalidField = async (requestedFields) => {
-        try {
-          return await this.rpc.searchRead(model, domain, requestedFields);
-        } catch (err) {
-          const message = String(err?.message || '');
-          const invalidFieldMatch = message.match(/Invalid field ['"]([^'"]+)['"]/i);
-          if (!invalidFieldMatch) {
-            throw err;
-          }
-          const invalidField = invalidFieldMatch[1];
-          const narrowedFields = requestedFields.filter((field) => field !== invalidField);
-          if (!narrowedFields.length || narrowedFields.length === requestedFields.length) {
-            throw err;
-          }
-          console.warn(`Retrying ${model} search_read without unsupported field: ${invalidField}`);
-          return await retryWithoutInvalidField(narrowedFields);
-        }
-      };
+      const result = await this.searchReadWithInvalidFieldRetry(model, domain, fields);
 
-      const res = await retryWithoutInvalidField(fields);
-
-      this.state.issues = (res.records || []).map((issue) => ({
+      this.state.issues = (result.records || []).map((issue) => ({
         ...issue,
         message_summary: extractMessageSummary(
           issue.message_summary || issue.description || issue.display_name || issue.name || ''
@@ -644,6 +1049,11 @@ class PopupApp extends Component {
     }
   }
 
+  /**
+   * Reload projects and issues.
+   *
+   * @returns {Promise<void>}
+   */
   async refreshAll() {
     try {
       await this.loadProjects();
@@ -653,74 +1063,140 @@ class PopupApp extends Component {
     }
   }
 
+  /**
+   * Start timing the selected issue/task.
+   *
+   * @param {object} issue Issue/task row.
+   * @returns {Promise<void>}
+   */
   async startTimer(issue) {
     const now = new Date().toISOString();
     this.state.activeTimerId = issue.id;
     this.state.timerStartIso = now;
-    await storage.set('start_date_time', now);
-    await storage.set('active_timer_id', issue.id);
+    await storage.set(STORAGE_KEYS.timerStartIso, now);
+    await storage.set(STORAGE_KEYS.activeTimerId, issue.id);
     await sendTimerStateToBackground(true);
   }
 
+  /**
+   * Resolve the analytic account for the given issue/task.
+   *
+   * @param {object} issue Issue/task row.
+   * @returns {object|undefined}
+   */
+  resolveAnalyticAccount(issue) {
+    if (issue.analytic_account_id) {
+      return issue.analytic_account_id;
+    }
+    const project = this.state.projects.find((currentProject) => currentProject.id === issue.project_id?.[0]);
+    return project?.analytic_account_id;
+  }
+
+  /**
+   * Create a timesheet entry for a project.issue row.
+   *
+   * @param {object} params Values needed to create the timesheet.
+   * @returns {Promise<void>}
+   */
+  async createIssueTimesheet(params) {
+    const journalResult = await this.rpc.searchRead(
+      'account.analytic.journal',
+      [['name', 'ilike', 'Timesheet']],
+      ['name']
+    );
+    const journal = journalResult.records?.[0];
+    if (!journal) {
+      throw new Error('No Timesheet analytic journal found in Odoo.');
+    }
+
+    await this.rpc.call('hr.analytic.timesheet', 'create', [{
+      date: params.date,
+      user_id: this.state.user.id,
+      name: params.issueName,
+      journal_id: journal.id,
+      account_id: params.analyticAccount[0],
+      unit_amount: params.durationInHours,
+      to_invoice: 1,
+      issue_id: params.issue.id,
+    }], {});
+  }
+
+  /**
+   * Create a timesheet entry for a project.task row.
+   *
+   * @param {object} params Values needed to create the timesheet.
+   * @returns {Promise<void>}
+   */
+  async createTaskTimesheet(params) {
+    await this.rpc.call('account.analytic.line', 'create', [{
+      date: params.date,
+      user_id: this.state.user.id,
+      name: params.issueName,
+      account_id: params.analyticAccount[0],
+      unit_amount: params.durationInHours,
+      project_id: params.issue.project_id?.[0],
+      task_id: params.issue.id,
+    }], {});
+  }
+
+  /**
+   * Stop the active timer and create the Odoo timesheet row.
+   *
+   * @param {object} issue Issue/task row.
+   * @returns {Promise<void>}
+   */
   async stopTimer(issue) {
     try {
-      let issueDesc = '';
+      let issueDescription = '';
       if (issue.editDesc) {
-        issueDesc = prompt(`#${issue.id} Description`, issue.name) || '';
-        if (!issueDesc.trim()) {
+        issueDescription = prompt(`#${issue.id} Description`, issue.name) || '';
+        if (!issueDescription.trim()) {
           alert('You cannot submit an empty description when Edit Issue Desc is checked.');
           return;
         }
       }
-      const startIso = this.state.timerStartIso || await storage.get('start_date_time', null);
-      if (!startIso) throw new Error('No start time found for the active timer.');
-      const now = new Date();
-      const durationMins = Math.max(0, (now.getTime() - new Date(startIso).getTime()) / 60000);
-      const mins = Math.round((durationMins % 60) / 15) * 15;
-      const durationInHours = Math.floor(durationMins / 60) + mins / 60;
 
-      let analyticAccount = issue.analytic_account_id;
-      if (!analyticAccount) {
-        const project = this.state.projects.find((p) => p.id === issue.project_id?.[0]);
-        analyticAccount = project?.analytic_account_id;
+      const startIso = this.state.timerStartIso || await storage.get(STORAGE_KEYS.timerStartIso, null);
+      if (!startIso) {
+        throw new Error('No start time found for the active timer.');
       }
-      if (!analyticAccount) throw new Error('No analytic account is defined on the project.');
 
-      const issueName = issueDesc.trim() || `${issue.name} (#${issue.id})`;
-      if (this.state.dataSource === 'project.issue') {
-        const journalRes = await this.rpc.searchRead('account.analytic.journal', [['name', 'ilike', 'Timesheet']], ['name']);
-        const journal = journalRes.records?.[0];
-        if (!journal) throw new Error('No Timesheet analytic journal found in Odoo.');
-        await this.rpc.call('hr.analytic.timesheet', 'create', [{
-          date: `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`,
-          user_id: this.state.user.id,
-          name: issueName,
-          journal_id: journal.id,
-          account_id: analyticAccount[0],
-          unit_amount: durationInHours,
-          to_invoice: 1,
-          issue_id: issue.id,
-        }], {});
+      const now = new Date();
+      const durationMinutes = Math.max(0, (now.getTime() - new Date(startIso).getTime()) / 60000);
+      const roundedMinutes = Math.round((durationMinutes % 60) / 15) * 15;
+      const durationInHours = Math.floor(durationMinutes / 60) + roundedMinutes / 60;
+      const analyticAccount = this.resolveAnalyticAccount(issue);
+
+      if (!analyticAccount) {
+        throw new Error('No analytic account is defined on the project.');
+      }
+
+      const issueName = issueDescription.trim() || `${issue.name} (#${issue.id})`;
+      const formattedDate = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+      const commonPayload = {
+        issue,
+        issueName,
+        analyticAccount,
+        durationInHours,
+        date: formattedDate,
+      };
+
+      if (this.state.dataSource === DATA_SOURCE_ISSUE) {
+        await this.createIssueTimesheet(commonPayload);
         alert(`Time for issue #${issue.id} was successfully recorded in Odoo timesheets.`);
       } else {
-        await this.rpc.call('account.analytic.line', 'create', [{
-          date: `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`,
-          user_id: this.state.user.id,
-          name: issueName,
-          account_id: analyticAccount[0],
-          unit_amount: durationInHours,
-          project_id: issue.project_id?.[0],
-          task_id: issue.id,
-        }], {});
+        await this.createTaskTimesheet(commonPayload);
         alert(`Time for task #${issue.id} was successfully recorded in Odoo timesheets.`);
       }
+
       if (this.state.autoDownloadIssueTimesheet) {
         await this.downloadCurrentIssueTimesheet(issue);
       }
+
       this.state.activeTimerId = null;
       this.state.timerStartIso = null;
-      await storage.remove('start_date_time');
-      await storage.remove('active_timer_id');
+      await storage.remove(STORAGE_KEYS.timerStartIso);
+      await storage.remove(STORAGE_KEYS.activeTimerId);
       await sendTimerStateToBackground(false);
       await this.loadIssues();
     } catch (err) {
@@ -729,67 +1205,134 @@ class PopupApp extends Component {
     }
   }
 
+  /**
+   * Download a CSV with current month timesheet rows.
+   *
+   * @returns {Promise<void>}
+   */
   async downloadCurrentMonthTimesheets() {
     try {
-      if (!this.state.user?.id) throw new Error('Login first.');
+      if (!this.state.user?.id) {
+        throw new Error('Login first.');
+      }
+
       const today = new Date();
-      const first = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10);
-      const current = new Date().toISOString().slice(0, 10);
-      const model = this.state.dataSource === 'project.task' ? 'account.analytic.line' : 'hr.analytic.timesheet';
-      const domain = [['user_id', '=', this.state.user.id], ['create_date', '>=', first], ['create_date', '<=', current]];
-      const res = await this.rpc.searchRead(model, domain, []);
-      const csv = toCSV(res.records || []);
-      if (!csv) { alert('No timesheet rows found for this month.'); return; }
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10);
+      const currentDay = new Date().toISOString().slice(0, 10);
+      const model = this.state.dataSource === DATA_SOURCE_TASK
+        ? 'account.analytic.line'
+        : 'hr.analytic.timesheet';
+      const domain = [
+        ['user_id', '=', this.state.user.id],
+        ['create_date', '>=', firstDay],
+        ['create_date', '<=', currentDay],
+      ];
+
+      const result = await this.rpc.searchRead(model, domain, []);
+      const csv = toCSV(result.records || []);
+      if (!csv) {
+        alert('No timesheet rows found for this month.');
+        return;
+      }
+
       const filename = `Timesheet [${new Date().toGMTString()}].csv`;
       downloadTextFile(filename, csv, 'application/csv;charset=utf-8;');
-      alert(`Timesheet for ${this.state.user.display_name} dated ${first} to ${current} has been saved locally as ${filename}.`);
+      alert(
+        `Timesheet for ${this.state.user.display_name} dated ${firstDay} to ${currentDay} has been saved locally as ${filename}.`
+      );
     } catch (err) {
       alert(err.message || 'Could not download current month timesheet.');
     }
   }
 
+  /**
+   * Download a CSV for the currently timed issue/task and current month.
+   *
+   * @param {object} issue Issue/task row.
+   * @returns {Promise<void>}
+   */
   async downloadCurrentIssueTimesheet(issue) {
     const today = new Date();
-    const first = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10);
-    const current = new Date().toISOString().slice(0, 10);
-    const model = this.state.dataSource === 'project.task' ? 'account.analytic.line' : 'hr.analytic.timesheet';
-    const keyDomain = this.state.dataSource === 'project.task' ? ['task_id', '=', issue.id] : ['issue_id', '=', issue.id];
-    const domain = [['user_id', '=', this.state.user.id], ['create_date', '>=', first], ['create_date', '<=', current], keyDomain];
-    const res = await this.rpc.searchRead(model, domain, []);
-    const csv = toCSV(res.records || []);
-    if (!csv) return;
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10);
+    const currentDay = new Date().toISOString().slice(0, 10);
+    const model = this.state.dataSource === DATA_SOURCE_TASK
+      ? 'account.analytic.line'
+      : 'hr.analytic.timesheet';
+    const keyDomain = this.state.dataSource === DATA_SOURCE_TASK
+      ? ['task_id', '=', issue.id]
+      : ['issue_id', '=', issue.id];
+    const domain = [
+      ['user_id', '=', this.state.user.id],
+      ['create_date', '>=', firstDay],
+      ['create_date', '<=', currentDay],
+      keyDomain,
+    ];
+
+    const result = await this.rpc.searchRead(model, domain, []);
+    const csv = toCSV(result.records || []);
+    if (!csv) {
+      return;
+    }
+
     const filename = `Timesheet-#${issue.id}-[${new Date().toGMTString()}].csv`;
     downloadTextFile(filename, csv, 'application/csv;charset=utf-8;');
   }
 
+  /**
+   * Switch back to login view without logging out.
+   *
+   * @returns {Promise<void>}
+   */
   async switchBetweenRemotes() {
     if (this.state.activeTimerId) {
       alert(`Please stop timer for issue #${this.state.activeTimerId} before switching out of the current session.`);
       return;
     }
-    this.state.view = 'login';
+
+    this.state.view = VIEW_LOGIN;
     this.state.useExistingSession = true;
-    await storage.set('useExistingSession', true);
+    await storage.set(STORAGE_KEYS.useExistingSession, true);
   }
 
+  /**
+   * Log out from the current Odoo session and reset popup state.
+   *
+   * @returns {Promise<void>}
+   */
   async logout() {
     if (this.state.activeTimerId) {
       alert(`Please stop timer for issue #${this.state.activeTimerId} before logging out.`);
       return;
     }
-    const ok = confirm('Are you sure you want to logout? Session will be removed and a re-login will be required.');
-    if (!ok) return;
-    try { await this.rpc.logout(); } catch {}
+
+    const confirmed = confirm(
+      'Are you sure you want to logout? Session will be removed and a re-login will be required.'
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await this.rpc.logout();
+    } catch {
+      // Ignore logout errors and continue with local cleanup.
+    }
+
     await clearOdooSessionCookies(this.state.currentHost);
     await storage.remove(this.state.currentDatabase);
-    await storage.set('current_host_state', 'Inactive');
+    await storage.set(STORAGE_KEYS.currentHostState, 'Inactive');
+
     this.state.user = null;
     this.state.issues = [];
     this.state.projects = [];
-    this.state.view = 'login';
+    this.state.view = VIEW_LOGIN;
     this.state.useExistingSession = true;
   }
 }
 
-const templates = { ReadMore: ReadMoreTemplate, PopupApp: PopupAppTemplate };
+const templates = {
+  ReadMore: createReadMoreTemplate,
+  PopupApp: createPopupAppTemplate,
+};
+
 mount(PopupApp, document.getElementById('app'), { dev: true, templates });
