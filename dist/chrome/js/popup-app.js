@@ -14,7 +14,9 @@ import {
     extractMessageSummary,
     notify,
     confirmDialog,
+    promptDialog,
 } from './common.js';
+import { ReadMore, createReadMoreTemplate } from './components/readmore.js';
 
 const {Component, mount, useState, onMounted, onWillUnmount} = owl;
 
@@ -50,60 +52,6 @@ const DEFAULTS = {
     busyMessage: 'Loading…',
     dataSource: DATA_SOURCE_ISSUE,
 };
-
-/**
- * Create the compiled template used by the ReadMore component.
- */
-function createReadMoreTemplate(app, bdom) {
-    const {text, createBlock} = bdom;
-    const linkBlock = createBlock(
-        `<a block-attribute-0="href" class="remote-link" target="_blank" rel="noreferrer"><block-text-1/></a>`
-    );
-    const wrapperBlock = createBlock(
-        `<span class="readmore-inline"><block-child-0/><block-child-1/></span>`
-    );
-    const toggleBlock = createBlock(
-        `<a href="#" class="hmMoreClass" block-handler-0="click"><block-text-1/></a>`
-    );
-
-    return function template(ctx) {
-        const displayText =
-            ctx.state.expanded || !ctx.needsTrim ? ctx.props.text || '' : ctx.shortText;
-
-        const contentNode = ctx.props.href
-            ? linkBlock([ctx.props.href, displayText])
-            : text(displayText);
-
-        let toggleNode = null;
-        if (ctx.needsTrim) {
-            const clickHandler = ['prevent', ctx.toggle, ctx];
-            toggleNode = toggleBlock([clickHandler, ctx.state.expanded ? ' ▲' : ' ...']);
-        }
-
-        return wrapperBlock([], [contentNode, toggleNode]);
-    };
-}
-
-class ReadMore extends Component {
-    static props = ['text', 'limit?', 'href?', 'title?'];
-    static template = 'ReadMore';
-
-    setup() {
-        this.state = useState({expanded: false});
-    }
-
-    get needsTrim() {
-        return (this.props.text || '').length > (this.props.limit || 40);
-    }
-
-    get shortText() {
-        return (this.props.text || '').slice(0, this.props.limit || 40);
-    }
-
-    toggle() {
-        this.state.expanded = !this.state.expanded;
-    }
-}
 
 /**
  * Create the compiled template used by the popup application.
@@ -1239,7 +1187,7 @@ class PopupApp extends Component {
      */
     async stopTimer(issue) {
         try {
-            const issueDescription = prompt(`#${issue.id} Description`, issue.name) || '';
+            const issueDescription = (await promptDialog(`#${issue.id} Description`, issue.name)) || '';
 
             const startIso =
                 this.state.timerStartIso || (await storage.get(STORAGE_KEYS.timerStartIso, null));

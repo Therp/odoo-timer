@@ -8,6 +8,7 @@ import {
   notify,
   confirmDialog,
 } from './common.js';
+import { ReadMore, createReadMoreTemplate } from './components/readmore.js';
 
 const { Component, mount, useState, onWillStart } = owl;
 
@@ -18,56 +19,6 @@ const DEFAULT_DATA_SOURCE = 'project.issue';
 const STORAGE_KEYS = {
   remoteHostInfo: 'remote_host_info',
 };
-
-/**
- * Create the compiled template used by the ReadMore component.
- *
- * @param {object} app OWL app instance.
- * @param {object} bdom OWL block DOM helpers.
- * @returns {Function} Compiled template.
- */
-function createReadMoreTemplate(app, bdom) {
-  const { text, createBlock } = bdom;
-  const wrapperBlock = createBlock(`<span><block-child-0/><block-child-1/></span>`);
-  const toggleBlock = createBlock(`<a href="#" block-handler-0="click"><block-text-1/></a>`);
-
-  return function template(ctx) {
-    const contentNode = text(
-      ctx.state.expanded || !ctx.needsTrim ? (ctx.props.text || '') : ctx.shortText
-    );
-
-    let toggleNode = null;
-    if (ctx.needsTrim) {
-      toggleNode = toggleBlock([
-        ['prevent', ctx.toggle, ctx],
-        ctx.state.expanded ? '▲' : '...',
-      ]);
-    }
-
-    return wrapperBlock([], [contentNode, toggleNode]);
-  };
-}
-
-class ReadMore extends Component {
-  static props = ['text', 'limit?'];
-  static template = 'ReadMore';
-
-  setup() {
-    this.state = useState({ expanded: false });
-  }
-
-  get needsTrim() {
-    return (this.props.text || '').length > (this.props.limit || 20);
-  }
-
-  get shortText() {
-    return (this.props.text || '').slice(0, this.props.limit || 20);
-  }
-
-  toggle() {
-    this.state.expanded = !this.state.expanded;
-  }
-}
 
 /**
  * Create the compiled template used by the options application.
