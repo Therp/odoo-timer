@@ -276,6 +276,7 @@ body.unselectable {
   border-radius: 10px 0 0 10px;
   margin-bottom: 0;
   display: inline-block;
+  background-color: #fff;
 }
 #limitTo {
   width: 88px;
