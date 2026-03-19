@@ -5,6 +5,8 @@ import {
   normalizeHost,
   storage,
   clearOdooSessionCookies,
+  notify,
+  confirmDialog,
 } from './common.js';
 
 const { Component, mount, useState, onWillStart } = owl;
@@ -297,7 +299,7 @@ class OptionsApp extends Component {
     await writeRemotes(remotes);
     await this.loadRemotes();
     this.resetRemoteForm();
-    alert(`Host [${host}] added successfully.`);
+    await notify(`Host [${host}] added successfully.`);
   }
 
   /**
@@ -307,7 +309,7 @@ class OptionsApp extends Component {
    * @returns {Promise<void>}
    */
   async removeRemote(remote) {
-    const confirmed = confirm(`Are you sure you want to remove remote [${remote.url}]?`);
+    const confirmed = await confirmDialog(`Are you sure you want to remove remote [${remote.url}]?`);
     if (!confirmed) {
       return;
     }
@@ -320,7 +322,7 @@ class OptionsApp extends Component {
     await writeRemotes(remotes);
     await storage.remove(remote.database);
     await this.loadRemotes();
-    alert(`[${remote.url}] removed successfully!`);
+    await notify(`[${remote.url}] removed successfully!`);
   }
 
   /**
@@ -329,7 +331,7 @@ class OptionsApp extends Component {
    * @returns {Promise<void>}
    */
   async removeAllRemotes() {
-    const confirmed = confirm('Are you sure you want to remove all remotes?');
+    const confirmed = await confirmDialog('Are you sure you want to remove all remotes?');
     if (!confirmed) {
       return;
     }
@@ -343,7 +345,7 @@ class OptionsApp extends Component {
     await writeRemotes([]);
     await storage.remove(STORAGE_KEYS.remoteHostInfo);
     await this.loadRemotes();
-    alert('Host list removed successfully!');
+    await notify('Host list removed successfully!');
   }
 }
 

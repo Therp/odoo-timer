@@ -1,15 +1,12 @@
-html,
 body {
     margin: 0;
     padding: 0;
-    min-height: 100%;
-    height: auto;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-
-body {
-    max-height: none;
+    min-width: 700px;
+    background-color: #FFF;
+    font-family: 'Open Sans', sans-serif;
+    cursor: default;
+    -webkit-user-select: none;
+    max-height: 700px;
 }
 
 h1 {
@@ -64,10 +61,13 @@ h1 {
 }
 
 #maincontent {
-    position: relative;
+    position: fixed;
     width: 100%;
-    min-height: 100vh;
-    height: auto;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #F7F7F7;
+    border: none;
 }
 
 .box {
@@ -324,14 +324,6 @@ hr {
 
 .remotes-table-info {
     padding: 20px;
-}
-
-.remotes-table-info,
-.remotes-list-container,
-.remote-list-wrapper {
-    background: #fff;
-    overflow-x: auto;
-    overflow-y: visible;
 }
 
 .remotes-table-info thead th {
