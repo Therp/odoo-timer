@@ -223,7 +223,7 @@ Firefox expects the file to be named exactly:
 manifest.json
 ```
 
-Do not try to load a file called `manifest-firefox.json` directly unless you have copied or renamed it to `manifest.json` inside the Firefox build folder.
+Do not try to load a file called `manifest.firefox.json` directly unless you have copied or renamed it to `manifest.json` inside the Firefox build folder.
 
 #### Firefox manifest notes
 

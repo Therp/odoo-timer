@@ -1,6 +1,33 @@
 
 const browserApi = globalThis.browser || globalThis.chrome;
 
+
+function getCustomAlert() {
+  const alertFn = globalThis.alert;
+  if (alertFn && typeof alertFn.show === 'function') {
+    return alertFn;
+  }
+  return null;
+}
+
+export async function notify(message, options = {}) {
+  const customAlert = getCustomAlert();
+  if (customAlert) {
+    await customAlert.show(String(message ?? ''), ['OK'], options);
+    return;
+  }
+  globalThis.alert(String(message ?? ''));
+}
+
+export async function confirmDialog(message, options = {}) {
+  const customAlert = getCustomAlert();
+  if (customAlert) {
+    const result = await customAlert.show(String(message ?? ''), ['Cancel', 'OK'], options);
+    return result === 'OK';
+  }
+  return globalThis.confirm(String(message ?? ''));
+}
+
 export const storage = {
   async get(key, fallback = null) {
     const obj = await browserApi.storage.local.get(key);
