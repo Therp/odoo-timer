@@ -348,6 +348,11 @@ hr {
     color: #17a2b8;
 }
 
+.remotes-control-btns .fa-eye:hover {
+    color: #17a2b8;
+    font-size: 1.2em !important;
+}
+
 .caption-remotes {
     font-weight: bolder;
     caption-side: top;
