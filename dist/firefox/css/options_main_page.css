@@ -326,6 +326,7 @@ hr {
     padding: 20px;
     overflow-x: auto;
     overflow-y: visible;
+    background: #fff;
 }
 
 .remotes-table-info thead th {
@@ -339,7 +340,8 @@ hr {
 
 .remotes-control-btns {
     font-size: 25px;
-    border: 2px solid #bcbfbf
+    border: 2px solid #bcbfbf;
+    background: #fff;
 }
 
 .remotes-control-btns > i {
