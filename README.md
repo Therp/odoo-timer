@@ -92,6 +92,58 @@ In this structure:
 
 Each browser folder must contain its own root `manifest.json`.
 
+# Building Odoo OWL Templates
+
+This repository currently uses compiled `createBlock(...)` template strings inside
+`dist/*/js/popup-app.js`. Those strings are brittle to hand-format. You can used NodeJS
+and odoo owl js library to build/compile xml files to a template.js file that can be used
+by the extension.
+
+## Recommended Dev and Building of Templates
+
+1. Keep the current JavaScript as the working baseline.
+2. Move hand-written UI markup into XML templates, for example:
+   - `src/templates/popup_app.xml`
+   - `src/templates/readmore.xml`
+3. Compile those XML files ahead of time with the OWL compiler.
+4. Load the generated `templates.js` before mounting the app.
+5. Keep the runtime-only OWL bundle in the extension.
+
+## Suggested local workflow
+
+```bash
+git clone https://github.com/odoo/owl.git
+cd owl
+npm install
+npm run build:runtime
+npm run build:compiler
+npm run compile_templates -- /path/to/odoo-timer/src/templates
+```
+
+That generates a `templates.js` file for the XML templates in the target folder.
+
+## How to wire it into this extension
+
+- Put generated `templates.js` under both browser builds, for example:
+  - `dist/chrome/js/templates.js`
+  - `dist/firefox/js/templates.js`
+- Load scripts in this order in `popup.html`:
+  1. OWL runtime (`owl.iife.runtime.js`)
+  2. generated templates (`templates.js`)
+  3. app code (`popup-app.js`)
+
+## What changes in `popup-app.js`
+
+Instead of keeping giant `createBlock(...)` strings, the app can reference the
+compiled template names from `templates.js`. That makes the source much easier to
+edit safely.
+
+## Important note
+
+Do not hand-reformat generated `createBlock(...)` blocks unless they are
+regenerated from XML afterward. For this extension, XML + ahead-of-time
+compilation is the safer long-term path.
+
 ## Why there are separate manifests
 
 Chromium-based browsers and Firefox handle extension background execution differently.

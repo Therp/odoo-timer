@@ -18,7 +18,7 @@ jobs:
         uses: kewisch/action-web-ext@v1
         with:
           cmd: build
-          source: src
+          source: dist/firefox
           filename: "therp-timer.xpi"
           ignoreFiles: '[ "package.json","package-lock.json","yarn.lock" ]'
 
