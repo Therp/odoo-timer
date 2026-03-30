@@ -1,0 +1,15 @@
+<templates xml:space="preserve">
+  <t t-name="OptionsApp" owl="1">
+    <!-- Source Owl template for future ahead-of-time compilation.
+         Runtime falls back to js/components/options-app.js until a compiled
+         template is registered in js/templates.js. -->
+    <div>
+      <div id="navigation">
+        <h1 class="title-app">Timer Options</h1>
+      </div>
+      <div class="options-box box">
+        <!-- See js/components/options-app.js for the current runtime template. -->
+      </div>
+    </div>
+  </t>
+</templates>

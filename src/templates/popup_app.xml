@@ -1,0 +1,24 @@
+<templates xml:space="preserve">
+  <t t-name="PopupApp" owl="1">
+    <!-- Source Owl template for future ahead-of-time compilation.
+         The runtime currently falls back to the createBlock implementation
+         in js/components/popup-app.js when compiled templates are not
+         registered in js/templates.js. -->
+    <div class="app-root">
+      <div id="loader-container" t-att-class="state.view === 'loading' ? '' : 'hide'">
+        <div class="loader-card">
+          <div class="loader-text">Loading current session and projects…</div>
+          <div class="loader-subtext">Please wait — or grab a cup of coffee ☕</div>
+          <i class="fa fa-cog fa-spin fa-5x"/>
+        </div>
+      </div>
+      <div id="login" class="login-view" t-att-class="state.view === 'login' ? 'login-view' : 'login-view hide'">
+        <!-- See js/components/popup-app.js for the current runtime template. -->
+      </div>
+      <div id="wrapper" t-att-class="state.view === 'main' ? '' : 'hide'">
+        <!-- Full source template migration can be developed here without
+             disturbing the working runtime fallback. -->
+      </div>
+    </div>
+  </t>
+</templates>

@@ -4,3 +4,7 @@
 .vs/
 .vscode
 .history/
+.nodeenv/
+.tools-venv/
+.tmp-owl-templates/
+
