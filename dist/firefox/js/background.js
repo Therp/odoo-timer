@@ -1,5 +1,5 @@
 try {
-  importScripts('browser-polyfill.js');
+  importScripts('lib/browser-polyfill.js');
 } catch (_err) {
   // Firefox background pages may already provide browser without importScripts.
 }

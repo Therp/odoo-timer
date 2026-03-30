@@ -92,58 +92,6 @@ In this structure:
 
 Each browser folder must contain its own root `manifest.json`.
 
-# Building Odoo OWL Templates
-
-This repository currently uses compiled `createBlock(...)` template strings inside
-`dist/*/js/popup-app.js`. Those strings are brittle to hand-format. You can used NodeJS
-and odoo owl js library to build/compile xml files to a template.js file that can be used
-by the extension.
-
-## Recommended Dev and Building of Templates
-
-1. Keep the current JavaScript as the working baseline.
-2. Move hand-written UI markup into XML templates, for example:
-   - `src/templates/popup_app.xml`
-   - `src/templates/readmore.xml`
-3. Compile those XML files ahead of time with the OWL compiler.
-4. Load the generated `templates.js` before mounting the app.
-5. Keep the runtime-only OWL bundle in the extension.
-
-## Suggested local workflow
-
-```bash
-git clone https://github.com/odoo/owl.git
-cd owl
-npm install
-npm run build:runtime
-npm run build:compiler
-npm run compile_templates -- /path/to/odoo-timer/src/templates
-```
-
-That generates a `templates.js` file for the XML templates in the target folder.
-
-## How to wire it into this extension
-
-- Put generated `templates.js` under both browser builds, for example:
-  - `dist/chrome/js/templates.js`
-  - `dist/firefox/js/templates.js`
-- Load scripts in this order in `popup.html`:
-  1. OWL runtime (`owl.iife.runtime.js`)
-  2. generated templates (`templates.js`)
-  3. app code (`popup-app.js`)
-
-## What changes in `popup-app.js`
-
-Instead of keeping giant `createBlock(...)` strings, the app can reference the
-compiled template names from `templates.js`. That makes the source much easier to
-edit safely.
-
-## Important note
-
-Do not hand-reformat generated `createBlock(...)` blocks unless they are
-regenerated from XML afterward. For this extension, XML + ahead-of-time
-compilation is the safer long-term path.
-
 ## Why there are separate manifests
 
 Chromium-based browsers and Firefox handle extension background execution differently.
@@ -422,3 +370,113 @@ Use:
 - the **Firefox** build for Firefox-based browsers
 
 Keep a separate `manifest.json` in each browser build folder, and load that folder with the browser’s extension developer tools.
+
+
+## Owl template compilation for developers
+
+The extension currently keeps its working runtime templates in the JavaScript
+entry files under:
+
+- `dist/chrome/js/components/popup-app.js`
+- `dist/chrome/js/components/options-app.js`
+- `dist/chrome/js/components/readmore.js`
+- `dist/firefox/js/components/popup-app.js`
+- `dist/firefox/js/components/options-app.js`
+- `dist/firefox/js/components/readmore.js`
+
+Those `createBlock(...)` templates remain the runtime fallback so that the
+extension keeps working even when ahead-of-time compiled Owl templates are not
+available.
+
+Editable source XML templates live under:
+
+- `src/templates/popup_app.xml`
+- `src/templates/options_app.xml`
+- `src/templates/readmore.xml`
+
+At runtime, the extension loads `js/templates.js` before the app modules.
+If that file registers compiled templates on
+`globalThis.__THERP_TIMER_TEMPLATES__`, the app will use them. If not, it
+falls back to the current JavaScript `createBlock(...)` templates.
+
+### Why this fallback exists
+
+Browser extensions often cannot rely on runtime template compilation in the way
+standard Odoo web builds do. Keeping the JavaScript fallback avoids breaking
+the popup or options page while developers gradually move templates into XML
+source files.
+
+### Set up Node tooling with Python `nodeenv`
+
+To avoid changing the host system Node installation, create an isolated Node
+environment with Python:
+
+```bash
+python3 -m pip install --user nodeenv
+python3 -m nodeenv .nodeenv
+. .nodeenv/bin/activate
+```
+
+A helper script is included:
+
+```bash
+./scripts/setup_nodeenv.sh
+. .nodeenv/bin/activate
+```
+
+### Compile Owl templates ahead of time
+
+1. Clone the Owl repository locally.
+2. Activate the `nodeenv` environment.
+3. Build the runtime and compiler.
+4. Compile the XML templates from `src/templates`.
+
+Example workflow:
+
+```bash
+git clone https://github.com/odoo/owl.git
+cd owl
+npm install
+npm run build:runtime
+npm run build:compiler
+npm run compile_templates -- /path/to/odoo-timer/src/templates
+```
+
+A helper script is also included in this repository:
+
+```bash
+./scripts/compile_owl_templates.sh /path/to/owl #(i.e path to owl is the cloned Odoo's OWL repo => https://github.com/odoo/owl.git)
+```
+
+**NB: Please note you need to clone Odoo's OWL repo to use it in compiling scripts since it has the helpers to build templates from xml to a compiled javascripts `template.js`.**
+
+### Register generated templates
+
+The extension expects compiled templates to be made available through:
+
+```js
+globalThis.__THERP_TIMER_TEMPLATES__ = {
+  ReadMore: /* compiled template */,
+  PopupApp: /* compiled template */,
+  OptionsApp: /* compiled template */,
+};
+```
+
+The distributed `dist/*/js/templates.js` files are safe placeholders.
+Replace them during development with your generated template registration code,
+or adapt the generated Owl output into that registry shape.
+
+### Current runtime layout
+
+Shared libraries now live under:
+
+- `dist/chrome/js/lib/`
+- `dist/firefox/js/lib/`
+
+Application entry modules now live under:
+
+- `dist/chrome/js/components/`
+- `dist/firefox/js/components/`
+
+This keeps library-style files such as `browser-polyfill.js`, `owl.iife.js`,
+and `common.js` separated from the popup and options app modules.

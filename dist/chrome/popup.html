@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Therp Timer OWL</title>
   <link rel="stylesheet" href="/css/lib/font-awesome-4.6.3/css/font-awesome.min.css" />
-  <link rel="stylesheet" href="/css/lib/bootstrap.min.css" />
+  <link rel="stylesheet" href="/css/lib/bootstrap-v4.0.0/bootstrap.min.css" />
   <link rel="stylesheet" href="/css/popup.css" />
-  <script src="/js/browser-polyfill.js"></script>
+  <script src="/js/lib/browser-polyfill.js"></script>
   <script src="/js/lib/ripple.js"></script>
   <script src="/js/lib/alert.js"></script>
-  <script src="/js/owl.iife.js"></script>
+  <script src="/js/lib/owl.iife.js"></script>
+  <script type="module" src="/js/templates.js"></script>
 </head>
 <body class="unselectable">
   <div id="boot-loader" class="boot-loader">
@@ -21,6 +22,6 @@
     </div>
   </div>
   <div id="app"></div>
-  <script type="module" src="/js/popup-app.js"></script>
+  <script type="module" src="/js/components/popup-app.js"></script>
 </body>
 </html>

@@ -7,8 +7,8 @@ import {
   clearOdooSessionCookies,
   notify,
   confirmDialog,
-} from './common.js';
-import { ReadMore, createReadMoreTemplate } from './components/readmore.js';
+} from '../lib/common.js';
+import { ReadMore, createReadMoreTemplate } from './readmore.js';
 
 const { Component, mount, useState, onWillStart } = owl;
 
@@ -19,6 +19,18 @@ const DEFAULT_DATA_SOURCE = 'project.issue';
 const STORAGE_KEYS = {
   remoteHostInfo: 'remote_host_info',
 };
+
+
+function getTemplateRegistry() {
+  return globalThis.__THERP_TIMER_TEMPLATES__ || {};
+}
+
+function resolveTemplate(name, fallbackTemplate) {
+  const registry = getTemplateRegistry();
+  return typeof registry[name] === 'function'
+    ? registry[name]
+    : fallbackTemplate;
+}
 
 /**
  * Create the compiled template used by the options application.
@@ -301,8 +313,11 @@ class OptionsApp extends Component {
 }
 
 const templates = {
-  ReadMore: createReadMoreTemplate,
-  OptionsApp: createOptionsAppTemplate,
+  ReadMore: resolveTemplate('ReadMore', createReadMoreTemplate),
+  OptionsApp: resolveTemplate('OptionsApp', createOptionsAppTemplate),
 };
 
-mount(OptionsApp, document.getElementById('app'), { dev: true, templates });
+mount(OptionsApp, document.getElementById('app'), {
+  dev: true,
+  templates,
+});

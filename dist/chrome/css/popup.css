@@ -30,15 +30,18 @@ body {
   background: var(--brand-bg);
 }
 
+
 body.unselectable {
   width: 920px;
   min-height: 820px;
 }
 
+
 #app {
   width: 920px;
   min-height: 100%;
 }
+
 
 .app-root {
   width: 920px;
@@ -46,6 +49,7 @@ body.unselectable {
   overflow: visible;
   background: linear-gradient(180deg, #f7f9fc 0%, #eef2f7 100%);
 }
+
 
 .hide { display: none !important; }
 .pointer { cursor: pointer; }
@@ -261,8 +265,10 @@ body.unselectable {
 #wrapper {
   margin: 0;
   padding: 18px 18px 24px;
-  min-height: 760px;
+  width: 920px;
+  box-sizing: border-box;
 }
+
 .toolbar-row {
   display: flex;
   gap: 10px;
