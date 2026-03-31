@@ -136,6 +136,8 @@ Before loading the extension, make sure you have:
 
 ## Usage
 
+![How Odoo timer app works](src/img/usage.gif "How it Works")
+
 ### Chromium-based browsers
 
 Examples:
