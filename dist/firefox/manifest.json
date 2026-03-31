@@ -28,7 +28,10 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "info@therp.nl"
+      "id": "info@therp.nl",
+      "data_collection_permissions": {
+        "required": []
+      }
     }
   },
   "options_ui": {
