@@ -362,17 +362,8 @@ A good workflow is:
 3. keep the code shared as much as possible
 4. only vary the manifest and browser-specific behavior where required
 
-## Summary
 
-Therp Timer is a practical browser-based Odoo timer that helps users quickly record work against Odoo project items.
-
-Use:
-
-- the **Chrome/Brave** build for Chromium-based browsers
-- the **Firefox** build for Firefox-based browsers
-
-Keep a separate `manifest.json` in each browser build folder, and load that folder with the browser’s extension developer tools.
-
+# For Developers
 
 ## Owl template compilation for developers
 
@@ -484,3 +475,14 @@ Application entry modules now live under:
 
 This keeps library-style files such as `browser-polyfill.js`, `owl.iife.js`,
 and `common.js` separated from the popup and options app modules.
+
+## Summary
+
+Therp Timer is a practical browser-based Odoo timer that helps users quickly record work against Odoo project items.
+
+Use:
+
+- the **Chrome/Brave** build for Chromium-based browsers
+- the **Firefox** build for Firefox-based browsers
+
+Keep a separate `manifest.json` in each browser build folder, and load that folder with the browser’s extension developer tools.
