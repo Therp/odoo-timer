@@ -26,6 +26,11 @@
       "js/background.js"
     ]
   },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "info@therp.nl"
+    }
+  },
   "options_ui": {
     "page": "options_main_page.html",
     "open_in_tab": true
