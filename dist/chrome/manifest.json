@@ -33,7 +33,8 @@
     "cookies",
     "notifications"
   ],
-  "host_permissions": [
-    "<all_urls>"
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://*/*"
   ]
 }
