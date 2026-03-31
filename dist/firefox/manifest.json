@@ -30,7 +30,9 @@
     "gecko": {
       "id": "info@therp.nl",
       "data_collection_permissions": {
-        "required": []
+        "required": [
+          "none"
+        ]
       }
     }
   },
