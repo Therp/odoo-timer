@@ -577,6 +577,15 @@ class PopupApp extends Component {
     }
 
     /**
+     * 
+     * @param {Integer} value 
+     * @returns String
+     */
+    toStringValue(value) {
+        return String(value);
+    }
+
+    /**
      * Return true when an error looks like an expired/invalid Odoo session.
      */
     isSessionExpiredError(err) {
@@ -718,7 +727,7 @@ class PopupApp extends Component {
 
         this.state.remotes = (await readRemotes()).map((remote, idx) => ({
             ...remote,
-            __index: idx,
+            __index: String(idx),
         }));
 
         await this.loadStoredPopupState();
@@ -938,7 +947,7 @@ class PopupApp extends Component {
             await writeRemotes(updatedRemotes);
             this.state.remotes = updatedRemotes.map((currentRemote, idx) => ({
                 ...currentRemote,
-                __index: idx,
+                __index: String(idx),
             }));
         }
 
@@ -1402,9 +1411,12 @@ class PopupApp extends Component {
     }
 }
 
+// setup template to use, either from template.js or pre-set createBlock functions
+const compiledTemplates = globalThis.__THERP_TIMER_TEMPLATES__ || {};
+
 const templates = {
-    ReadMore: resolveTemplate('ReadMore', createReadMoreTemplate),
-    PopupApp: resolveTemplate('PopupApp', createPopupAppTemplate),
+    ReadMore: compiledTemplates.ReadMore || createReadMoreTemplate,
+    PopupApp: compiledTemplates.PopupApp || createPopupAppTemplate,
 };
 
 mount(PopupApp, document.getElementById('app'), {

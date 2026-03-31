@@ -3,14 +3,14 @@
     <span class="readmore-inline">
       <t t-if="props.href">
         <a t-att-href="props.href" class="remote-link" target="_blank" rel="noreferrer">
-          <t t-esc="state.expanded || !needsTrim ? (props.text || '') : shortText"/>
+          <t t-out="state.expanded || !needsTrim ? (props.text || '') : shortText"/>
         </a>
       </t>
       <t t-else="">
-        <t t-esc="state.expanded || !needsTrim ? (props.text || '') : shortText"/>
+        <t t-out="state.expanded || !needsTrim ? (props.text || '') : shortText"/>
       </t>
       <a t-if="needsTrim" href="#" class="hmMoreClass" t-on-click.prevent="toggle">
-        <t t-esc="state.expanded ? ' ▲' : ' ...'"/>
+        <t t-out="state.expanded ? ' ▲' : ' ...'"/>
       </a>
     </span>
   </t>

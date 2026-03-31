@@ -37,7 +37,7 @@ const STORAGE_KEYS = {
     currentDataSource: 'current_host_datasrc',
     currentHostState: 'current_host_state',
     usersIssues: 'users_issues',
-    serverVersionInfo: 'server_version_info',
+    odooOWLVersion: 'odoo_owl_version',
     searchLimit: 'search_limit',
     showAllItems: 'show_all_items',
 };
@@ -55,7 +55,7 @@ const DEFAULTS = {
 
 
 function getTemplateRegistry() {
-    return globalThis.__THERP_TIMER_TEMPLATES__ || {};
+  return globalThis.__THERP_TIMER_TEMPLATES__ || {};
 }
 
 function resolveTemplate(name, fallbackTemplate) {
@@ -79,7 +79,7 @@ function createPopupAppTemplate(app, bdom, helpers) {
     const readMoreProject = app.createComponent('ReadMore', true, false, false, ['text', 'limit']);
 
     const rootBlock = createBlock(
-        `<div class="app-root"><div id="loader-container" block-attribute-0="class"><div class="loader-card"><div class="loader-text">Loading current session and projects…</div><div class="loader-subtext">Please wait — or grab a cup of coffee ☕</div><i class="fa fa-cog fa-spin fa-5x"/></div></div><div id="login" class="login-view" block-attribute-1="class"><div class="popup-login-shell"><div class="form"><div class="logo"><img src="/img/logo.png"/></div><block-child-0/><block-child-1/><block-child-2/></div></div><div class="cta forgotpwd footer-app-opts login-footer-bar"><a href="options_main_page.html"><i class="fa fa-cogs"/> Options</a></div></div><div id="wrapper" block-attribute-2="class"><div class="toolbar-row"><input id="searchIssue" type="text" placeholder="Search by ID, name, user, priority, stage..." block-property-3="value" block-handler-4="input"/><select id="limitTo" block-property-5="value" block-handler-6="change"><option value="10">10</option><option value="15">15</option><option value="25">25</option><option value="">All</option></select></div><div class="container footer top-actions"><div class="auto_download_timesheet" title="Store timesheet locally when you stop timer on the current item"><input id="auto_download_timesheet_input" type="checkbox" block-property-7="checked" block-handler-8="change"/> Auto Download Current Item Timesheet </div><div class="row"><div class="mx-3 col-md-12 footer-btns pointer"><i class="fa fa-download fa-2x" title="Download current month timesheet" block-handler-9="click"/><i class="fa fa-hand-o-left fa-2x" title="Switch between remotes" block-handler-10="click"/><i class="fa fa-refresh fa-2x" title="Refresh current items" block-handler-11="click"/><i class="fa fa-undo fa-2x" title="Discard the active timer" block-handler-12="click"/><i class="fa fa-sign-out fa-2x" title="Log out" block-handler-13="click"/><a href="options_main_page.html" class="options-btn" title="Go To options"><i class="fa fa-cogs fa-2x"/></a></div></div></div><div class="table-scroll"><table class="table table-responsive-sm table-bordered table-fixed" id="table-task-issues"><thead><tr><th class="action-col"><div><block-child-3/></div><block-child-4/></th><th class="priority-col">Priority</th><th class="stage-col">Stage</th><th class="item-col"><div class="item-header-title"><block-text-14/> [<block-text-15/>]</div><label class="allIssues"><input id="showAllIssues" type="checkbox" block-property-16="checked" block-handler-17="input"/> Show for everyone</label></th><block-child-5/><block-child-6/><th class="project-col">Project</th></tr></thead><tbody><block-child-7/><block-child-8/></tbody></table></div><div class="container footer info-footer"><div class="row"><div class="remote-info-block col-md-12"><span><b>Odoo:</b> <block-text-18/></span><br/><span><b>Host:</b> <block-text-19/></span><br/><span><b>Database:</b> <block-text-20/></span><br/><span><b>Current User:</b> <block-text-21/></span><br/></div></div></div></div></div>`
+        `<div class="app-root"><div id="loader-container" block-attribute-0="class"><div class="loader-card"><div class="loader-text">Loading current session and projects…</div><div class="loader-subtext">Please wait — or grab a cup of coffee ☕</div><i class="fa fa-cog fa-spin fa-5x"/></div></div><div id="login" class="login-view" block-attribute-1="class"><div class="popup-login-shell"><div class="form"><div class="logo"><img src="/img/logo.png"/></div><block-child-0/><block-child-1/><block-child-2/></div></div><div class="cta forgotpwd footer-app-opts login-footer-bar"><a href="options_main_page.html"><i class="fa fa-cogs"/> Options</a></div></div><div id="wrapper" block-attribute-2="class"><div class="toolbar-row"><input id="searchIssue" type="text" placeholder="Search by ID, name, user, priority, stage..." block-property-3="value" block-handler-4="input"/><select id="limitTo" block-property-5="value" block-handler-6="change"><option value="10">10</option><option value="15">15</option><option value="25">25</option><option value="">All</option></select></div><div class="container footer top-actions"><div class="auto_download_timesheet" title="Store timesheet locally when you stop timer on the current item"><input id="auto_download_timesheet_input" type="checkbox" block-property-7="checked" block-handler-8="change"/> Auto Download Current Item Timesheet </div><div class="row"><div class="mx-3 col-md-12 footer-btns pointer"><i class="fa fa-download fa-2x" title="Download current month timesheet" block-handler-9="click"/><i class="fa fa-hand-o-left fa-2x" title="Switch between remotes" block-handler-10="click"/><i class="fa fa-refresh fa-2x" title="Refresh current items" block-handler-11="click"/><i class="fa fa-undo fa-2x" title="Discard the active timer" block-handler-12="click"/><i class="fa fa-sign-out fa-2x" title="Log out" block-handler-13="click"/><a href="options_main_page.html" class="options-btn" title="Go To options"><i class="fa fa-cogs fa-2x"/></a></div></div></div><div class="table-scroll"><table class="table table-responsive-sm table-bordered table-fixed" id="table-task-issues"><thead><tr><th class="action-col"><div><block-child-3/></div><block-child-4/></th><th class="priority-col">Priority</th><th class="stage-col">Stage</th><th class="item-col"><div class="item-header-title"><block-text-14/> [<block-text-15/>]</div><label class="allIssues"><input id="showAllIssues" type="checkbox" block-property-16="checked" block-handler-17="input"/> Show for everyone</label></th><block-child-5/><block-child-6/><th class="project-col">Project</th></tr></thead><tbody><block-child-7/><block-child-8/></tbody></table></div><div class="info-footer mx-3"><div class="row"><div class="remote-info-block col-md-12"><span><b>Odoo:</b> <block-text-18/></span><br/><span><b>Host:</b> <block-text-19/></span><br/><span><b>Database:</b> <block-text-20/></span><br/><span><b>Current User:</b> <block-text-21/></span><br/></div></div></div></div></div>`
     );
     const bootErrorBlock = createBlock(`<div><p class="odooError"><block-text-0/></p></div>`);
     const noRemotesBlock = createBlock(
@@ -394,6 +394,7 @@ function createPopupAppTemplate(app, bdom, helpers) {
         }
 
         const serverVersionText = ctx.state.serverVersion || 'Unknown';
+        const odooOWLVersionText = ctx.state.odooOWLVersion || owl.__info__.version;
         const currentHostText = ctx.state.currentHost || '-';
         const currentDatabaseText = ctx.state.currentDatabase || '-';
         const currentUserText = ctx.state.user ? ctx.state.user.display_name : '-';
@@ -419,6 +420,7 @@ function createPopupAppTemplate(app, bdom, helpers) {
                 showAllIssuesChecked,
                 showAllIssuesHandler,
                 serverVersionText,
+                odooOWLVersionText,
                 currentHostText,
                 currentDatabaseText,
                 currentUserText,
@@ -472,6 +474,7 @@ class PopupApp extends Component {
             currentDatabase: '',
             dataSource: DEFAULTS.dataSource,
             serverVersion: '',
+            odooOWLVersion: owl.__info__.version,
             supportedFields: {},
             busyMessage: DEFAULTS.busyMessage,
             loadingTable: false,
@@ -577,6 +580,15 @@ class PopupApp extends Component {
     }
 
     /**
+     * 
+     * @param {Integer} value 
+     * @returns String
+     */
+    toStringValue(value) {
+        return String(value);
+    }
+
+    /**
      * Return true when an error looks like an expired/invalid Odoo session.
      */
     isSessionExpiredError(err) {
@@ -617,6 +629,7 @@ class PopupApp extends Component {
         this.state.projects = [];
         this.state.issues = [];
         this.state.serverVersion = '';
+        this.state.odooOWLVersion = owl.__info__.version;
         this.state.supportedFields = {};
         this.state.view = VIEW_LOGIN;
         this.state.loginLoading = false;
@@ -718,7 +731,7 @@ class PopupApp extends Component {
 
         this.state.remotes = (await readRemotes()).map((remote, idx) => ({
             ...remote,
-            __index: idx,
+            __index: String(idx),
         }));
 
         await this.loadStoredPopupState();
@@ -938,7 +951,7 @@ class PopupApp extends Component {
             await writeRemotes(updatedRemotes);
             this.state.remotes = updatedRemotes.map((currentRemote, idx) => ({
                 ...currentRemote,
-                __index: idx,
+                __index: String(idx),
             }));
         }
 
@@ -1402,9 +1415,12 @@ class PopupApp extends Component {
     }
 }
 
+// setup template to use, either from template.js or pre-set createBlock functions
+const compiledTemplates = globalThis.__THERP_TIMER_TEMPLATES__ || {};
+
 const templates = {
-    ReadMore: resolveTemplate('ReadMore', createReadMoreTemplate),
-    PopupApp: resolveTemplate('PopupApp', createPopupAppTemplate),
+    ReadMore: compiledTemplates.ReadMore || createReadMoreTemplate,
+    PopupApp: compiledTemplates.PopupApp || createPopupAppTemplate,
 };
 
 mount(PopupApp, document.getElementById('app'), {
