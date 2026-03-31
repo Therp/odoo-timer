@@ -1,0 +1,29 @@
+name: Chrome Package
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build-chrome:
+    name: Build Chrome ZIP
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create ZIP
+        run: |
+          cd dist/chrome
+          zip -r ../../therp-timer-chrome.zip .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: therp-odoo-timer-chrome
+          path: therp-timer-chrome.zip
