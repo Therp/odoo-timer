@@ -287,6 +287,112 @@ class OptionsApp extends Component {
     await this.loadRemotes();
     await notify(`[${remote.url}] removed successfully!`);
   }
+  /**
+   * Expose the About page constant to Owl XML expressions.
+   *
+   * @returns {string}
+   */
+  get PAGE_ABOUT() {
+      return PAGE_ABOUT;
+  }
+
+  /**
+   * Expose the Options page constant to Owl XML expressions.
+   *
+   * @returns {string}
+   */
+  get PAGE_OPTIONS() {
+      return PAGE_OPTIONS;
+  }
+
+  /**
+   * Expose the default data source constant to Owl XML expressions.
+   *
+   * @returns {string}
+   */
+  get DEFAULT_DATA_SOURCE() {
+      return DEFAULT_DATA_SOURCE;
+  }
+
+  /**
+   * Switch the options view to the About page.
+   *
+   * @returns {void}
+   */
+  showAboutPage() {
+      this.state.activePage = PAGE_ABOUT;
+  }
+
+  /**
+   * Switch the options view to the Options page.
+   *
+   * @returns {void}
+   */
+  showOptionsPage() {
+      this.state.activePage = PAGE_OPTIONS;
+  }
+
+  /**
+   * Toggle visibility of the saved remotes list.
+   *
+   * @returns {void}
+   */
+  toggleRemoteList() {
+      this.state.showList = !this.state.showList;
+  }
+
+  /**
+   * Handle selecting the "From Issues" data source radio option.
+   *
+   * @param {Event} ev
+   * @returns {void}
+   */
+  onDataSourceIssuesChange(ev) {
+      if (ev.target.checked) {
+          this.state.form.remote_datasrc = DEFAULT_DATA_SOURCE;
+      }
+  }
+
+  /**
+   * Handle selecting the "From Tasks" data source radio option.
+   *
+   * @param {Event} ev
+   * @returns {void}
+   */
+  onDataSourceTasksChange(ev) {
+      if (ev.target.checked) {
+          this.state.form.remote_datasrc = 'project.task';
+      }
+  }
+  /**
+   * Handle Odoo host text input changes.
+   *
+   * @param {Event} ev
+   * @returns {void}
+   */
+  onRemoteHostInput(ev) {
+      this.state.form.remote_host = ev.target.value;
+  }
+
+  /**
+   * Handle display name text input changes.
+   *
+   * @param {Event} ev
+   * @returns {void}
+   */
+  onRemoteNameInput(ev) {
+      this.state.form.remote_name = ev.target.value;
+  }
+
+  /**
+   * Handle database name text input changes.
+   *
+   * @param {Event} ev
+   * @returns {void}
+   */
+  onRemoteDatabaseInput(ev) {
+      this.state.form.remote_database = ev.target.value;
+  }
 
   /**
    * Remove every saved remote configuration.
@@ -312,9 +418,12 @@ class OptionsApp extends Component {
   }
 }
 
+const compiledTemplates = globalThis.__THERP_TIMER_TEMPLATES__ || {};
+
 const templates = {
-  ReadMore: resolveTemplate('ReadMore', createReadMoreTemplate),
-  OptionsApp: resolveTemplate('OptionsApp', createOptionsAppTemplate),
+    ReadMore: compiledTemplates.ReadMore || createReadMoreTemplate,
+    OptionsApp:
+        compiledTemplates.OptionsApp || createOptionsAppTemplate,
 };
 
 mount(OptionsApp, document.getElementById('app'), {

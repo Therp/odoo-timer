@@ -30,7 +30,6 @@ body {
   background: var(--brand-bg);
 }
 
-
 body.unselectable {
   width: 920px;
   min-height: 820px;
@@ -449,6 +448,12 @@ body.unselectable {
   font-size: 13px;
   padding: 14px 16px;
   overflow-wrap: anywhere;
+}
+.remote-info-block .remote-value {
+  color: var(--brand-blue);
+  font-size: 14px;
+  line-height: 1.7;
+  font-weight: 600;
 }
 .current-source-chip {
   display: inline-block;

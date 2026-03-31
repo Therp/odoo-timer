@@ -448,7 +448,9 @@ A helper script is also included in this repository:
 ./scripts/compile_owl_templates.sh /path/to/owl #(i.e path to owl is the cloned Odoo's OWL repo => https://github.com/odoo/owl.git)
 ```
 
-**NB: Please note you need to clone Odoo's OWL repo to use it in compiling scripts since it has the helpers to build templates from xml to a compiled javascripts `template.js`.**
+**NB:**
+- **Make sure you have templates to be compile by the scrip in `src/template/*.xml*` otherwise script might fail.**
+- **Please note you need to clone Odoo's OWL repo branch that is identical to your owl js library when compiling templates otherwise you will get templat errors when generating `template.js`. For instance: this current project is using OWL lib v2.8.2. So we need to clone owl repo branch owl-2.x (i.e https://github.com/odoo/owl/tree/owl-2.x) to compile template with.**
 
 ### Register generated templates
 

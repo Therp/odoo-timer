@@ -1,10 +1,38 @@
-.idea
+# JetBrains IDE project files
+.idea/
+*.iml
 
-# Visual Studio cache/options directory
+# Visual Studio/VS Code
 .vs/
-.vscode
+.vscode/
+
+# VS Code extension local history
 .history/
+
+# Python virtual environments and local tooling
 .nodeenv/
 .tools-venv/
+.venv/
+venv/
+env/
+
+# Temporary build helpers
 .tmp-owl-templates/
 
+# Local Owl clone used for template compilation
+/owl/
+
+# Python compiled/cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Optional Python tool caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# macOS/Linux editor noise
+.DS_Store

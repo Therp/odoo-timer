@@ -464,9 +464,15 @@ body.unselectable {
   background: #fff;
   border: 1px solid var(--brand-border-soft);
   border-radius: 12px;
-  font-size: 13px;
+  font-size: 14px;
   padding: 14px 16px;
   overflow-wrap: anywhere;
+}
+.remote-info-block .remote-value {
+  color: var(--brand-blue);
+  font-size: 14px;
+  line-height: 1.7;
+  font-weight: 600;
 }
 .current-source-chip {
   display: inline-block;
