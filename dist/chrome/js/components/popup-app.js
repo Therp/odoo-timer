@@ -538,6 +538,13 @@ class PopupApp extends Component {
     async updateShowAllPreference(value) {
         this.state.allIssues = !!value;
         await storage.set(STORAGE_KEYS.showAllItems, !!value);
+        // Reload from server so tasks not owned by the current user are
+        // fetched (or dropped) depending on the new setting.
+        try {
+            await this.loadIssues();
+        } catch (err) {
+            console.warn('Could not reload issues after show-all toggle', err);
+        }
     }
 
 
@@ -1052,15 +1059,29 @@ class PopupApp extends Component {
         this.state.busyMessage = 'Loading tasks…';
 
         try {
-            const domain = [
-                '|',
-                ['id', '=', this.state.activeTimerId || 0],
-                '&',
-                ['stage_id.name', 'not ilike', '%Done%'],
-                '&',
-                ['stage_id.name', 'not ilike', '%Cancel%'],
-                ['stage_id.name', 'not ilike', '%Hold%'],
-            ];
+            // When the user wants only their own tasks (allIssues = false) and
+            // the current user is known, push the user filter to the server so
+            // tasks belonging to other people are never included in the result
+            // set.  This also avoids hitting Odoo's default 80-record page
+            // limit with large installations (issue #30).
+            const domain = (!this.state.allIssues && this.state.user?.id)
+                ? [
+                    '|',
+                    ['id', '=', this.state.activeTimerId || 0],
+                    '&', ['user_id', '=', this.state.user.id],
+                    '&', ['stage_id.name', 'not ilike', '%Done%'],
+                    '&', ['stage_id.name', 'not ilike', '%Cancel%'],
+                    ['stage_id.name', 'not ilike', '%Hold%'],
+                ]
+                : [
+                    '|',
+                    ['id', '=', this.state.activeTimerId || 0],
+                    '&',
+                    ['stage_id.name', 'not ilike', '%Done%'],
+                    '&',
+                    ['stage_id.name', 'not ilike', '%Cancel%'],
+                    ['stage_id.name', 'not ilike', '%Hold%'],
+                ];
 
             const baseFields = [
                 'id',

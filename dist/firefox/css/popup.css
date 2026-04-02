@@ -18,8 +18,8 @@
 
 html,
 body {
-  min-width: 960px;
-  width: 960px;
+  min-width: 980px;
+  width: 980px;
   height: 820px;
   margin: 0;
   padding: 0;
@@ -30,21 +30,20 @@ body {
   background: var(--brand-bg);
 }
 
-
 body.unselectable {
-  width: 960px;
+  width: 980px;
   min-height: 820px;
 }
 
 
 #app {
-  width: 960px;
+  width: 980px;
   min-height: 100%;
 }
 
 
 .app-root {
-  width: 960px;
+  width: 980px;
   min-height: 100%;
   overflow: visible;
   background: linear-gradient(180deg, #f7f9fc 0%, #eef2f7 100%);
@@ -265,7 +264,7 @@ body.unselectable {
 #wrapper {
   margin: 0;
   padding: 18px 16px 24px;
-  width: 960px;
+  width: 980px;
   box-sizing: border-box;
 }
 
@@ -341,19 +340,16 @@ body.unselectable {
 }
 
 .table-bordered { border: 1px solid #dadde1; }
-.table-fixed thead {
-  position: static;
-}
-
+.table-fixed thead,
 .table-fixed thead th {
   position: sticky;
   position: -webkit-sticky;
   top: 0;
-  z-index: 3;
-  background: #f8fafc;
 }
+.table-fixed thead { background-color: #fff; }
+/* Reduced from 0.42rem to 0.3rem to prevent horizontal overflow (issue #23) */
 .table td,
-.table th { padding: 0.42rem; }
+.table th { padding: 0.3rem; }
 .table tbody > tr:hover { background: #F3FBFF; }
 .active-row { background: #EAF8FF; }
 .table-scroll {
@@ -365,44 +361,32 @@ body.unselectable {
   border: 1px solid var(--brand-border-soft);
   border-radius: 12px;
 }
-
 #table-task-issues {
   width: 100%;
   table-layout: fixed;
   margin-bottom: 0;
   background: #fff;
-  border-collapse: separate;
-  border-spacing: 0;
 }
-#table-task-issues thead th:first-child {
-  border-left: 1px solid #bcc8d6;
-}
+/* action-col: single authoritative rule to avoid specificity conflicts */
 #table-task-issues th:first-child,
 #table-task-issues td:first-child {
-    width: 66px;
-    min-width: 66px;
+    width: 52px;
+    min-width: 52px;
     white-space: nowrap;
 }
-#table-task-issues thead th { 
-  background: #f8fafc; 
-  z-index: 2; 
-  color: #2f3640;
-  border-top: 1px solid #bcc8d6;
-  border-bottom: 1px solid #aebccc;
-  border-right: 1px solid #c6d0db;
-  box-shadow: inset 0 -1px 0 #aebccc;
-}
+#table-task-issues thead th { background: #f8fafc; z-index: 2; }
 #table-task-issues td,
 #table-task-issues th { vertical-align: top; white-space: normal; }
-.action-col { width: 42px; }
-.priority-col, .priority-cell { width: 58px; }
-.stage-col, .stage-cell { width: 118px; }
+.action-col { width: 52px; }
+.priority-col, .priority-cell { width: 52px; }
+.stage-col, .stage-cell { width: 100px; }
 .item-col { width: 320px; }
-.project-col, .project-cell { width: 160px; }
+.project-col, .project-cell { width: 150px; }
+/* Hours Spent / Remaining Hours columns (task datasource) */
 #table-task-issues th:nth-child(5),
 #table-task-issues th:nth-child(6),
 #table-task-issues td:nth-child(5),
-#table-task-issues td:nth-child(6) { width: 76px; }
+#table-task-issues td:nth-child(6) { width: 72px; }
 .issue-desc-cell { width: 320px; min-width: 0; max-width: none; }
 .issue-desc-cell .remote-link,
 .issue-desc-cell .readmore-inline,
@@ -459,7 +443,7 @@ body.unselectable {
   background: #fff;
   border: 1px solid var(--brand-border-soft);
   border-radius: 12px;
-  font-size: 14px;
+  font-size: 13px;
   padding: 14px 16px;
   overflow-wrap: anywhere;
 }
