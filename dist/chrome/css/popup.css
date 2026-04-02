@@ -18,8 +18,8 @@
 
 html,
 body {
-  min-width: 920px;
-  width: 920px;
+  min-width: 960px;
+  width: 960px;
   height: 820px;
   margin: 0;
   padding: 0;
@@ -31,19 +31,19 @@ body {
 }
 
 body.unselectable {
-  width: 920px;
+  width: 960px;
   min-height: 820px;
 }
 
 
 #app {
-  width: 920px;
+  width: 960px;
   min-height: 100%;
 }
 
 
 .app-root {
-  width: 920px;
+  width: 960px;
   min-height: 100%;
   overflow: visible;
   background: linear-gradient(180deg, #f7f9fc 0%, #eef2f7 100%);
@@ -263,8 +263,8 @@ body.unselectable {
 /* Main wrapper */
 #wrapper {
   margin: 0;
-  padding: 18px 18px 24px;
-  width: 920px;
+  padding: 18px 16px 24px;
+  width: 960px;
   box-sizing: border-box;
 }
 
@@ -309,7 +309,7 @@ body.unselectable {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: 10px;
   padding: 12px 8px;
   margin: 0 0 10px 0;
   background: #fff;
@@ -319,11 +319,11 @@ body.unselectable {
   border-radius: 12px;
   text-align: center;
 }
-.footer-btns > i { padding: 0 4px; }
+.footer-btns > i { padding: 0 2px; }
 .footer-btns i,
 .footer-btns a { margin-right: 4px; color: var(--brand-blue-strong); }
 .action-btn { font-size: 30px; margin: 0; }
-.fa-2x { margin: 0 3%; }
+.fa-2x { margin: 0 1.5%; }
 .td-btn { color: var(--brand-success); }
 .pause-btn { color: var(--brand-warning); }
 .bigstopbutton {
@@ -368,23 +368,23 @@ body.unselectable {
 }
 #table-task-issues th:first-child,
 #table-task-issues td:first-child {
-    width: 71px;
-    min-width: 70px;
+    width: 66px;
+    min-width: 66px;
     white-space: nowrap;
 }
 #table-task-issues thead th { background: #f8fafc; z-index: 2; }
 #table-task-issues td,
 #table-task-issues th { vertical-align: top; white-space: normal; }
 .action-col { width: 42px; }
-.priority-col, .priority-cell { width: 62px; }
-.stage-col, .stage-cell { width: 130px; }
-.item-col { width: 340px; }
-.project-col, .project-cell { width: 180px; }
+.priority-col, .priority-cell { width: 58px; }
+.stage-col, .stage-cell { width: 118px; }
+.item-col { width: 320px; }
+.project-col, .project-cell { width: 160px; }
 #table-task-issues th:nth-child(5),
 #table-task-issues th:nth-child(6),
 #table-task-issues td:nth-child(5),
-#table-task-issues td:nth-child(6) { width: 84px; }
-.issue-desc-cell { width: 340px; min-width: 0; max-width: none; }
+#table-task-issues td:nth-child(6) { width: 76px; }
+.issue-desc-cell { width: 320px; min-width: 0; max-width: none; }
 .issue-desc-cell .remote-link,
 .issue-desc-cell .readmore-inline,
 .project-cell .readmore-inline,
@@ -420,12 +420,7 @@ body.unselectable {
   font-weight: 600;
 }
 
-.active-timer-running {
-  font-size: 13px;
-  color: var(--brand-blue-strong);
-  font-weight: bold;
-}
-.startTimerCount { font-size: 12px; color: var(--brand-danger); }
+.startTimeCount { font-size: 12px; color: var(--brand-danger); font-weight: 700; }
 .morebtn,
 .lessbtn { color: orange !important; cursor: pointer; }
 .defaultCheckbox { width: 40px !important; display: inline !important; margin-bottom: 0 !important; }

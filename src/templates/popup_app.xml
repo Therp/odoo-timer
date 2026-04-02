@@ -154,7 +154,7 @@
           />
           <select
             id="limitTo"
-            t-att-value="state.limitTo"
+            t-model="state.limitTo"
             t-on-change="(ev) => updateLimitPreference(ev.target.value)"
           >
             <option value="10">10</option>
@@ -196,7 +196,7 @@
                 t-on-click="refreshAll"
               />
               <i
-                class="fa fa-undo fa-2x"
+                class="fa fa-clock-o fa-2x"
                 title="Discard the active timer"
                 t-on-click="resetTimer"
               />
@@ -224,14 +224,7 @@
             <thead>
               <tr>
                 <th class="action-col">
-                  <div>
-                    <t t-if="state.activeTimerId and state.timerStartIso">
-                      <span class="active-timer-running">
-                        <i class="fa fa-clock-o"/>
-                        #<t t-out="state.activeTimerId"/>
-                      </span>
-                    </t>
-                  </div>
+                  <div/>
 
                   <t t-if="state.timerStartIso">
                     <span class="startTimeCount" t-out="formattedTimer"/>
