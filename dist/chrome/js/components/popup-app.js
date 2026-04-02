@@ -37,7 +37,7 @@ const STORAGE_KEYS = {
     currentDataSource: 'current_host_datasrc',
     currentHostState: 'current_host_state',
     usersIssues: 'users_issues',
-    serverVersionInfo: 'server_version_info',
+    odooOWLVersion: 'odoo_owl_version',
     searchLimit: 'search_limit',
     showAllItems: 'show_all_items',
 };
@@ -386,6 +386,7 @@ function createPopupAppTemplate(app, bdom, helpers) {
         }
 
         const serverVersionText = ctx.state.serverVersion || 'Unknown';
+        const odooOWLVersionText = ctx.state.odooOWLVersion || owl.__info__.version;
         const currentHostText = ctx.state.currentHost || '-';
         const currentDatabaseText = ctx.state.currentDatabase || '-';
         const currentUserText = ctx.state.user ? ctx.state.user.display_name : '-';
@@ -411,6 +412,7 @@ function createPopupAppTemplate(app, bdom, helpers) {
                 showAllIssuesChecked,
                 showAllIssuesHandler,
                 serverVersionText,
+                odooOWLVersionText,
                 currentHostText,
                 currentDatabaseText,
                 currentUserText,
@@ -464,6 +466,7 @@ class PopupApp extends Component {
             currentDatabase: '',
             dataSource: DEFAULTS.dataSource,
             serverVersion: '',
+            odooOWLVersion: owl.__info__.version,
             supportedFields: {},
             busyMessage: DEFAULTS.busyMessage,
             loadingTable: false,
@@ -618,6 +621,7 @@ class PopupApp extends Component {
         this.state.projects = [];
         this.state.issues = [];
         this.state.serverVersion = '';
+        this.state.odooOWLVersion = owl.__info__.version;
         this.state.supportedFields = {};
         this.state.view = VIEW_LOGIN;
         this.state.loginLoading = false;
