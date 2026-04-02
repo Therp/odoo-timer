@@ -30,8 +30,7 @@
   },
   "permissions": [
     "storage",
-    "cookies",
-    "notifications"
+    "cookies"
   ],
   "optional_host_permissions": [
     "https://*/*",
