@@ -105,9 +105,6 @@ function createPopupAppTemplate(app, bdom, helpers) {
     const remoteInfoBlock = createBlock(
         `<div class="remote-info small-note">Host: <block-text-0/> <span class="current-source-chip"><block-text-1/></span></div>`
     );
-    const activeTimerBadgeBlock = createBlock(
-        `<span class="active-timer-running"><i class="fa fa-clock-o"/> #<block-text-0/></span>`
-    );
     const activeTimerDurationBlock = createBlock(`<span class="startTimeCount"><block-text-0/></span>`);
     const hoursSpentHeaderBlock = createBlock(`<th>Hours Spent</th>`);
     const remainingHoursHeaderBlock = createBlock(`<th>Remaining Hours</th>`);
@@ -132,7 +129,6 @@ function createPopupAppTemplate(app, bdom, helpers) {
         let bootErrorNode;
         let noRemotesNode;
         let loginFormNode;
-        let activeTimerNode;
         let timerDurationNode;
         let hoursSpentHeaderNode;
         let remainingHoursHeaderNode;
@@ -261,10 +257,6 @@ function createPopupAppTemplate(app, bdom, helpers) {
         const refreshHandler = [ctx.refreshAll, ctx];
         const resetTimerHandler = [ctx.resetTimer, ctx];
         const logoutHandler = [ctx.logout, ctx];
-
-        if (ctx.state.activeTimerId && ctx.state.timerStartIso) {
-            activeTimerNode = activeTimerBadgeBlock([ctx.state.activeTimerId]);
-        }
 
         if (ctx.state.timerStartIso) {
             timerDurationNode = activeTimerDurationBlock([ctx.formattedTimer]);
@@ -427,7 +419,7 @@ function createPopupAppTemplate(app, bdom, helpers) {
                 bootErrorNode,
                 noRemotesNode,
                 loginFormNode,
-                activeTimerNode,
+                null,
                 timerDurationNode,
                 hoursSpentHeaderNode,
                 remainingHoursHeaderNode,
@@ -710,7 +702,7 @@ class PopupApp extends Component {
         this.state.currentHost = currentHost || '';
         this.state.currentDatabase = currentDb || '';
         this.state.dataSource = currentSrc || DEFAULTS.dataSource;
-        this.state.limitTo = searchLimit || DEFAULTS.searchLimit;
+        this.state.limitTo = searchLimit ?? DEFAULTS.searchLimit;
         this.state.allIssues = !!showAllItems;
     }
 
@@ -1208,7 +1200,7 @@ class PopupApp extends Component {
      */
     async stopTimer(issue) {
         try {
-            const issueDescription = (await promptDialog(`#${issue.id} Description`, issue.name)) || '';
+            const issueDescription = (await promptDialog(`${this.itemLabelSingular.charAt(0).toUpperCase() + this.itemLabelSingular.slice(1)} #${issue.id} Description`, issue.name)) || '';
 
             const startIso =
                 this.state.timerStartIso || (await storage.get(STORAGE_KEYS.timerStartIso, null));
