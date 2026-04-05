@@ -6,7 +6,7 @@ body {
     font-family: 'Open Sans', sans-serif;
     cursor: default;
     -webkit-user-select: none;
-    max-height: 700px;
+    min-height: 100vh;
 }
 
 h1 {
@@ -382,33 +382,26 @@ hr {
 .timesheet-download-link{display:inline-block;margin-right:8px;color:inherit;}
 .no-remotes-set{padding-left:0;}
 
-/* ── Desktop-specific overrides ────────────────────────────── */
-body {
-  max-height: none;
-  min-height: 100vh;
-  overflow-y: auto;
-}
+/* ── Desktop additions ───────────────────────────────────────────── */
+body { overflow-y: auto; }
 
-.remotes-table-info {
-  overflow-x: auto;
+.back-left {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: #33BAF6;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 17px;
+  text-decoration: none;
+  box-shadow: 0 2px 10px rgba(51,186,246,.4);
+  transition: background .15s, transform .12s;
 }
+.back-left:hover { background: #1FA7E6; transform: scale(1.08); }
 
-.remotes-table-info table th,
-.remotes-table-info table td {
-  font-size: 0.82em;
-  vertical-align: middle;
-}
-
-select.form-control {
-  height: calc(2.25rem + 2px);
-}
-
-.form-group label .text-muted {
-  font-size: 0.82em;
-  font-weight: normal;
-}
-
-/* ── Remote row action buttons ────────────────────────────────── */
+/* Edit + delete icons */
 .remote-row-actions {
   white-space: nowrap;
   text-align: center;
@@ -416,79 +409,25 @@ select.form-control {
 }
 .remote-row-actions .fa {
   cursor: pointer;
-  font-size: 1.1em;
-  padding: 2px 6px;
-  transition: opacity 0.15s;
+  font-size: 13px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  transition: background .12s, color .12s;
 }
-.remote-row-actions .fa:hover { opacity: 0.7; }
-.remote-row-actions .fa-pencil { color: #17a2b8; }
-.remote-row-actions .fa-trash  { color: #dc3545; }
+.remote-row-actions .fa-pencil       { color: #17a2b8; }
+.remote-row-actions .fa-pencil:hover { background: #e0f4ff; }
+.remote-row-actions .fa-trash        { color: #dc3545; }
+.remote-row-actions .fa-trash:hover  { background: #fff5f5; }
 
+.footer-app {
+  padding: 10px 12px;
+  text-align: center;
+  border-top: 1px solid #E3E3E3;
+  margin-top: auto;
+}
 
-/* Phase 1 desktop polish */
-body {
-  background: linear-gradient(180deg, #f7f9fc 0%, #eef2f7 100%);
-  color: #3f4854;
-}
-#navigation {
-  width: 190px;
-  background: linear-gradient(180deg, #ffffff 0%, #f5f8fc 100%);
-  border-right: 1px solid #dce7f1;
-  box-shadow: 8px 0 24px rgba(31, 41, 55, 0.05);
-}
-#navigation li {
-  border-radius: 0 12px 12px 0;
-  margin-right: 12px;
-  padding-top: 10px;
-  padding-bottom: 10px;
-}
-#navigation li.selected {
-  background: rgba(51, 186, 246, 0.10);
-  -webkit-border-start-color: #33baf6;
-}
-.box {
-  margin-left: 215px;
-  padding: 24px 24px 18px;
-}
-.options-box .form,
-.options-box.box {
-  background: rgba(255,255,255,0.94);
-  border: 1px solid #dfe7ef;
-  border-radius: 16px;
-  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.08);
-}
-.remote-options-form {
-  padding: 18px 18px 8px;
-}
-.footer-app .back-left {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #4ac4fa 0%, #1fa7e6 100%);
-  color: #fff !important;
-  box-shadow: 0 10px 22px rgba(51, 186, 246, 0.28);
-  left: 22px;
-  bottom: 22px;
-}
-.footer-app .back-left:hover {
-  transform: translateY(-1px);
-  text-decoration: none;
-}
-.remotes-control-btns {
-  border: 1px solid #d9e4ec;
-  border-radius: 12px;
-  background: #f8fbff;
-}
-.remotes-table-info table {
-  background: #fff;
-}
-.remotes-table-info tbody > tr:hover {
-  background: #eef8ff;
-}
-.inline-help {
-  margin: 0 0 12px;
-  color: #667085;
+.form-group label .text-muted {
+  font-weight: normal;
+  font-size: 11.5px;
+  color: #9ca3af;
 }

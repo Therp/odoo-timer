@@ -29,9 +29,9 @@ function createOptionsAppTemplate(app, bdom, helpers) {
     const rmHost     = app.createComponent('ReadMore', true, false, false, ['text', 'limit']);
     const rmDatabase = app.createComponent('ReadMore', true, false, false, ['text', 'limit']);
     const rmVersion  = app.createComponent('ReadMore', true, false, false, ['text', 'limit']);
+    const rmPoll     = app.createComponent('ReadMore', true, false, false, ['text', 'limit']);
     const rmSource   = app.createComponent('ReadMore', true, false, false, ['text', 'limit']);
     const rmState    = app.createComponent('ReadMore', true, false, false, ['text', 'limit']);
-    const rmCheck    = app.createComponent('ReadMore', true, false, false, ['text', 'limit']);
 
     const rootBlock = createBlock(
         `<div>` +
@@ -59,7 +59,7 @@ function createOptionsAppTemplate(app, bdom, helpers) {
         // ── Options / Add-remote form ──
         `<div class="options-box box" block-attribute-5="class"><div class="form remote-options-form">` +
         `<form block-handler-6="submit.prevent">` +
-        `<h4 class="remote-title text-info">Add Remote</h4><p class="inline-help">Manage existing remotes, keep edit support, and set a message polling interval for desktop notifications.</p><hr/>` +
+        `<h4 class="remote-title text-info">Add Remote</h4><hr/>` +
         `<div class="form-group"><label for="remote-host">Odoo Host</label>` +
         `<input type="text" class="form-control" id="remote-host" placeholder="https://your-odoo-host.example" block-property-7="value" block-handler-8="input"/></div>` +
         `<div class="form-group"><label for="remote-name">Display Name</label>` +
@@ -68,8 +68,8 @@ function createOptionsAppTemplate(app, bdom, helpers) {
         `<input type="text" class="form-control" id="remote-database" placeholder="myodoodatabase" block-property-11="value" block-handler-12="input"/></div>` +
         `<div class="form-group"><label for="remote-odoo-version">Odoo Version <span class="text-muted">(e.g. 16.0)</span></label>` +
         `<input type="text" class="form-control" id="remote-odoo-version" placeholder="16.0" block-property-13="value" block-handler-14="input"/></div>` +
-        `<div class="form-group"><label for="remote-check-interval">Message check interval <span class="text-muted">(seconds)</span></label>` +
-        `<input type="number" min="0" step="1" class="form-control" id="remote-check-interval" placeholder="60" block-property-15="value" block-handler-16="input"/></div>` +
+        `<div class="form-group"><label for="remote-poll">Message Poll Interval <span class="text-muted">(seconds, 0 = off)</span></label>` +
+        `<input type="number" class="form-control" id="remote-poll" placeholder="60" min="0" block-property-15="value" block-handler-16="input"/></div>` +
         `<div class="form-group"><label class="label">Data Source</label><ul class="data-source-list list-group">` +
         `<li class="list-group-item"><div class="form-check">` +
         `<input class="form-check-input" type="radio" value="project.issue" id="FromIssues" block-property-17="checked" block-handler-18="change"/>` +
@@ -94,7 +94,7 @@ function createOptionsAppTemplate(app, bdom, helpers) {
         `<caption class="text-info caption-remotes">List of Available Remotes</caption>` +
         `<thead><tr>` +
         `<th>Remote</th><th>Host</th><th>Database</th>` +
-        `<th>Version</th><th>Source</th><th>Check every</th><th>State</th><th></th>` +
+        `<th>Version</th><th>Poll (s)</th><th>Source</th><th>State</th><th></th>` +
         `</tr></thead><tbody><block-child-0/></tbody></table></div>`
     );
 
@@ -102,7 +102,8 @@ function createOptionsAppTemplate(app, bdom, helpers) {
         `<tr>` +
         `<td class="text-info"><block-child-0/></td>` +
         `<td><block-child-1/></td><td><block-child-2/></td>` +
-        `<td><block-child-3/></td><td><block-child-4/></td><td><block-child-5/></td><td><block-child-6/></td>` +
+        `<td><block-child-3/></td><td><block-child-4/></td>` +
+        `<td><block-child-5/></td><td><block-child-6/></td>` +
         `<td class="remote-row-actions">` +
         `<i class="fa fa-pencil text-info"  title="Edit remote"   block-handler-0="click"/>` +
         `<i class="fa fa-trash  text-danger" title="Remove remote" block-handler-1="click"/>` +
@@ -127,7 +128,7 @@ function createOptionsAppTemplate(app, bdom, helpers) {
         const nameInputHandler     = [(ev) => { fs.remote_name         = ev.target.value; }];
         const databaseInputHandler = [(ev) => { fs.remote_database     = ev.target.value; }];
         const versionInputHandler  = [(ev) => { fs.remote_odoo_version = ev.target.value; }];
-        const intervalInputHandler = [(ev) => { fs.remote_check_interval = ev.target.value; }];
+        const pollInputHandler     = [(ev) => { fs.remote_poll_interval = ev.target.value; }];
         const issuesRadioChecked   = fs.remote_datasrc === DEFAULT_DATA_SOURCE;
         const tasksRadioChecked    = fs.remote_datasrc === 'project.task';
         const issuesRadioHandler   = [(ev) => { if (ev.target.checked) fs.remote_datasrc = DEFAULT_DATA_SOURCE; }];
@@ -154,8 +155,8 @@ function createOptionsAppTemplate(app, bdom, helpers) {
                 const hostN  = rmHost(    { text: ctx.remote.url         || '',                  limit: 28 }, key+`__2__${rk}`, node, this, null);
                 const dbN    = rmDatabase({ text: ctx.remote.database    || '',                  limit: 18 }, key+`__3__${rk}`, node, this, null);
                 const verN   = rmVersion( { text: ctx.remote.odooVersion || '\u2014',            limit: 10 }, key+`__4__${rk}`, node, this, null);
-                const srcN   = rmSource(  { text: ctx.remote.datasrc     || DEFAULT_DATA_SOURCE, limit: 18 }, key+`__5__${rk}`, node, this, null);
-                const checkN = rmCheck(   { text: `${Number(ctx.remote.messageCheckIntervalSeconds || 60) || 60}s`, limit: 8 }, key+`__6__${rk}`, node, this, null);
+                const pollN  = rmPoll(    { text: String(ctx.remote.pollInterval ?? 60),         limit: 6  }, key+`__5__${rk}`, node, this, null);
+                const srcN   = rmSource(  { text: ctx.remote.datasrc     || DEFAULT_DATA_SOURCE, limit: 18 }, key+`__6__${rk}`, node, this, null);
                 const stateN = rmState(   { text: ctx.remote.state       || 'Inactive',          limit: 12 }, key+`__7__${rk}`, node, this, null);
 
                 const r = ctx.remote;
@@ -163,7 +164,7 @@ function createOptionsAppTemplate(app, bdom, helpers) {
                 const deleteH = [() => ctx.removeRemote(r), ctx];
 
                 children[i] = withKey(
-                    remoteRowBlock([editH, deleteH], [nameN, hostN, dbN, verN, srcN, checkN, stateN]),
+                    remoteRowBlock([editH, deleteH], [nameN, hostN, dbN, verN, pollN, srcN, stateN]),
                     rk
                 );
             }
@@ -181,7 +182,7 @@ function createOptionsAppTemplate(app, bdom, helpers) {
                 fs.remote_name,          nameInputHandler,
                 fs.remote_database,      databaseInputHandler,
                 fs.remote_odoo_version,  versionInputHandler,
-                fs.remote_check_interval, intervalInputHandler,
+                fs.remote_poll_interval, pollInputHandler,
                 issuesRadioChecked,      issuesRadioHandler,
                 tasksRadioChecked,       tasksRadioHandler,
                 addRemoteHandler, reloadHandler, toggleListHandler, removeAllHandler,
@@ -204,28 +205,24 @@ class OptionsApp extends Component {
             showList:   true,
             error:      '',
             form: {
-                remote_host:         '',
-                remote_name:         '',
-                remote_database:     '',
-                remote_odoo_version: '',
-                remote_check_interval: '60',
-                remote_datasrc:      DEFAULT_DATA_SOURCE,
+                remote_host:          '',
+                remote_name:          '',
+                remote_database:      '',
+                remote_odoo_version:  '',
+                remote_poll_interval: '60',
+                remote_datasrc:       DEFAULT_DATA_SOURCE,
             },
         });
         onWillStart(async () => { await this.loadRemotes(); });
     }
 
-    async loadRemotes() {
-        this.state.remotes = (await readRemotes()).map((remote) => ({
-            ...remote,
-            messageCheckIntervalSeconds: Number(remote.messageCheckIntervalSeconds || 60) || 60,
-        }));
-    }
+    async loadRemotes() { this.state.remotes = await readRemotes(); }
 
     resetRemoteForm() {
         Object.assign(this.state.form, {
             remote_host: '', remote_name: '', remote_database: '',
-            remote_odoo_version: '', remote_check_interval: '60', remote_datasrc: DEFAULT_DATA_SOURCE,
+            remote_odoo_version: '', remote_poll_interval: '60',
+            remote_datasrc: DEFAULT_DATA_SOURCE,
         });
     }
 
@@ -243,12 +240,12 @@ class OptionsApp extends Component {
 
     async addRemote() {
         this.state.error = '';
-        const host     = normalizeHost(this.state.form.remote_host || '');
-        const name     = (this.state.form.remote_name || '').trim();
-        const database = (this.state.form.remote_database || '').trim();
-        const version  = (this.state.form.remote_odoo_version || '').trim();
-        const interval = String(this.state.form.remote_check_interval || '60').trim() || '60';
-        const datasrc  = this.state.form.remote_datasrc || DEFAULT_DATA_SOURCE;
+        const host          = normalizeHost(this.state.form.remote_host || '');
+        const name          = (this.state.form.remote_name || '').trim();
+        const database      = (this.state.form.remote_database || '').trim();
+        const version       = (this.state.form.remote_odoo_version || '').trim();
+        const pollInterval  = Number(this.state.form.remote_poll_interval ?? 60);
+        const datasrc       = this.state.form.remote_datasrc || DEFAULT_DATA_SOURCE;
 
         if (!this._validate(host, name, database)) return;
 
@@ -258,7 +255,7 @@ class OptionsApp extends Component {
             return;
         }
 
-        remotes.push({ url: host, name, database, odooVersion: version, datasrc, messageCheckIntervalSeconds: Number(interval) || 60, state: 'Inactive' });
+        remotes.push({ url: host, name, database, odooVersion: version, pollInterval, datasrc, state: 'Inactive' });
         await writeRemotes(remotes);
         await this.loadRemotes();
         this.resetRemoteForm();
@@ -298,12 +295,6 @@ class OptionsApp extends Component {
       style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:4px;box-sizing:border-box;font-size:14px;"/>
   </div>
 
-  <div style="margin-bottom:10px;">
-    <label style="display:block;font-size:13px;margin-bottom:4px;color:#555;">Message check interval <span style="color:#999;">(seconds)</span></label>
-    <input id="${pfx}-interval" type="number" min="0" step="1" value="${escapeHtml(String(remote.messageCheckIntervalSeconds || 60))}" placeholder="60"
-      style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:4px;box-sizing:border-box;font-size:14px;"/>
-  </div>
-
   <div style="margin-bottom:4px;">
     <label style="display:block;font-size:13px;margin-bottom:4px;color:#555;">Data Source</label>
     <select id="${pfx}-datasrc"
@@ -322,7 +313,6 @@ class OptionsApp extends Component {
         const newHost  = normalizeHost(get(`${pfx}-host`));
         const newDb    = get(`${pfx}-database`).trim();
         const newVer   = get(`${pfx}-version`).trim();
-        const newInterval = Number(get(`${pfx}-interval`) || 60) || 60;
         const newSrc   = get(`${pfx}-datasrc`) || DEFAULT_DATA_SOURCE;
 
         if (!this._validate(newHost, newName, newDb)) return;
@@ -340,7 +330,7 @@ class OptionsApp extends Component {
         const updated = remotes.map((r) =>
             r.url === remote.url && r.database === remote.database
                 ? { ...r, name: newName, url: newHost, database: newDb,
-                         odooVersion: newVer, datasrc: newSrc, messageCheckIntervalSeconds: newInterval }
+                         odooVersion: newVer, datasrc: newSrc }
                 : r
         );
         await writeRemotes(updated);
@@ -382,8 +372,9 @@ class OptionsApp extends Component {
 // ─── Mount ────────────────────────────────────────────────────────────────────
 
 const compiledTemplates = globalThis.__THERP_TIMER_TEMPLATES__ || {};
+// OptionsApp uses its own code-based template — same reason as PopupApp.
 const templates = {
-    ReadMore:   compiledTemplates.ReadMore   || createReadMoreTemplate,
-    OptionsApp: compiledTemplates.OptionsApp || createOptionsAppTemplate,
+    ReadMore:   compiledTemplates.ReadMore || createReadMoreTemplate,
+    OptionsApp: createOptionsAppTemplate,
 };
 mount(OptionsApp, document.getElementById('app'), { dev: false, templates });
