@@ -7,10 +7,10 @@
       >
         <div class="loader-card">
           <div class="loader-text">
-            Loading current session and projects…
+            Loading current session &amp;&amp; projects…
           </div>
           <div class="loader-subtext">
-            Please wait — or grab a cup of coffee ☕
+            Please wait — || grab a cup of coffee ☕
           </div>
           <i class="fa fa-cog fa-spin fa-5x"/>
         </div>
@@ -24,7 +24,7 @@
         <div class="popup-login-shell">
           <div class="form">
             <div class="logo">
-              <img src="/img/logo.png"/>
+              <img src="img/logo.png"/>
             </div>
 
             <t t-if="state.bootError">
@@ -39,7 +39,7 @@
                   Hello <span class="fun-man">😉</span>, you have not configured
                   any remotes. Open
                   <b><i class="fa fa-cogs"/> Options</b>
-                  below and add one.
+                  below &amp;&amp; add one.
                 </div>
               </div>
             </t>
@@ -280,7 +280,7 @@
                       <t t-if="state.activeTimerId === issue.id">
                         <i
                           class="text-danger fa fa-stop-circle action-btn pointer"
-                          title="Stop timer and record the time to Odoo timesheets"
+                          title="Stop timer &amp;&amp; record the time to Odoo timesheets"
                           t-on-click="() => stopTimer(issue)"
                         />
                       </t>

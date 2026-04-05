@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src *;" />
+  <title>Therp Timer</title>
+  <link rel="stylesheet" href="css/lib/font-awesome-4.6.3/css/font-awesome.min.css" />
+  <link rel="stylesheet" href="css/lib/bootstrap-v4.0.0/bootstrap.min.css" />
+  <link rel="stylesheet" href="css/popup.css" />
+  <!-- OWL runtime (IIFE — sets globalThis.owl) -->
+  <script src="js/lib/owl.iife.js"></script>
+  <!-- alert.js custom dialog library -->
+  <script src="js/lib/ripple.js"></script>
+  <script src="js/lib/alert.js"></script>
+  <!-- Pre-compiled OWL templates (sets globalThis.__THERP_TIMER_TEMPLATES__).
+       If the file does not exist the component files fall back to their
+       built-in createXxxTemplate() functions. -->
+  <script type="module" src="js/templates.js"></script>
+</head>
+<body class="unselectable">
+  <!-- Boot loader shown while OWL mounts -->
+  <div id="boot-loader" class="boot-loader">
+    <div class="loader-card">
+      <div class="loader-text">Loading current session and projects…</div>
+      <div class="loader-subtext">Please wait — or grab a cup of coffee ☕</div>
+      <i class="fa fa-cog fa-spin fa-5x"></i>
+    </div>
+  </div>
+
+  <div id="app"></div>
+
+  <script type="module" src="js/components/popup-app.js"></script>
+</body>
+</html>

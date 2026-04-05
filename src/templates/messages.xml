@@ -1,0 +1,60 @@
+<templates xml:space="preserve">
+  <t t-name="MessagesApp" owl="1">
+    <div class="messages-layout">
+      <aside class="messages-sidebar" id="tasksPane">
+        <div class="messages-search">
+          <input id="task-search" placeholder="Search tasks/issues..." t-att-value="state.search" />
+        </div>
+        <div class="task-list">
+          <t t-if="state.tasks.length">
+            <t t-foreach="state.tasks" t-as="task" t-key="task.id">
+              <div class="task-card" t-att-class="task.id === state.selectedTaskId ? 'task-card active' : 'task-card'" t-att-data-task-id="task.id">
+                <div class="task-title"><t t-out="issueLabel(state.dataSource, task)" /></div>
+                <div class="task-meta">
+                  <span class="task-badge"><i class="fa fa-folder-open-o"/><t t-out="normalizeText(task.project_id) || 'No project'"/></span>
+                  <span t-out="normalizeText(task.stage_id) || 'No stage'"/>
+                  <span t-out="normalizeText(task.user_id) || 'Unassigned'"/>
+                </div>
+              </div>
+            </t>
+          </t>
+          <t t-else="">
+            <div class="tasks-empty">No matching tasks or issues.</div>
+          </t>
+        </div>
+      </aside>
+      <main class="messages-main">
+        <div class="messages-topbar">
+          <div class="messages-topbar-title">
+            <div class="messages-title">Inbox</div>
+            <div class="messages-subtitle"><t t-out="state.messageTotal"/> unread recent messages · latest 10 per tracked item · checking every <t t-out="state.polling"/>s</div>
+          </div>
+          <div class="messages-top-actions">
+            <button class="messages-btn" id="show-tasks-btn"><i class="fa fa-list"/> Tasks</button>
+            <button class="messages-btn" id="back-to-timer-btn"><i class="fa fa-clock-o"/> Back To Timer</button>
+            <button class="messages-btn" id="mark-task-read"><i class="fa fa-check"/> Read all</button><button class="messages-btn" id="refresh-messages"><i class="fa fa-refresh"/> Refresh</button>
+          </div>
+        </div>
+        <div class="message-thread-header">
+          <div class="message-thread-title compact-title">
+            <t t-if="currentTask()"><a href="#" id="task-title-link"><t t-out="issueLabel(state.dataSource, currentTask())"/></a></t>
+            <t t-else="">Select a task or issue</t>
+          </div>
+          <div class="messages-subtitle">
+            <t t-if="currentTask()"><t t-out="normalizeText(currentTask().project_id) || 'No project'"/> · <t t-out="normalizeText(currentTask().stage_id) || 'No stage'"/></t>
+            <t t-else="">Choose a task from the left pane</t>
+          </div>
+          <div class="message-legend">
+            <t t-foreach="Object.entries(TYPE_META)" t-as="entry" t-key="entry[0]">
+              <button class="filter-chip" t-att-class="state.filter === entry[0] ? 'filter-chip active' : 'filter-chip'" t-att-data-filter="entry[0]">
+                <span class="dot" t-att-style="'background:' + entry[1].color"></span>
+                <t t-out="entry[1].label"/>
+              </button>
+            </t>
+          </div>
+        </div>
+        <div class="messages-thread"></div>
+      </main>
+    </div>
+  </t>
+</templates>

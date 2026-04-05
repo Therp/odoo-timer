@@ -1,0 +1,64 @@
+{
+  "name": "odoo-timer-desktop",
+  "version": "1.0.0",
+  "description": "Therp Timer — Desktop (Electron) edition",
+  "main": "main.js",
+  "author": "Therp BV",
+  "license": "LGPL-3.0",
+  "private": true,
+  "scripts": {
+    "start":       "electron .",
+    "build:win":   "electron-builder --win",
+    "build:mac":   "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "build":       "electron-builder",
+    "compile-templates": "bash scripts/compile-templates.sh"
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0"
+  },
+  "devDependencies": {
+    "electron":         "^29.4.6",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId":       "com.therp.odoo-timer",
+    "productName": "Therp Timer",
+    "copyright":   "Copyright © 2024 Therp BV",
+    "icon":        "renderer/img/icon_128.png",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "node_modules/**/*",
+      "!node_modules/.cache/**",
+      "!node_modules/**/test/**",
+      "!node_modules/**/docs/**"
+    ],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "renderer/img/icon_128.png"
+    },
+    "mac": {
+      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }],
+      "icon": "renderer/img/icon_128.png",
+      "category": "public.app-category.productivity"
+    },
+    "linux": {
+      "target": [
+        { "target": "AppImage", "arch": ["x64"] }
+      ],
+      "icon":     "renderer/img",
+      "category": "Office"
+    },
+    "nsis": {
+      "oneClick":          false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}

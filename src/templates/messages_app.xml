@@ -1,0 +1,252 @@
+<templates xml:space="preserve">
+  <t t-name="MessagesApp" owl="1">
+    <div id="root">
+
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <span class="sidebar-title">
+            <i class="fa fa-comments"/> Messages
+          </span>
+          <input
+            id="task-search"
+            type="text"
+            placeholder="Filter tasks…"
+            t-att-value="state.taskSearch"
+            t-on-input="(ev) => { state.taskSearch = ev.target.value; }"
+          />
+          <label class="show-all-label">
+            <input
+              id="show-all-checkbox"
+              type="checkbox"
+              t-att-checked="state.showAllTasks"
+              t-on-change="onShowAllChange"
+            />
+            Show all tasks
+          </label>
+        </div>
+
+        <div id="task-list">
+          <t t-if="state.loading">
+            <div class="empty-state">
+              <i class="fa fa-spinner fa-spin"/> Loading…
+            </div>
+          </t>
+          <t t-elif="!visibleTasks.length">
+            <div class="empty-state">
+              <t t-if="state.allTasks &amp;&amp; state.allTasks.length">
+                No assigned tasks found.<br/>
+                <small>Check "Show all tasks" to see more.</small>
+              </t>
+              <t t-else="t-else">No tasks found</t>
+            </div>
+          </t>
+          <t t-else="t-else">
+            <t t-foreach="visibleTasks" t-as="task" t-key="task.id">
+              <div
+                t-att-class="'task-item'
+                  + (state.selectedTask &amp;&amp; state.selectedTask.id === task.id ? ' active' : '')
+                  + ((state.unreadMap[task.id] || 0) > 0 ? ' has-unread' : '')"
+                t-att-data-task-id="task.id" t-on-click="onTaskItemClick"
+              >
+                <div class="task-item-main">
+                  <span class="task-item-name" t-out="task.name"/>
+                  <t t-if="(state.unreadMap[task.id] || 0) > 0">
+                    <span
+                      class="unread-badge"
+                      t-att-title="(state.unreadMap[task.id]) + ' unread message(s)'"
+                      t-out="state.unreadMap[task.id]"
+                    />
+                  </t>
+                </div>
+                <t t-if="task.project_id &amp;&amp; task.project_id[1]">
+                  <span class="task-project" t-out="task.project_id[1] || ''"/>
+                </t>
+              </div>
+            </t>
+          </t>
+        </div>
+      </aside>
+
+      <!-- Chat pane -->
+      <main class="chat-pane">
+
+        <!-- No task selected -->
+        <t t-if="!state.selectedTask">
+          <div class="no-selection">
+            <i class="fa fa-comments fa-4x"/>
+            <p>Select a task from the sidebar to view its messages</p>
+            <p class="no-sel-hint">
+              Showing recent <strong>10</strong> messages per task
+            </p>
+          </div>
+        </t>
+
+        <!-- Task selected -->
+        <t t-else="t-else">
+          <div class="chat-view">
+
+            <!-- Header -->
+            <div class="chat-header">
+              <div class="chat-header-top">
+                <a
+                  class="task-title-link"
+                  href="#"
+                  t-on-click.prevent="openTaskInBrowser"
+                >
+                  #<t t-out="state.selectedTask.id"/> —
+                  <t t-out="state.selectedTask.name"/>
+                </a>
+                <t t-if="(state.unreadMap[state.selectedTask.id] || 0) > 0">
+                  <span class="unread-info-badge">
+                    <t t-out="state.unreadMap[state.selectedTask.id] || 0"/> new
+                  </span>
+                </t>
+                <div class="header-actions">
+                  <t t-if="(state.unreadMap[state.selectedTask.id] || 0) > 0">
+                    <button class="mark-read-btn" t-on-click="markAllRead">
+                      <i class="fa fa-check-double"/> Mark all read
+                    </button>
+                  </t>
+                  <button t-on-click="refreshMessages" title="Refresh">
+                    <i class="fa fa-refresh"/>
+                  </button>
+                </div>
+              </div>
+
+              <div class="filter-bar">
+                <button
+                  t-att-class="'pill' + (state.filterType === 'all'     ? ' active' : '')"
+                  data-filter="all" t-on-click="onFilterClick"
+                >All</button>
+                <button
+                  t-att-class="'pill' + (state.filterType === 'comment' ? ' active' : '')"
+                  data-filter="comment" t-on-click="onFilterClick"
+                >Public</button>
+                <button
+                  t-att-class="'pill' + (state.filterType === 'note'    ? ' active' : '')"
+                  data-filter="note" t-on-click="onFilterClick"
+                >Internal</button>
+                <div class="legend">
+                  <span class="dot dot-comment"/> Public
+                  <span class="dot dot-note"/> Internal
+                  <span class="dot dot-system"/> System
+                </div>
+              </div>
+            </div>
+
+            <!-- Messages list -->
+            <div class="messages-list" id="messages-list">
+              <t t-if="state.loadingMessages">
+                <div class="loading-msg">
+                  <i class="fa fa-spinner fa-spin"/> Loading…
+                </div>
+              </t>
+              <t t-elif="!filteredMessages.length">
+                <div class="empty-state">No messages match this filter</div>
+              </t>
+              <t t-else="t-else">
+                <t t-foreach="filteredMessages" t-as="msg" t-key="msg.id">
+                  <div t-att-class="'msg ' + msgClass(msg)">
+                    <div class="msg-meta">
+                      <span class="msg-author" t-out="authorName(msg)"/>
+                      <span class="msg-time"
+                            t-att-title="msg.date"
+                            t-out="timeAgo(msg.date)"/>
+                      <t t-if="msg.subtype_id &amp;&amp; msg.subtype_id[1]">
+                        <span class="msg-type-badge" t-out="msg.subtype_id[1]"/>
+                      </t>
+                    </div>
+                    <div class="msg-body" t-out="msg.body || ''"/>
+                    <t t-if="msg.attachment_ids &amp;&amp; msg.attachment_ids.length">
+                      <div class="msg-attachments">
+                        <t t-foreach="msg.attachment_ids" t-as="attId" t-key="attId">
+                          <a class="attachment-chip" href="#"
+                             t-att-data-att-id="attId" t-on-click.prevent="onAttachmentClick">
+                            <i class="fa fa-paperclip"/>
+                            <t t-out="getAttachmentName(attId)"/>
+                          </a>
+                        </t>
+                      </div>
+                    </t>
+                  </div>
+                </t>
+              </t>
+            </div>
+
+            <!-- Compose -->
+            <div class="compose">
+              <div class="compose-type-tabs">
+                <button
+                  t-att-class="'ctab' + (state.composeType === 'comment' ? ' active' : '')"
+                  data-compose-type="comment" t-on-click="onComposeTypeClick"
+                >
+                  <i class="fa fa-globe"/> Message
+                </button>
+                <button
+                  t-att-class="'ctab' + (state.composeType === 'note' ? ' active' : '')"
+                  data-compose-type="note" t-on-click="onComposeTypeClick"
+                >
+                  <i class="fa fa-lock"/> Internal Note
+                </button>
+              </div>
+
+              <t t-if="state.attachment">
+                <div class="attachment-preview">
+                  <i class="fa fa-paperclip"/>
+                  <span t-out="state.attachment.name"/>
+                  <button t-on-click="clearAttachment">✕</button>
+                </div>
+              </t>
+
+              <div class="compose-body">
+                <textarea
+                  id="compose-text"
+                  rows="3"
+                  placeholder="Write a message… type @ to mention someone (Ctrl+Enter to send)"
+                  t-att-value="state.composeText"
+                  t-on-input="handleComposeInput"
+                  t-on-keydown="handleComposeKeydown"
+                />
+                <t t-if="state.mentionResults &amp;&amp; state.mentionResults.length">
+                  <div class="mention-list">
+                    <t t-foreach="state.mentionResults" t-as="user" t-key="user.id">
+                      <div class="mention-item"
+                           t-att-data-user-id="user.id" t-on-mousedown.prevent="onMentionClick">
+                        <i class="fa fa-user"/>
+                        <t t-out="user.name"/>
+                        <t t-if="user.email">
+                          <span class="mention-email" t-out="user.email"/>
+                        </t>
+                      </div>
+                    </t>
+                  </div>
+                </t>
+              </div>
+
+              <div class="compose-footer">
+                <button id="attach-btn" t-on-click="pickAttachment" title="Attach file">
+                  <i class="fa fa-paperclip"/>
+                </button>
+                <span class="compose-hint" t-out="composeHint"/>
+                <button
+                  class="send-btn"
+                  t-att-disabled="state.sending"
+                  t-on-click="sendMessage"
+                >
+                  <t t-if="state.sending">
+                    <i class="fa fa-spinner fa-spin"/>
+                  </t>
+                  <t t-else="t-else">
+                    <i class="fa fa-paper-plane"/> Send
+                  </t>
+                </button>
+              </div>
+            </div>
+
+          </div><!-- end .chat-view -->
+        </t>
+      </main>
+    </div>
+  </t>
+</templates>
