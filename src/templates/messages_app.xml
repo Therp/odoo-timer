@@ -157,7 +157,7 @@
                         <span class="msg-type-badge" t-out="msg.subtype_id[1]"/>
                       </t>
                     </div>
-                    <div class="msg-body" t-out="msg.body || ''"/>
+                    <div class="msg-body" t-out="bodyMarkup(msg)"/>
                     <t t-if="msg.attachment_ids &amp;&amp; msg.attachment_ids.length">
                       <div class="msg-attachments">
                         <t t-foreach="msg.attachment_ids" t-as="attId" t-key="attId">

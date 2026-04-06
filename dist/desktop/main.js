@@ -94,10 +94,10 @@ function updateTray() {
     : '\u25CB  No timer active';
 
   tray.setContextMenu(Menu.buildFromTemplate([
-    { label: stateLabel, enabled: true },
+    { label: stateLabel, enabled: false },
     { type: 'separator' },
-    { label: '\u23F1  Timer',    click: () => showWindow('timer') },
-    { label: '\u2709  Messages', click: () => showWindow('messages') },
+    { label: '\uD83D\uDD16  Timer',    click: () => showWindow('timer') },
+    { label: '\uD83D\uDCAC  Messages', click: () => showWindow('messages') },
     { label: '\u2699\uFE0F  Options',  click: () => showWindow('options') },
     { type: 'separator' },
     { label: 'Quit', click: () => { isQuitting = true; app.quit(); } },

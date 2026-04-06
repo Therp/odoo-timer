@@ -20,7 +20,7 @@ import {
   promptDialog,
 } from '../lib/common.js';
 
-const { Component, mount, useState, onMounted, onWillUnmount } = owl;
+const { Component, mount, useState, onMounted, onWillUnmount, markup } = owl;
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const RECENT_COUNT = 10;
@@ -199,6 +199,19 @@ class MessagesApp extends Component {
 
   getAttachmentName(attId) {
     return this.state.attachmentDetails[attId]?.name || `Attachment #${attId}`;
+  }
+
+  /** Wrap message body in owl.markup() so t-out renders HTML instead of escaping it */
+  bodyMarkup(msg) {
+    return markup(msg.body || '');
+  }
+
+  /**
+   * Wrap msg.body in OWL's markup() so t-out renders it as real HTML
+   * instead of escaping it as text.  Odoo chatter HTML is server-trusted.
+   */
+  bodyMarkup(msg) {
+    return markup(msg.body || '');
   }
 
   // ── Task loading ───────────────────────────────────────────────────────────
@@ -557,6 +570,6 @@ if (!compiledTemplates.MessagesApp) {
 } else {
   mount(MessagesApp, document.getElementById('app'), {
     dev: false,
-    templates: { MessagesApp: compiledTemplates.MessagesApp },
+    templates: compiledTemplates,   // pass full registry from templates.js
   });
 }
