@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Therp Timer
+Comment=Record timer on Odoo timesheets
+Exec={path-to-executable}{Therp-Timer-1.0.0.AppImage}
+TryExec={path-to-executable}{Therp-Timer-1.0.0.AppImage}
+Icon={path-to-logo-icon}{Therp-Timer-1.0.0.AppImage}
+Terminal=false
+Categories=Office;ProjectManagement;
+StartupNotify=true
+StartupWMClass=Therp Timer
