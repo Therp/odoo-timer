@@ -9,4 +9,4 @@ Icon={path-to-logo-icon}{Therp-Timer-1.0.0.AppImage}
 Terminal=false
 Categories=Office;ProjectManagement;
 StartupNotify=true
-StartupWMClass=Therp Timer
+StartupWMClass=odoo-timer-desktop
