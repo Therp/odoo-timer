@@ -25,10 +25,11 @@
     "appId":       "com.therp.odoo-timer",
     "productName": "Therp-Timer",
     "copyright":   "Copyright © 2026 Therp BV",
-    "icon":        "renderer/img/icon_128.png",
+    "icon":        "renderer/build/icon.png",
     "directories": {
       "output": "release"
     },
+    "buildResources": "build",
     "files": [
       "main.js",
       "preload.js",
@@ -40,18 +41,18 @@
     ],
     "win": {
       "target": [{ "target": "nsis", "arch": ["x64"] }],
-      "icon": "renderer/img/icon_128.png"
+      "icon": "build/icons/256x256.png"
     },
     "mac": {
       "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }],
-      "icon": "renderer/img/icon_128.png",
+      "icon": "build/icons/512x512.png",
       "category": "public.app-category.productivity"
     },
     "linux": {
       "target": [
         { "target": "AppImage", "arch": ["x64"] }
       ],
-      "icon":     "renderer/img",
+      "icon": "build/icons",
       "category": "Office"
     },
     "nsis": {
