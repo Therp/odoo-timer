@@ -1,4 +1,4 @@
-name: Desktop Builds
+name: Therp Timer Desktop Builds
 
 on:
   pull_request:
@@ -97,13 +97,13 @@ jobs:
           path: dist/desktop/release/Therp-Timer-linux-portable.zip
           if-no-files-found: error
 
-      - name: Upload Linux AppImage
-        if: matrix.name == 'linux'
-        uses: actions/upload-artifact@v4
-        with:
-          name: desktop-linux-appimage
-          path: dist/desktop/release/*.AppImage
-          if-no-files-found: error
+      # - name: Upload Linux AppImage
+      #  if: matrix.name == 'linux'
+      #  uses: actions/upload-artifact@v4
+      #  with:
+      #    name: desktop-linux-appimage
+      #   path: dist/desktop/release/*.AppImage
+      #   if-no-files-found: error
 
       - name: Upload Windows artifacts
         if: matrix.name == 'windows'
