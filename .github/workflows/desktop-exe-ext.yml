@@ -30,7 +30,6 @@ jobs:
             build_cmd: npm run build:linux
             artifact_path: |
               dist/desktop/release/*.AppImage
-              dist/desktop/release/*.deb
 
           - os: windows-latest
             name: windows
