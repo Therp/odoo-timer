@@ -28,23 +28,14 @@ jobs:
           - os: ubuntu-latest
             name: linux
             build_cmd: npm run build:linux
-            artifact_path: |
-              dist/desktop/release/*.AppImage
 
           - os: windows-latest
             name: windows
             build_cmd: npm run build:win
-            artifact_path: |
-              dist/desktop/release/*.exe
-              dist/desktop/release/*.msi
-              dist/desktop/release/*.zip
 
           - os: macos-latest
             name: macos
             build_cmd: npm run build:mac
-            artifact_path: |
-              dist/desktop/release/*.dmg
-              dist/desktop/release/*.zip
 
     runs-on: ${{ matrix.os }}
 
@@ -72,9 +63,65 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
 
-      - name: Upload desktop artifacts
+      - name: Prepare Linux portable bundle
+        if: matrix.name == 'linux'
+        run: |
+          APPIMAGE="$(find release -maxdepth 1 -name '*.AppImage' | head -n 1)"
+          mkdir -p portable/Therp-Timer
+          cp "$APPIMAGE" portable/Therp-Timer/
+          cp build/icons/512x512.png portable/Therp-Timer/icon.png
+
+          cat > portable/Therp-Timer/therp-timer.desktop <<EOF
+          [Desktop Entry]
+          Version=1.0
+          Type=Application
+          Name=Therp Timer
+          Comment=Record time on project tasks
+          Exec=./$(basename "$APPIMAGE")
+          TryExec=./$(basename "$APPIMAGE")
+          Icon=./icon.png
+          Terminal=false
+          Categories=Office;ProjectManagement;
+          StartupNotify=true
+          StartupWMClass=therp-timer
+          EOF
+
+          cd portable
+          zip -r ../release/Therp-Timer-linux-portable.zip Therp-Timer
+
+      - name: Upload Linux portable bundle
+        if: matrix.name == 'linux'
         uses: actions/upload-artifact@v4
         with:
-          name: desktop-${{ matrix.name }}
-          path: ${{ matrix.artifact_path }}
+          name: desktop-linux-portable
+          path: dist/desktop/release/Therp-Timer-linux-portable.zip
+          if-no-files-found: error
+
+      - name: Upload Linux AppImage
+        if: matrix.name == 'linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-linux-appimage
+          path: dist/desktop/release/*.AppImage
+          if-no-files-found: error
+
+      - name: Upload Windows artifacts
+        if: matrix.name == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-windows
+          path: |
+            dist/desktop/release/*.exe
+            dist/desktop/release/*.msi
+            dist/desktop/release/*.zip
+          if-no-files-found: error
+
+      - name: Upload macOS artifacts
+        if: matrix.name == 'macos'
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-macos
+          path: |
+            dist/desktop/release/*.dmg
+            dist/desktop/release/*.zip
           if-no-files-found: error
