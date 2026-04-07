@@ -1,0 +1,81 @@
+name: Desktop Builds
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - "dist/desktop/**"
+      - ".github/workflows/desktop.yml"
+      - "src/templates/**"
+      - "scripts/**"
+  push:
+    branches: [master]
+    tags:
+      - "v*"
+    paths:
+      - "dist/desktop/**"
+      - ".github/workflows/desktop.yml"
+      - "src/templates/**"
+      - "scripts/**"
+  workflow_dispatch:
+
+jobs:
+  build-desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: linux
+            build_cmd: npm run build:linux
+            artifact_path: |
+              dist/desktop/release/*.AppImage
+              dist/desktop/release/*.deb
+
+          - os: windows-latest
+            name: windows
+            build_cmd: npm run build:win
+            artifact_path: |
+              dist/desktop/release/*.exe
+              dist/desktop/release/*.msi
+              dist/desktop/release/*.zip
+
+          - os: macos-latest
+            name: macos
+            build_cmd: npm run build:mac
+            artifact_path: |
+              dist/desktop/release/*.dmg
+              dist/desktop/release/*.zip
+
+    runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        working-directory: dist/desktop
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: dist/desktop/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build desktop app
+        run: ${{ matrix.build_cmd }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+      - name: Upload desktop artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.name }}
+          path: ${{ matrix.artifact_path }}
+          if-no-files-found: error
