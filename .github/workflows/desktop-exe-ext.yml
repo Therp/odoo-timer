@@ -69,7 +69,7 @@ jobs:
           APPIMAGE="$(find release -maxdepth 1 -name '*.AppImage' | head -n 1)"
           mkdir -p portable/Therp-Timer
           cp "$APPIMAGE" portable/Therp-Timer/
-          cp build/icons/512x512.png portable/Therp-Timer/icon.png
+          cp build/icon_512.png portable/Therp-Timer/icon.png
 
           cat > portable/Therp-Timer/therp-timer.desktop <<EOF
           [Desktop Entry]
