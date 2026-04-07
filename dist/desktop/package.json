@@ -1,35 +1,43 @@
 {
   "name": "therp-timer",
   "version": "1.0.0",
-  "description": "Therp Timer - Desktop ",
+  "description": "Therp Timer - Desktop",
   "main": "main.js",
-  "author": "Therp BV",
+  "homepage": "https://github.com/Therp/odoo-timer",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Therp/odoo-timer.git"
+  },
+  "author": {
+    "name": "Therp BV",
+    "email": "info@therp.nl"
+  },
   "license": "LGPL-3.0",
   "private": true,
   "scripts": {
-    "start":       "electron .",
-    "build:win":   "electron-builder --win",
-    "build:mac":   "electron-builder --mac",
-    "build:linux": "electron-builder --linux",
-    "build":       "electron-builder",
+    "start": "electron .",
+    "build:win": "electron-builder --win nsis portable",
+    "build:mac": "electron-builder --mac dmg zip",
+    "build:linux": "electron-builder --linux AppImage",
+    "build": "electron-builder",
     "compile-templates": "bash scripts/compile-templates.sh"
   },
   "dependencies": {
     "electron-store": "^8.1.0"
   },
   "devDependencies": {
-    "electron":         "^29.4.6",
+    "electron": "^29.4.6",
     "electron-builder": "^24.13.3"
   },
   "build": {
-    "appId":       "com.therp.odoo-timer",
+    "appId": "com.therp.odoo-timer",
     "productName": "Therp-Timer",
-    "copyright":   "Copyright © 2026 Therp BV",
-    "icon":        "renderer/build/icon.png",
+    "copyright": "Copyright © 2026 Therp BV",
+    "publish": null,
     "directories": {
-      "output": "release"
+      "output": "release",
+      "buildResources": "build"
     },
-    "buildResources": "build",
     "files": [
       "main.js",
       "preload.js",
@@ -40,23 +48,56 @@
       "!node_modules/**/docs/**"
     ],
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }],
-      "icon": "build/icons/256x256.png"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon_256.png"
     },
     "mac": {
-      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }],
-      "icon": "build/icons/512x512.png",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "build/icon_512.png",
       "category": "public.app-category.productivity"
     },
     "linux": {
       "target": [
-        { "target": "AppImage", "arch": ["x64"] }
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
-      "icon": "build/icons",
+      "icon": "build",
       "category": "Office"
     },
     "nsis": {
-      "oneClick":          false,
+      "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
