@@ -483,6 +483,8 @@ class PopupApp extends Component {
         this.toggleAutoDownload = this.toggleAutoDownload.bind(this);
         this.toggleUseExistingSession = this.toggleUseExistingSession.bind(this);
         this.togglePassword = this.togglePassword.bind(this);
+        this.updateLimitPreference = this.updateLimitPreference.bind(this);
+        this.updateShowAllPreference = this.updateShowAllPreference.bind(this);
 
         onMounted(() => {
             const bootLoader = document.getElementById('boot-loader');
@@ -546,28 +548,33 @@ class PopupApp extends Component {
      */
     get filteredIssues() {
         const limit = this.state.limitTo ? Number(this.state.limitTo) : null;
+        const query = (this.state.searchQuery || '').trim();
         let issues = [...this.state.issues];
 
         issues.sort((a, b) => {
-            if (a.id === this.state.activeTimerId) return -1;
-            if (b.id === this.state.activeTimerId) return 1;
-
-            const priorityDelta = Number(b.priority || 0) - Number(a.priority || 0);
-            if (priorityDelta !== 0) return priorityDelta;
-
-            const stageDelta = Number(a.stage_sequence ?? 9999) - Number(b.stage_sequence ?? 9999);
-            if (stageDelta !== 0) return stageDelta;
-
-            return a.id - b.id;
+        if (a.id === this.state.activeTimerId) return -1;
+        if (b.id === this.state.activeTimerId) return 1;
+        const priorityDelta = Number(b.priority || 0) - Number(a.priority || 0);
+        if (priorityDelta !== 0) return priorityDelta;
+        const stageDelta = Number(a.stage_sequence ?? 9999) - Number(b.stage_sequence ?? 9999);
+        if (stageDelta !== 0) return stageDelta;
+        return a.id - b.id;
         });
 
-        if (!this.state.allIssues && this.state.user?.id) {
-            issues = issues.filter(
-                (issue) => issue.id === this.state.activeTimerId || issue.user_id?.[0] === this.state.user.id
-            );
+        const matchesSearch = (issue) => matchesIssue(issue, query);
+
+        if (this.state.allIssues) {
+        issues = issues.filter(matchesSearch);
+        } else if (this.state.user?.id) {
+        issues = issues.filter(
+            (issue) =>
+            issue.id === this.state.activeTimerId ||
+            (issue.user_id?.[0] === this.state.user.id && matchesSearch(issue))
+        );
+        } else {
+        issues = issues.filter(matchesSearch);
         }
 
-        issues = issues.filter((issue) => matchesIssue(issue, this.state.searchQuery));
         return limit ? issues.slice(0, limit) : issues;
     }
 
