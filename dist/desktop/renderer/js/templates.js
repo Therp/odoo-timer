@@ -438,6 +438,7 @@ export const templates = {
     b44 = safeOutput(ctx['state'].currentHost||'-');
     b45 = safeOutput(ctx['state'].currentDatabase||'-');
     b46 = safeOutput(ctx['state'].user?ctx['state'].user.display_name:'-');
+    b47 = safeOutput(ctx['state'].currentOWLVersion||'-');
     return block1([attr1, attr2, attr6, prop5, hdlr7, prop6, hdlr8, prop7, hdlr9, hdlr10, hdlr11, hdlr12, hdlr13, hdlr14, prop8, hdlr15], [b2, b4, b5, b18, b20, b22, b23, b24, b27, b42, b43, b44, b45, b46]);
   }
 },

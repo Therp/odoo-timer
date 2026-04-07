@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100vw; height: 100vh; overflow: hidden;
+      background: transparent; cursor: crosshair;
+    }
+    #overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.35);
+    }
+    #selection {
+      position: fixed; border: 2px solid #33BAF6;
+      background: rgba(51,186,246,.08);
+      display: none; pointer-events: none;
+    }
+    #hint {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.75); color: #fff;
+      padding: 8px 18px; border-radius: 20px;
+      font: 600 13px 'Segoe UI', sans-serif;
+      letter-spacing: .02em; white-space: nowrap;
+    }
+    #dims {
+      position: fixed; background: #33BAF6; color: #fff;
+      padding: 3px 8px; border-radius: 4px;
+      font: 700 11px monospace; display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay"></div>
+  <div id="selection"></div>
+  <div id="dims"></div>
+  <div id="hint">Drag to select region &nbsp;·&nbsp; ESC to cancel &nbsp;·&nbsp; Enter to confirm</div>
+  <script>
+    const api = window.electronAPI;
+    const sel = document.getElementById('selection');
+    const dims = document.getElementById('dims');
+
+    let startX = 0, startY = 0, dragging = false;
+    let region = null;
+
+    document.addEventListener('mousedown', (e) => {
+      startX = e.screenX - window.screenX;
+      startY = e.screenY - window.screenY;
+      dragging = true;
+      sel.style.display = 'block';
+      sel.style.left = startX + 'px'; sel.style.top = startY + 'px';
+      sel.style.width = '0'; sel.style.height = '0';
+      dims.style.display = 'block';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!dragging) return;
+      const cx = e.screenX - window.screenX;
+      const cy = e.screenY - window.screenY;
+      const x = Math.min(cx, startX), y = Math.min(cy, startY);
+      const w = Math.abs(cx - startX), h = Math.abs(cy - startY);
+      sel.style.left = x+'px'; sel.style.top = y+'px';
+      sel.style.width = w+'px'; sel.style.height = h+'px';
+      dims.style.left = (cx + 8)+'px'; dims.style.top = (cy + 8)+'px';
+      dims.textContent = `${w} × ${h}`;
+      region = { x, y, width: w, height: h };
+    });
+
+    document.addEventListener('mouseup', () => { dragging = false; });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') api?.regionPicker?.cancel?.();
+      if ((e.key === 'Enter' || e.key === ' ') && region && region.width > 10) {
+        api?.regionPicker?.confirm?.(region);
+      }
+    });
+
+    // Double-click to confirm
+    document.addEventListener('dblclick', () => {
+      if (region && region.width > 10) api?.regionPicker?.confirm?.(region);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src *;"/>
+  <title>Therp Timer — Recorder</title>
+  <link rel="stylesheet" href="css/lib/font-awesome-4.6.3/css/font-awesome.min.css"/>
+  <link rel="stylesheet" href="css/recorder.css"/>
+</head>
+<body>
+  <div id="app">
+    <!-- Mode tabs -->
+    <div class="rec-tabs">
+      <button class="rec-tab active" data-mode="video" title="Record video (WebM)">
+        <i class="fa fa-video-camera"></i> Video
+      </button>
+      <button class="rec-tab" data-mode="gif" title="Record animated GIF">
+        <i class="fa fa-film"></i> GIF
+      </button>
+      <button class="rec-tab" data-mode="screenshot" title="Take screenshot (PNG)">
+        <i class="fa fa-camera"></i> Screenshot
+      </button>
+    </div>
+
+    <!-- Source selector -->
+    <div class="rec-section" id="source-section">
+      <label class="rec-label">Source</label>
+      <div class="source-btns">
+        <button class="source-btn active" data-src="screen">
+          <i class="fa fa-desktop"></i> Full Screen
+        </button>
+        <button class="source-btn" data-src="window">
+          <i class="fa fa-window-maximize"></i> Window
+        </button>
+        <button class="source-btn" data-src="region">
+          <i class="fa fa-crop"></i> Region
+        </button>
+      </div>
+      <!-- Window picker (hidden until "Window" selected) -->
+      <select id="window-picker" class="rec-select" style="display:none">
+        <option value="">Select a window…</option>
+      </select>
+    </div>
+
+    <!-- Screenshot options -->
+    <div class="rec-section" id="delay-section">
+      <label class="rec-label">
+        <i class="fa fa-clock-o"></i>
+        <span id="delay-label">Delay before screenshot</span>
+        <span class="rec-unit">seconds</span>
+      </label>
+      <div class="rec-slider-row">
+        <input type="range" id="delay-slider" min="0" max="30" value="0" step="1"/>
+        <span id="delay-value" class="rec-slider-val">0s</span>
+      </div>
+    </div>
+
+    <!-- Duration (video / gif) -->
+    <div class="rec-section" id="duration-section" style="display:none">
+      <label class="rec-label">
+        <i class="fa fa-hourglass-half"></i>
+        Auto-stop after
+        <span class="rec-unit">seconds (0 = manual)</span>
+      </label>
+      <div class="rec-slider-row">
+        <input type="range" id="duration-slider" min="0" max="300" value="0" step="5"/>
+        <span id="duration-value" class="rec-slider-val">∞</span>
+      </div>
+    </div>
+
+    <!-- GIF quality (gif only) -->
+    <div class="rec-section" id="gif-quality-section" style="display:none">
+      <label class="rec-label">
+        <i class="fa fa-sliders"></i> GIF Frame Rate
+        <span class="rec-unit">fps</span>
+      </label>
+      <div class="rec-slider-row">
+        <input type="range" id="fps-slider" min="5" max="20" value="10" step="1"/>
+        <span id="fps-value" class="rec-slider-val">10</span>
+      </div>
+    </div>
+
+    <!-- Save location (screenshot) -->
+    <div class="rec-section" id="folder-section" style="display:none">
+      <label class="rec-label"><i class="fa fa-folder-open"></i> Save to folder</label>
+      <div class="folder-row">
+        <span id="folder-path" class="folder-path">~/Pictures</span>
+        <button id="pick-folder-btn" class="rec-btn-sm">Browse…</button>
+      </div>
+    </div>
+
+    <!-- Status / countdown -->
+    <div class="rec-status" id="rec-status" style="display:none">
+      <div class="rec-status-icon"><i class="fa fa-circle rec-dot"></i></div>
+      <div class="rec-status-text" id="rec-status-text">Recording…</div>
+      <div class="rec-countdown" id="rec-countdown"></div>
+    </div>
+
+    <!-- Delay countdown -->
+    <div class="rec-delay-count" id="delay-count" style="display:none">
+      <span id="delay-count-num"></span>
+    </div>
+
+    <!-- Main action button -->
+    <div class="rec-action">
+      <button id="start-btn" class="rec-start-btn">
+        <i class="fa fa-circle"></i> Start
+      </button>
+      <button id="stop-btn" class="rec-stop-btn" style="display:none">
+        <i class="fa fa-stop"></i> Stop &amp; Save
+      </button>
+    </div>
+  </div>
+
+  <script type="module" src="js/recorder.js"></script>
+</body>
+</html>

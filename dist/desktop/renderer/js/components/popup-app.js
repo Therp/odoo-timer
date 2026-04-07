@@ -181,10 +181,8 @@ function createPopupAppTemplate(app, bdom, helpers) {
         const totalUnread           = ctx.state.msgUnreadTotal || 0;
         const msgBadgeStyle         = totalUnread > 0 ? '' : 'display:none';
         const msgBadgeText          = totalUnread > 99 ? '99+' : String(totalUnread || '');
-        const recordIconClass       = ctx.state.isRecording
-            ? 'fa fa-circle fa-2x record-active'
-            : 'fa fa-video-camera fa-2x';
-        const toggleRecordHandler   = [ctx.toggleRecording, ctx];
+        const recordIconClass     = 'fa fa-video-camera fa-2x';
+        const toggleRecordHandler = [ctx.toggleRecording, ctx];
 
         if (ctx.state.timerStartIso) timerDurationNode = activeTimerDurationBlock([ctx.formattedTimer]);
 
@@ -315,8 +313,6 @@ class PopupApp extends Component {
             supportedFields:   {},
             busyMessage:       DEFAULTS.busyMessage,
             loadingTable:      false,
-            isRecording:       false,
-            recordingSecs:     0,
             msgUnreadTotal:    0,
         });
 
@@ -893,50 +889,8 @@ class PopupApp extends Component {
         await storage.set(STORAGE_KEYS.useExistingSession, true);
     }
 
-    async toggleRecording() {
-        if (this.state.isRecording) {
-            // Stop
-            if (this._recorder) {
-                this._recorder.stop();
-                this._recorder.stream?.getTracks().forEach(t => t.stop());
-            }
-            return;
-        }
-        try {
-            const sources = await window.electronAPI?.getSources?.();
-            if (!sources?.length) { await notify('No screen sources found.'); return; }
-            const stream = await navigator.mediaDevices.getUserMedia({
-                audio: false,
-                video: {
-                    mandatory: {
-                        chromeMediaSource: 'desktop',
-                        chromeMediaSourceId: sources[0].id,
-                        minWidth: 1280, maxWidth: 1920,
-                        minHeight: 720, maxHeight: 1080,
-                    },
-                },
-            });
-            this._recChunks = [];
-            this._recorder  = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp8' });
-            this._recorder.ondataavailable = (e) => { if (e.data.size) this._recChunks.push(e.data); };
-            this._recorder.onstop = async () => {
-                this.state.isRecording = false;
-                clearInterval(this._recInterval);
-                const blob = new Blob(this._recChunks, { type: 'video/webm' });
-                const arr  = new Uint8Array(await blob.arrayBuffer());
-                const name = `recording-${new Date().toISOString().replace(/[:.]/g,'-')}.webm`;
-                const saved = await window.electronAPI?.saveRecording?.(arr, name);
-                if (saved) await notify(`Recording saved to ${saved}`);
-                this._recorder = null;
-                this._recChunks = [];
-            };
-            this._recorder.start(1000);
-            this.state.isRecording = true;
-            this.state.recordingSecs = 0;
-            this._recInterval = setInterval(() => { this.state.recordingSecs++; }, 1000);
-        } catch (e) {
-            await notify('Could not start recording: ' + e.message);
-        }
+    toggleRecording() {
+        window.electronAPI?.recorder?.open?.();
     }
 
     openMessages() {
