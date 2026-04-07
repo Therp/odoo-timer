@@ -86,17 +86,15 @@ jobs:
           StartupWMClass=therp-timer
           EOF
 
-          cd portable
-          zip -r ../release/Therp-Timer-linux-portable.zip Therp-Timer
-
       - name: Upload Linux portable bundle
         if: matrix.name == 'linux'
         uses: actions/upload-artifact@v4
         with:
           name: desktop-linux-portable
-          path: dist/desktop/release/Therp-Timer-linux-portable.zip
+          path: dist/desktop/portable/Therp-Timer
           if-no-files-found: error
 
+      # if you want single binary without desktop entry
       # - name: Upload Linux AppImage
       #  if: matrix.name == 'linux'
       #  uses: actions/upload-artifact@v4
