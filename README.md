@@ -1,488 +1,197 @@
 # Therp Timer
 
-Therp Timer is a browser extension for recording time on Odoo project work and posting that time to Odoo timesheets.
+Therp Timer lets you track time on Odoo project work and post it back to Odoo timesheets. It ships as:
 
-It lets you:
+- **Browser extensions** — Chrome/Chromium and Firefox
+- **Desktop app** — a standalone Electron application (`dist/desktop/`)
 
-- connect to one or more Odoo instances
-- load assigned issues or tasks
-- start and stop a timer from the browser popup
-- write the result back to Odoo timesheets
-- optionally export timesheet data to CSV
+---
 
-The extension has separate manifests for Chromium-based browsers and Firefox because background script support differs between the two browser families.
+## Desktop quick start
 
-## What it does
-
-At a high level, the extension works like this:
-
-1. You configure one or more Odoo remotes in the options page.
-2. You open the popup and choose a remote.
-3. The extension either reuses an existing Odoo browser session or logs in with a username and password.
-4. It loads project items from Odoo, usually `project.task` or `project.issue` depending on the configured data source.
-5. You start a timer on a selected row.
-6. When you stop the timer, the extension creates the correct timesheet record in Odoo.
-7. Optionally, it can download CSV timesheet data.
-
-## Odoo behavior
-
-The extension supports two common flows.
-
-### `project.task`
-
-When the remote is configured to use `project.task`, the extension writes time to:
-
-- `account.analytic.line`
-
-### `project.issue`
-
-When the remote is configured to use `project.issue`, the extension writes time to:
-
-- `hr.analytic.timesheet`
-
-The extension also tries to find the correct analytic account from the issue/task or its related project.
-
-## Main features
-
-- popup-based timer UI
-- support for multiple Odoo remotes
-- use existing browser Odoo session or manual login
-- task/issue filtering and search
-- automatic timer state persistence
-- CSV export for current month timesheets
-- optional download of issue/task-specific timesheets
-- browser-specific manifests for Chromium and Firefox
-
-## Recommended project layout
-
-A practical layout is:
-
-```text
-therp_timer_owl/
-  src/
-    popup.html
-    options_main_page.html
-    js/
-    css/
-    img/
-
-  dist/
-    chrome/
-      manifest.json
-      popup.html
-      options_main_page.html
-      js/
-      css/
-      img/
-
-    firefox/
-      manifest.json
-      popup.html
-      options_main_page.html
-      js/
-      css/
-      img/
+```bash
+cd dist/desktop
+bash scripts/setup.sh        # one-time: Python venv + nodeenv + npm install
+. .nodeenv/bin/activate
+npm start
 ```
 
-In this structure:
+---
 
-- `src` is your editable source
-- `dist/chrome` is the loadable Chromium build
-- `dist/firefox` is the loadable Firefox build
+## Project layout
 
-Each browser folder must contain its own root `manifest.json`.
-
-## Why there are separate manifests
-
-Chromium-based browsers and Firefox handle extension background execution differently.
-
-### Chromium-based browsers
-
-Use a service worker background definition:
-
-```json
-{
-  "background": {
-    "service_worker": "js/background.js"
-  }
-}
+```
+therp-timer/
+├── src/templates/              OWL XML source templates
+├── scripts/                   Browser-extension build scripts
+└── dist/
+    ├── chrome/                Chrome extension
+    ├── firefox/               Firefox extension
+    └── desktop/               Electron desktop app
+        ├── main.js            Main process (tray, IPC, notifications, recorder)
+        ├── preload.js         Context bridge
+        ├── package.json
+        ├── renderer/
+        │   ├── popup.html           Timer window
+        │   ├── options_main_page.html
+        │   ├── messages.html        Messages / chatter window
+        │   ├── css/
+        │   │   ├── popup.css
+        │   │   ├── options_main_page.css
+        │   │   └── messages.css
+        │   └── js/
+        │       ├── lib/common.js    OdooRpc + storage + helpers
+        │       ├── components/      OWL components (popup-app, options-app, readmore)
+        │       ├── messages.js      Chatter panel (vanilla JS)
+        │       └── templates.js     Compiled OWL templates (or stub)
+        └── scripts/
+            ├── setup.sh             Bootstrap environment
+            └── compile-templates.sh Compile OWL XML → templates.js
 ```
 
-### Firefox
+---
 
-Use background scripts:
+## Desktop features
 
-```json
-{
-  "background": {
-    "scripts": ["js/background.js"],
-    "type": "module"
-  }
-}
+### Timer window
+
+- Browse `project.task` or `project.issue` from your Odoo instance.
+- Start / stop a timer — creates a timesheet record in Odoo on stop.
+- Discard the active timer without saving.
+- Search, filter, limit and sort items.
+- Show your items or everyone's items.
+- Download current-month timesheet as CSV.
+- Auto-download the timed item's timesheet when the timer stops.
+- **💬 Messages** button opens the chatter panel.
+- **⚙ Options** button opens the options page.
+
+### System tray
+
+| State | Icon | Tooltip |
+|---|---|---|
+| No timer | Pale icon | "Therp Timer — idle" |
+| Timer running | Blue T icon | "⏱ #42 — Fix login bug" |
+
+- Right-click: **Timer · Messages · Options · Quit**
+- Closing the window hides it to tray. The app keeps running.
+- Only **Quit** from the tray menu stops the process.
+
+### Options
+
+| Field | Description |
+|---|---|
+| Odoo Host | Base URL (`https://…`) |
+| Display Name | Human label for this remote |
+| Database | Odoo database name |
+| Odoo Version | Informational tag (e.g. `16.0`) |
+| Poll Interval (s) | Background message check frequency (0 = off) |
+| Data Source | `project.task` or `project.issue` |
+
+Saved remotes table columns: Remote · Host · Database · Version · Poll(s) · Source · State  
+Actions per row: **✏ Edit** · **🗑 Delete**
+
+### Messages / Chatter panel
+
+Open with the **💬** toolbar button or tray → Messages.
+
+**Sidebar**
+- Lists all tasks for the active remote.
+- Unread badge shows new messages since last view.
+- Filter by task name.
+
+**Chat header**
+- Task name is a clickable link → opens the Odoo form in your browser.
+- Filter pills: **All · Public · Internal** with colour legend.
+- Colour coding: 🔵 Public comment · 🟡 Internal note · ⬜ System log
+
+**Compose**
+- Toggle between **Message** (public) and **Internal Note**.
+- `@name` triggers a mention autocomplete from all known partners.
+- Attach a file via 📎 — uploaded to Odoo as `ir.attachment`.
+- **Ctrl+Enter** to send. Posts via `message_post` on the task/issue.
+
+**Attachments**
+- Download chips appear on messages that have attachments.
+- Click → system save dialog.
+
+**Background polling**
+- Checks for new messages at the configured poll interval (per remote).
+- OS notification for new messages on tasks not currently visible.
+- Click notification → opens the Messages window.
+- Memory-safe: single `setInterval`, errors silently ignored.
+
+### Screen recorder
+
+Inside the Messages window → **⏺ Record**
+
+1. Captures the primary screen (full desktop).
+2. Live duration counter.
+3. **Stop & Save** → save dialog → `.webm` (VP8).
+
+---
+
+## Packaging for distribution
+
+```bash
+# Inside dist/desktop/ with nodeenv active:
+npm run build:linux   # AppImage + .deb
+npm run build:win     # NSIS .exe
+npm run build:mac     # .dmg (macOS host only)
+npm run build         # current platform
 ```
 
-Because of that difference, keeping separate browser build folders is the easiest setup.
+Output: `dist/desktop/release/`
 
-## Setup
+---
 
-### Requirements
+## Compiling OWL templates (optional)
 
-Before loading the extension, make sure you have:
+The app ships built-in code-based template fallbacks and works without this step.
 
-- a working Odoo instance
-- access to tasks or issues you want to track
-- a browser supported by one of the two builds
-- the extension files arranged so the correct `manifest.json` is at the root of the browser-specific folder
+```bash
+# Desktop target:
+bash dist/desktop/scripts/compile-templates.sh
 
-## Usage
-
-![How Odoo timer app works](src/img/usage.gif "How it Works")
-
-### Chromium-based browsers
-
-Examples:
-
-- Brave
-- Chrome
-- Chromium
-- Edge
-- Vivaldi
-
-#### Setup steps
-
-1. Open the extensions page in your browser.
-2. Enable **Developer mode**.
-3. Choose **Load unpacked**.
-4. Select the browser-specific extension folder, for example:
-
-```text
-/dist/chrome
+# Browser targets:
+bash scripts/setup_nodeenv.sh && . .nodeenv/bin/activate
+bash scripts/compile_owl_templates.sh
 ```
 
-5. Confirm that the extension appears in the extensions list.
-6. Pin the extension to the toolbar if desired.
+---
 
-#### Chromium manifest notes
+## Architecture
 
-The Chromium build should use a `manifest.json` with a background service worker, for example:
+| Layer | Technology |
+|---|---|
+| Timer / Options UI | OWL 2.8.2 reactive components |
+| Messages UI | Vanilla JS (no framework needed) |
+| Desktop shell | Electron 29 + electron-store |
+| Odoo API | JSON-RPC (`fetch` + Electron Chromium session cookies) |
+| Notifications | Electron `Notification` API |
+| Screen capture | `desktopCapturer` + `MediaRecorder` (WebM/VP8) |
+| Dialogs | `alert.js` custom modal library |
 
-```json
-{
-  "manifest_version": 3,
-  "background": {
-    "service_worker": "js/background.js"
-  }
-}
-```
-
-#### First use in Chromium
-
-1. Click the extension icon.
-2. Open **Options**.
-3. Add an Odoo remote:
-   - name
-   - base URL
-   - database
-   - data source such as `project.task` or `project.issue`
-4. Save the remote.
-5. Return to the popup.
-6. Select the remote.
-7. Either:
-   - keep **Use Existing Session** enabled if already logged into Odoo in the browser, or
-   - disable it and log in manually
-8. Start a timer on a task or issue.
-9. Stop the timer to write the timesheet back to Odoo.
-
-### Firefox-based browsers
-
-Examples:
-
-- Firefox
-- Firefox Developer Edition
-
-#### Setup steps
-
-1. Open:
-
-```text
-about:debugging#/runtime/this-firefox
-```
-
-2. Click **Load Temporary Add-on...**.
-3. Select the actual Firefox manifest file:
-
-```text
-/dist/firefox/manifest.json
-```
-
-4. The temporary add-on should load into Firefox.
-
-#### Important Firefox note
-
-Firefox expects the file to be named exactly:
-
-```text
-manifest.json
-```
-
-Do not try to load a file called `manifest.firefox.json` directly unless you have copied or renamed it to `manifest.json` inside the Firefox build folder.
-
-#### Firefox manifest notes
-
-The Firefox build should use background scripts instead of a service worker:
-
-```json
-{
-  "manifest_version": 3,
-  "background": {
-    "scripts": ["js/background.js"],
-    "type": "module"
-  }
-}
-```
-
-#### First use in Firefox
-
-The usage flow is the same as Chromium:
-
-1. Open **Options**.
-2. Add a remote.
-3. Return to the popup.
-4. Select the remote.
-5. Reuse an existing Odoo session or log in manually.
-6. Start and stop timers as needed.
-
-## Remote configuration
-
-A remote usually includes:
-
-- **Name**: friendly label shown in the popup
-- **URL**: base Odoo URL, for example `https://example.odoo.com`
-- **Database**: target database name
-- **Data source**: usually `project.task` or `project.issue`
-
-If the wrong data source is selected, the extension may load the wrong model or fail to create the expected timesheet record type.
-
-## Typical workflow
-
-### Using an existing session
-
-This is the easiest option when you are already logged into Odoo in the same browser.
-
-1. Log into Odoo normally in a browser tab.
-2. Open the extension popup.
-3. Choose the remote.
-4. Leave **Use Existing Session** enabled.
-5. Click **Login**.
-
-If the session is valid, the extension will load your tasks/issues.
-
-### Manual login
-
-Use this when there is no active browser Odoo session.
-
-1. Open the popup.
-2. Disable **Use Existing Session**.
-3. Enter username and password.
-4. Click **Login**.
-
-## Timer behavior
-
-When you start a timer:
-
-- the active item is remembered
-- the start time is stored in extension storage
-- the popup can continue showing elapsed time
-
-When you stop a timer:
-
-- the elapsed time is calculated
-- rounding logic is applied
-- you may be prompted for a description
-- a new timesheet record is created in Odoo
-
-## CSV export
-
-The extension can export:
-
-- current month timesheets
-- issue/task-specific timesheets
-
-This is useful for local backup, manual review, or reporting.
+---
 
 ## Troubleshooting
 
-### Firefox does not load the extension
+**"Not connected" in Messages**  
+Log in via the Timer window first. Messages reads the session from storage.
 
-Check the following:
+**No tasks in Messages sidebar**  
+Check the data source in Options matches your Odoo setup (`project.task` vs `project.issue`).
 
-- the selected file is named `manifest.json`
-- the file is inside the Firefox build folder
-- the Firefox manifest uses `background.scripts`
-- the JSON is valid
+**Screen recorder — no sources found**  
+On Wayland (Linux) add `--enable-features=WebRTCPipeWireCapturer` to the Electron launch flags.
 
-### Chromium loads but Firefox fails
+**"No active Odoo session found"**  
+Uncheck "Use Existing Session" and enter your credentials.
 
-This usually means the Chromium manifest was used in Firefox. Switch to the Firefox build folder.
+**Tasks show "No matching items"**  
+Tasks are filtered to active stages (not Done/Cancelled/Hold). Check your Odoo stages or tick "Show for everyone".
 
-### Session restore fails
+---
 
-Possible causes:
+## License
 
-- Odoo session expired
-- remote URL does not match the actual Odoo login host
-- browser cookies are missing or blocked
-
-Try disabling **Use Existing Session** and log in manually.
-
-### Tasks do not appear
-
-Possible causes:
-
-- wrong data source configured
-- current user has no assigned records
-- Odoo model fields differ from what the extension expects
-- slow Odoo response during startup
-
-### Timer stops but no timesheet is created
-
-Check:
-
-- the related project or task has an analytic account
-- the remote is using the correct model
-- your Odoo user has permission to create timesheets
-- the correct journal exists for the issue-based flow
-
-## Development notes
-
-A good workflow is:
-
-1. maintain common source files in `src`
-2. produce separate `dist/chrome` and `dist/firefox` builds
-3. keep the code shared as much as possible
-4. only vary the manifest and browser-specific behavior where required
-
-
-# For Developers
-
-## Owl template compilation for developers
-
-The extension currently keeps its working runtime templates in the JavaScript
-entry files under:
-
-- `dist/chrome/js/components/popup-app.js`
-- `dist/chrome/js/components/options-app.js`
-- `dist/chrome/js/components/readmore.js`
-- `dist/firefox/js/components/popup-app.js`
-- `dist/firefox/js/components/options-app.js`
-- `dist/firefox/js/components/readmore.js`
-
-Those `createBlock(...)` templates remain the runtime fallback so that the
-extension keeps working even when ahead-of-time compiled Owl templates are not
-available.
-
-Editable source XML templates live under:
-
-- `src/templates/popup_app.xml`
-- `src/templates/options_app.xml`
-- `src/templates/readmore.xml`
-
-At runtime, the extension loads `js/templates.js` before the app modules.
-If that file registers compiled templates on
-`globalThis.__THERP_TIMER_TEMPLATES__`, the app will use them. If not, it
-falls back to the current JavaScript `createBlock(...)` templates.
-
-### Why this fallback exists
-
-Browser extensions often cannot rely on runtime template compilation in the way
-standard Odoo web builds do. Keeping the JavaScript fallback avoids breaking
-the popup or options page while developers gradually move templates into XML
-source files.
-
-### Set up Node tooling with Python `nodeenv`
-
-To avoid changing the host system Node installation, create an isolated Node
-environment with Python:
-
-```bash
-python3 -m pip install --user nodeenv
-python3 -m nodeenv .nodeenv
-. .nodeenv/bin/activate
-```
-
-A helper script is included:
-
-```bash
-./scripts/setup_nodeenv.sh
-. .nodeenv/bin/activate
-```
-
-### Compile Owl templates ahead of time
-
-1. Clone the Owl repository locally.
-2. Activate the `nodeenv` environment.
-3. Build the runtime and compiler.
-4. Compile the XML templates from `src/templates`.
-
-Example workflow:
-
-```bash
-git clone https://github.com/odoo/owl.git
-cd owl
-npm install
-npm run build:runtime
-npm run build:compiler
-npm run compile_templates -- /path/to/odoo-timer/src/templates
-```
-
-A helper script is also included in this repository:
-
-```bash
-./scripts/compile_owl_templates.sh /path/to/owl #(i.e path to owl is the cloned Odoo's OWL repo => https://github.com/odoo/owl.git)
-```
-
-**NB:**
-- **Make sure you have templates to be compile by the scrip in `src/template/*.xml*` otherwise script might fail.**
-- **Please note you need to clone Odoo's OWL repo branch that is identical to your owl js library when compiling templates otherwise you will get templat errors when generating `template.js`. For instance: this current project is using OWL lib v2.8.2. So we need to clone owl repo branch owl-2.x (i.e https://github.com/odoo/owl/tree/owl-2.x) to compile template with.**
-
-### Register generated templates
-
-The extension expects compiled templates to be made available through:
-
-```js
-globalThis.__THERP_TIMER_TEMPLATES__ = {
-  ReadMore: /* compiled template */,
-  PopupApp: /* compiled template */,
-  OptionsApp: /* compiled template */,
-};
-```
-
-The distributed `dist/*/js/templates.js` files are safe placeholders.
-Replace them during development with your generated template registration code,
-or adapt the generated Owl output into that registry shape.
-
-### Current runtime layout
-
-Shared libraries now live under:
-
-- `dist/chrome/js/lib/`
-- `dist/firefox/js/lib/`
-
-Application entry modules now live under:
-
-- `dist/chrome/js/components/`
-- `dist/firefox/js/components/`
-
-This keeps library-style files such as `browser-polyfill.js`, `owl.iife.js`,
-and `common.js` separated from the popup and options app modules.
-
-## Summary
-
-Therp Timer is a practical browser-based Odoo timer that helps users quickly record work against Odoo project items.
-
-Use:
-
-- the **Chrome/Brave** build for Chromium-based browsers
-- the **Firefox** build for Firefox-based browsers
-
-Keep a separate `manifest.json` in each browser build folder, and load that folder with the browser’s extension developer tools.
+LGPL-3.0 — see `LICENSE.md`.

@@ -1,0 +1,106 @@
+{
+  "name": "therp-timer",
+  "version": "1.0.0",
+  "description": "Therp Timer - Desktop",
+  "main": "main.js",
+  "homepage": "https://github.com/Therp/odoo-timer",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Therp/odoo-timer.git"
+  },
+  "author": {
+    "name": "Therp BV",
+    "email": "info@therp.nl"
+  },
+  "license": "LGPL-3.0",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win nsis portable",
+    "build:mac": "electron-builder --mac dmg zip",
+    "build:linux": "electron-builder --linux AppImage",
+    "build": "electron-builder",
+    "compile-templates": "bash scripts/compile-templates.sh"
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0"
+  },
+  "devDependencies": {
+    "electron": "^29.4.6",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.therp.odoo-timer",
+    "productName": "Therp-Timer",
+    "copyright": "Copyright © 2026 Therp BV",
+    "publish": null,
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "node_modules/**/*",
+      "!node_modules/.cache/**",
+      "!node_modules/**/test/**",
+      "!node_modules/**/docs/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon_256.png"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "build/icon_512.png",
+      "category": "public.app-category.productivity"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build",
+      "category": "Office"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}

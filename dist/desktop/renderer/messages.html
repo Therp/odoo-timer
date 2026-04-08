@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https:; connect-src *;"/>
+  <title>Therp Timer — Messages</title>
+  <link rel="stylesheet" href="css/lib/font-awesome-4.6.3/css/font-awesome.min.css"/>
+  <link rel="stylesheet" href="css/messages.css"/>
+  <!-- OWL runtime -->
+  <script src="js/lib/owl.iife.js"></script>
+  <!-- alert.js dialogs -->
+  <script src="js/lib/ripple.js"></script>
+  <script src="js/lib/alert.js"></script>
+  <!-- Compiled OWL templates (sets globalThis.__THERP_TIMER_TEMPLATES__).
+       Run: bash scripts/compile_owl_templates.sh --target=desktop -->
+  <script type="module" src="js/templates.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="js/components/messages-app.js"></script>
+</body>
+</html>
