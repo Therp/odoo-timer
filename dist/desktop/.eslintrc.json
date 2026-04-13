@@ -1,0 +1,32 @@
+{
+  "env": {
+    "browser": true,
+    "es2022": true,
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "no-console": "off",
+    "semi": ["error", "always"],
+    "no-undef": "warn",
+    "eqeqeq": ["warn", "always"],
+    "no-var": "error",
+    "prefer-const": "warn"
+  },
+  "globals": {
+    "owl": "readonly",
+    "alert": "readonly",
+    "globalThis": "readonly"
+  },
+  "ignorePatterns": [
+    "renderer/js/lib/owl.iife.js",
+    "renderer/js/lib/gif-encoder.js",
+    "renderer/js/lib/browser-polyfill.js",
+    "renderer/js/templates.js",
+    "node_modules/"
+  ]
+}

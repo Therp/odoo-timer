@@ -548,3 +548,23 @@ body.unselectable {
   pointer-events: none;
   font-family: Arial, sans-serif;
 }
+
+/* ── Logs button in toolbar (todo #4) ───────────────────────── */
+.logs-btn {
+  color: #718096;
+  cursor: pointer;
+  transition: color .15s;
+}
+.logs-btn:hover { color: #e53e3e; }
+
+/* ── Timesheets action button per task row (todo #15) ────────── */
+.fa.fa-list-alt.action-btn { font-size: 1em; vertical-align: middle; }
+
+/* ── Storage / folder path display (options Storage page) ───── */
+.folder-path-display {
+  display: inline-block; max-width: 280px;
+  font-size: 12px; color: #718096;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  vertical-align: middle; margin-right: 6px;
+}
+.folder-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 6px; }

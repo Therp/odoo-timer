@@ -65,12 +65,13 @@ class MessagesApp extends Component {
   setup() {
     this.state = useState({
       // session
-      host:     '',
-      database: '',
-      datasrc:  'project.task',
-      user:     null,
+      host:       '',
+      database:   '',
+      datasrc:    'project.task',
+      user:       null,
+      partnerId:  null,   // res.partner id of current user (for follower lookup)
       // task list
-      allTasks:     [],
+      allTasks:     [],   // each task may have followerType: 'assigned'|'follower'
       showAllTasks: false,
       taskSearch:   '',
       unreadMap:    {},
@@ -127,6 +128,15 @@ class MessagesApp extends Component {
       }
     } catch (_) {}
 
+    // Resolve partner_id for follower queries (todo #3)
+    if (this.state.user?.id) {
+      try {
+        const ur = await this._searchRead('res.users', [['id','=',this.state.user.id]], ['partner_id'], { limit: 1 });
+        const pid = ur.records?.[0]?.partner_id;
+        this.state.partnerId = Array.isArray(pid) ? pid[0] : pid || null;
+      } catch (_) {}
+    }
+
     // Poll interval from active remote
     let pollSec = 60;
     try {
@@ -153,11 +163,29 @@ class MessagesApp extends Component {
   // ── Computed getters (referenced in messages_app.xml) ──────────────────────
   get visibleTasks() {
     const q = this.state.taskSearch.toLowerCase();
-    let tasks = this.state.showAllTasks
-      ? this.state.allTasks
-      : this.state.allTasks.filter(t => !this.state.user?.id || t.user_id?.[0] === this.state.user.id);
-    if (q) tasks = tasks.filter(t => t.name?.toLowerCase().includes(q));
+    let tasks;
+    if (this.state.showAllTasks) {
+      tasks = this.state.allTasks;
+    } else {
+      // Show assigned tasks + follower tasks (todo #3)
+      tasks = this.state.allTasks.filter(
+        (t) => t.followerType === 'follower' ||
+               !this.state.user?.id ||
+               t.user_id?.[0] === this.state.user.id
+      );
+    }
+    if (q) tasks = tasks.filter((t) => t.name?.toLowerCase().includes(q));
     return tasks;
+  }
+
+  /** Label for a task's relationship type (todo #3). */
+  followerLabel(task) {
+    return task.followerType === 'follower' ? '👁 Follower' : '👤 Assigned';
+  }
+
+  /** CSS class for a task's relationship badge (todo #3). */
+  followerClass(task) {
+    return task.followerType === 'follower' ? 'badge-follower' : 'badge-assigned';
   }
 
   get filteredMessages() {
@@ -215,16 +243,50 @@ class MessagesApp extends Component {
   }
 
   // ── Task loading ───────────────────────────────────────────────────────────
+  /**
+   * Load tasks: assigned tasks + tasks where user is a follower (todo #3).
+   * Each task record is annotated with followerType: 'assigned' | 'follower'.
+   */
   async _loadTasks() {
     this.state.loading = true;
     try {
-      const result = await this._searchRead(
-        this.state.datasrc,
-        [['stage_id.name','not ilike','%Done%'], ['stage_id.name','not ilike','%Cancel%']],
-        ['id','name','project_id','user_id','stage_id','message_ids'],
-        { limit: 200 }
-      );
-      this.state.allTasks = result.records || [];
+      const baseFields = ['id','name','project_id','user_id','stage_id','message_ids'];
+      const domain = [['stage_id.name','not ilike','%Done%'], ['stage_id.name','not ilike','%Cancel%']];
+
+      // Assigned / all tasks
+      const result = await this._searchRead(this.state.datasrc, domain, baseFields, { limit: 200 });
+      const assignedTasks = (result.records || []).map((t) => ({ ...t, followerType: 'assigned' }));
+      const assignedIds   = new Set(assignedTasks.map((t) => t.id));
+
+      // Follower tasks (todo #3): tasks where current partner is a follower
+      let followerTasks = [];
+      if (this.state.partnerId) {
+        try {
+          const followerRes = await this._searchRead(
+            'mail.followers',
+            [['partner_id','=',this.state.partnerId], ['res_model','=',this.state.datasrc]],
+            ['res_id'],
+            { limit: 300 }
+          );
+          const followerIds = (followerRes.records || [])
+            .map((r) => r.res_id)
+            .filter((id) => !assignedIds.has(id));
+
+          if (followerIds.length) {
+            const ftRes = await this._searchRead(
+              this.state.datasrc,
+              [['id','in', followerIds], ...domain],
+              baseFields,
+              { limit: 200 }
+            );
+            followerTasks = (ftRes.records || []).map((t) => ({ ...t, followerType: 'follower' }));
+          }
+        } catch (fe) {
+          console.warn('[MessagesApp] Follower lookup failed:', fe.message);
+        }
+      }
+
+      this.state.allTasks = [...assignedTasks, ...followerTasks];
       await this._recomputeAllUnread();
     } catch (e) { this._showError('Failed to load tasks: ' + e.message); }
     this.state.loading = false;

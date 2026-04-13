@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src *;"/>
+  <title>Therp Timer — Logs</title>
+  <link rel="stylesheet" href="css/lib/font-awesome-4.6.3/css/font-awesome.min.css"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: #0f1117; color: #e2e8f0; font-family: 'Consolas','Courier New',monospace; font-size: 13px; }
+    #toolbar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: #1a1f2e; border-bottom: 1px solid #2d3748; }
+    #toolbar h1 { margin: 0; font-size: 15px; color: #90cdf4; font-family: Arial, sans-serif; flex: 1; }
+    .tb-btn { padding: 6px 12px; border-radius: 4px; border: 1px solid #4a5568; background: #2d3748; color: #e2e8f0; cursor: pointer; font-size: 12px; }
+    .tb-btn:hover { background: #3d4a5f; }
+    #filter-bar { display: flex; gap: 8px; padding: 8px 16px; background: #141820; border-bottom: 1px solid #2d3748; }
+    .lvl-btn { padding: 4px 10px; border-radius: 3px; border: 1px solid transparent; cursor: pointer; font-size: 11px; font-weight: 600; }
+    .lvl-btn.active { border-color: currentColor; }
+    .lvl-all   { color: #a0aec0; } .lvl-all.active   { background: rgba(160,174,192,.15); }
+    .lvl-debug { color: #718096; } .lvl-debug.active { background: rgba(113,128,150,.15); }
+    .lvl-info  { color: #63b3ed; } .lvl-info.active  { background: rgba(99,179,237,.15); }
+    .lvl-warn  { color: #f6ad55; } .lvl-warn.active  { background: rgba(246,173,85,.15); }
+    .lvl-error { color: #fc8181; } .lvl-error.active { background: rgba(252,129,129,.15); }
+    #log-list { list-style: none; margin: 0; padding: 8px 0; overflow-y: auto; height: calc(100vh - 96px); }
+    #log-list li { display: flex; gap: 10px; padding: 3px 16px; line-height: 1.5; white-space: pre-wrap; word-break: break-all; }
+    #log-list li:hover { background: rgba(255,255,255,.04); }
+    .log-ts   { color: #4a5568; flex-shrink: 0; font-size: 11px; padding-top: 1px; }
+    .log-lvl  { flex-shrink: 0; font-size: 11px; font-weight: 700; width: 42px; padding-top: 1px; text-align: right; }
+    .log-msg  { flex: 1; }
+    .lvl-debug .log-lvl, li[data-level="debug"] .log-lvl { color: #718096; }
+    li[data-level="info"]  .log-lvl { color: #63b3ed; }
+    li[data-level="warn"]  .log-lvl { color: #f6ad55; }
+    li[data-level="error"] .log-lvl { color: #fc8181; }
+    #empty { text-align: center; color: #4a5568; padding: 60px; display: none; }
+  </style>
+</head>
+<body>
+  <div id="toolbar">
+    <h1><i class="fa fa-terminal" style="color:#63b3ed;margin-right:8px;"></i>Therp Timer — Internal Logs</h1>
+    <button class="tb-btn" id="btn-refresh"><i class="fa fa-refresh"></i> Refresh</button>
+    <button class="tb-btn" id="btn-clear"  style="color:#fc8181;"><i class="fa fa-trash"></i> Clear</button>
+  </div>
+  <div id="filter-bar">
+    <button class="lvl-btn lvl-all   active" data-level="all">ALL</button>
+    <button class="lvl-btn lvl-debug"        data-level="debug">DEBUG</button>
+    <button class="lvl-btn lvl-info"         data-level="info">INFO</button>
+    <button class="lvl-btn lvl-warn"         data-level="warn">WARN</button>
+    <button class="lvl-btn lvl-error"        data-level="error">ERROR</button>
+  </div>
+  <ul id="log-list"></ul>
+  <div id="empty">No log entries yet.</div>
+
+  <script>
+    const api = window.electronAPI;
+    let allLogs   = [];
+    let activeLevel = 'all';
+
+    function esc(s) {
+      return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function render() {
+      const list = document.getElementById('log-list');
+      const empty = document.getElementById('empty');
+      const filtered = activeLevel === 'all'
+        ? allLogs
+        : allLogs.filter((e) => e.level === activeLevel);
+      if (!filtered.length) { list.innerHTML = ''; empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+      list.innerHTML = filtered.map((e) => {
+        const ts  = e.ts ? e.ts.replace('T', ' ').slice(0, 23) : '';
+        const lvl = (e.level || 'info').toUpperCase().slice(0, 5);
+        return `<li data-level="${esc(e.level)}">
+          <span class="log-ts">${esc(ts)}</span>
+          <span class="log-lvl">${esc(lvl)}</span>
+          <span class="log-msg">${esc(e.msg)}</span>
+        </li>`;
+      }).join('');
+      // Auto-scroll to bottom
+      list.scrollTop = list.scrollHeight;
+    }
+
+    async function refresh() {
+      allLogs = (await api.logs.get()) || [];
+      render();
+    }
+
+    document.getElementById('btn-refresh').addEventListener('click', refresh);
+    document.getElementById('btn-clear').addEventListener('click', async () => {
+      await api.logs.clear(); allLogs = []; render();
+    });
+
+    document.querySelectorAll('.lvl-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.lvl-btn').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeLevel = btn.dataset.level;
+        render();
+      });
+    });
+
+    // Initial load + auto-refresh every 3s
+    refresh();
+    setInterval(refresh, 3000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src *;"/>
+  <title>Therp Timer — Task Timesheets</title>
+  <link rel="stylesheet" href="css/lib/font-awesome-4.6.3/css/font-awesome.min.css"/>
+  <link rel="stylesheet" href="css/popup.css"/>
+  <style>
+    body { background: #EEF2F7; font-family: Arial, Helvetica, sans-serif; margin:0; padding:0; }
+    #app { padding: 24px; }
+    .ts-header { margin-bottom: 20px; }
+    .ts-header h2 { margin: 0 0 4px; color: #42475a; font-size: 18px; }
+    .ts-header .ts-meta { font-size: 13px; color: #666; }
+    .ts-header .ts-meta b { color: #42475a; }
+    .ts-table-wrap { overflow-x: auto; margin-bottom: 20px; }
+    .ts-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .ts-table thead { background: #42475a; color: #fff; }
+    .ts-table thead th { padding: 10px 14px; text-align: left; font-weight: 600; }
+    .ts-table tbody tr { border-bottom: 1px solid #e2e8f0; }
+    .ts-table tbody tr:hover { background: #f0f4f8; }
+    .ts-table tbody td { padding: 9px 14px; color: #334155; }
+    .ts-table tbody td.td-amount { font-weight: 600; color: #2d3748; text-align: right; }
+    .ts-table tbody tr.ts-total-row { background: #f7fafc; font-weight: 700; }
+    .ts-table tbody tr.ts-total-row td { border-top: 2px solid #42475a; }
+    .ts-summary { display: flex; gap: 24px; flex-wrap: wrap; margin-top: 12px; }
+    .ts-summary-card { flex: 1; min-width: 160px; padding: 16px 20px; border-radius: 8px; }
+    .ts-summary-card .label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+    .ts-summary-card .value { font-size: 28px; font-weight: 700; }
+    .ts-card-planned  { background: #e8f0fe; color: #1a56db; }
+    .ts-card-total    { background: #e6ffed; color: #1d6a36; }
+    .ts-card-total.over { background: #fff1f0; color: #c53030; }
+    .ts-card-remaining { background: #fff7e6; color: #c05621; }
+    .ts-card-remaining.negative { background: #fff1f0; color: #c53030; }
+    .ts-empty { text-align: center; padding: 48px; color: #94a3b8; font-size: 15px; }
+    .ts-loading { text-align: center; padding: 48px; color: #94a3b8; }
+    .ts-toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }
+    .ts-btn { padding: 7px 14px; border-radius: 5px; border: 1px solid #cbd5e1; background: #fff; color: #42475a; font-size: 13px; cursor: pointer; display:flex; align-items:center; gap:6px; }
+    .ts-btn:hover { background: #f1f5f9; }
+    .ts-month-label { font-size: 13px; color: #64748b; margin-left: auto; }
+    .ts-error { color: #c53030; padding: 16px; background: #fff5f5; border-radius: 6px; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="ts-loading"><i class="fa fa-cog fa-spin fa-2x"></i><br/><br/>Loading timesheets…</div>
+  </div>
+
+  <script type="module" src="js/components/timesheets-app.js"></script>
+</body>
+</html>

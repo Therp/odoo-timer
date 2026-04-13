@@ -584,3 +584,12 @@ html, body { height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui,
   color: var(--muted);
   margin-top: 0;
 }
+
+/* ── Follower / assigned badge (todo #3) ──────────────────── */
+.badge-assigned, .badge-follower {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  padding: 1px 6px; border-radius: 3px; margin-left: 4px;
+  vertical-align: middle;
+}
+.badge-assigned { background: #e6f0ff; color: #1a56db; }
+.badge-follower { background: #f0fff4; color: #276749; }

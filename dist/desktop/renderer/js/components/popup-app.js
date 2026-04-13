@@ -74,7 +74,7 @@ function createPopupAppTemplate(app, bdom, helpers) {
     const readMoreProject        = app.createComponent('ReadMore', true, false, false, ['text', 'limit']);
 
     const rootBlock = createBlock(
-        `<div class="app-root"><div id="loader-container" block-attribute-0="class"><div class="loader-card"><div class="loader-text">Loading current session and projects…</div><div class="loader-subtext">Please wait — or grab a cup of coffee ☕</div><i class="fa fa-cog fa-spin fa-5x"/></div></div><div id="login" class="login-view" block-attribute-1="class"><div class="popup-login-shell"><div class="form"><div class="logo"><img src="img/logo.png"/></div><block-child-0/><block-child-1/><block-child-2/></div></div><div class="cta forgotpwd footer-app-opts login-footer-bar"><a href="options_main_page.html"><i class="fa fa-cogs"/> Options</a></div></div><div id="wrapper" block-attribute-2="class"><div class="toolbar-row"><input id="searchIssue" type="text" placeholder="Search by ID, name, user, priority, stage..." block-property-3="value" block-handler-4="input"/><select id="limitTo" block-property-5="value" block-handler-6="change"><option value="10">10</option><option value="15">15</option><option value="25">25</option><option value="">All</option></select></div><div class="container footer top-actions"><div class="auto_download_timesheet" title="Store timesheet locally when you stop timer on the current item"><input id="auto_download_timesheet_input" type="checkbox" block-property-7="checked" block-handler-8="change"/> Auto Download Current Item Timesheet </div><div class="row"><div class="mx-3 col-md-12 footer-btns pointer"><i class="fa fa-download fa-2x" title="Download current month timesheet" block-handler-9="click"/><i class="fa fa-hand-o-left fa-2x" title="Switch between remotes" block-handler-10="click"/><i class="fa fa-refresh fa-2x" title="Refresh current items" block-handler-11="click"/><i class="fa fa-clock-o fa-2x" title="Discard the active timer" block-handler-12="click"/><i class="fa fa-sign-out fa-2x" title="Log out" block-handler-13="click"/><span class="msg-icon-wrap" title="Open Messages" block-handler-22="click"><i class="fa fa-comments fa-2x"/><span class="msg-unread-badge" block-attribute-25="style"><block-text-26/></span></span><i block-attribute-23="class" title="Record screen" block-handler-24="click"/><a href="options_main_page.html" class="options-btn" title="Options"><i class="fa fa-cogs fa-2x"/></a></div></div></div><div class="table-scroll"><table class="table table-responsive-sm table-bordered table-fixed" id="table-task-issues"><thead><tr><th class="action-col"><div><block-child-3/></div><block-child-4/></th><th class="priority-col">Priority</th><th class="stage-col">Stage</th><th class="item-col"><div class="item-header-title"><block-text-14/> [<block-text-15/>]</div><label class="allIssues"><input id="showAllIssues" type="checkbox" block-property-16="checked" block-handler-17="input"/> Show for everyone</label></th><block-child-5/><block-child-6/><th class="project-col">Project</th></tr></thead><tbody><block-child-7/><block-child-8/></tbody></table></div><div class="info-footer mx-3"><div class="row"><div class="remote-info-block col-md-12"><span><b>Odoo:</b> <block-text-18/></span><br/><span><b>Host:</b> <block-text-19/></span><br/><span><b>OWL:</b> v${String(owl.__info__.version)}</span><br/><span><b>Database:</b> <block-text-20/></span><br/><span><b>Current User:</b> <block-text-21/></span><br/></div></div></div></div></div>`
+        `<div class="app-root"><div id="loader-container" block-attribute-0="class"><div class="loader-card"><div class="loader-text">Loading current session and projects…</div><div class="loader-subtext">Please wait — or grab a cup of coffee ☕</div><i class="fa fa-cog fa-spin fa-5x"/></div></div><div id="login" class="login-view" block-attribute-1="class"><div class="popup-login-shell"><div class="form"><div class="logo"><img src="img/logo.png"/></div><block-child-0/><block-child-1/><block-child-2/></div></div><div class="cta forgotpwd footer-app-opts login-footer-bar"><a href="options_main_page.html"><i class="fa fa-cogs"/> Options</a></div></div><div id="wrapper" block-attribute-2="class"><div class="toolbar-row"><input id="searchIssue" type="text" placeholder="Search by ID, name, user, priority, stage..." block-property-3="value" block-handler-4="input"/><select id="limitTo" block-property-5="value" block-handler-6="change"><option value="10">10</option><option value="15">15</option><option value="25">25</option><option value="">All</option></select></div><div class="container footer top-actions"><div class="auto_download_timesheet" title="Store timesheet locally when you stop timer on the current item"><input id="auto_download_timesheet_input" type="checkbox" block-property-7="checked" block-handler-8="change"/> Auto Download Current Item Timesheet </div><div class="row"><div class="mx-3 col-md-12 footer-btns pointer"><i class="fa fa-download fa-2x" title="Download current month timesheet" block-handler-9="click"/><i class="fa fa-hand-o-left fa-2x" title="Switch between remotes" block-handler-10="click"/><i class="fa fa-refresh fa-2x" title="Refresh current items" block-handler-11="click"/><i class="fa fa-clock-o fa-2x" title="Discard the active timer" block-handler-12="click"/><i class="fa fa-sign-out fa-2x" title="Log out" block-handler-13="click"/><span class="msg-icon-wrap" title="Open Messages" block-handler-22="click"><i class="fa fa-comments fa-2x"/><span class="msg-unread-badge" block-attribute-25="style"><block-text-26/></span></span><i block-attribute-23="class" title="Record screen" block-handler-24="click"/><a href="options_main_page.html" class="options-btn" title="Options"><i class="fa fa-cogs fa-2x"/></a><i class="fa fa-bug fa-2x logs-btn" title="View Logs" block-handler-27="click"/></div></div></div><div class="table-scroll"><table class="table table-responsive-sm table-bordered table-fixed" id="table-task-issues"><thead><tr><th class="action-col"><div><block-child-3/></div><block-child-4/></th><th class="priority-col">Priority</th><th class="stage-col">Stage</th><th class="item-col"><div class="item-header-title"><block-text-14/> [<block-text-15/>]</div><label class="allIssues"><input id="showAllIssues" type="checkbox" block-property-16="checked" block-handler-17="input"/> Show for everyone</label></th><block-child-5/><block-child-6/><th class="project-col">Project</th></tr></thead><tbody><block-child-7/><block-child-8/></tbody></table></div><div class="info-footer mx-3"><div class="row"><div class="remote-info-block col-md-12"><span><b>Odoo:</b> <block-text-18/></span><br/><span><b>Host:</b> <block-text-19/></span><br/><span><b>OWL:</b> v${String(owl.__info__.version)}</span><br/><span><b>Database:</b> <block-text-20/></span><br/><span><b>Current User:</b> <block-text-21/></span><br/></div></div></div></div></div>`
     );
 
     const bootErrorBlock   = createBlock(`<div><p class="odooError"><block-text-0/></p></div>`);
@@ -90,7 +90,9 @@ function createPopupAppTemplate(app, bdom, helpers) {
     const activeTimerDurationBlock = createBlock(`<span class="startTimeCount"><block-text-0/></span>`);
     const hoursSpentHeaderBlock    = createBlock(`<th>Hours Spent</th>`);
     const remainingHoursHeaderBlock = createBlock(`<th>Remaining Hours</th>`);
-    const issueRowBlock = createBlock(`<tr block-attribute-0="class"><td class="text-center px-2 td-btn action-col"><block-child-0/><block-child-1/></td><td class="priority-cell"><block-child-2/><block-child-3/></td><td class="stage-cell"><block-child-4/></td><td class="issue-desc-cell"><block-child-5/></td><block-child-6/><block-child-7/><td class="project-cell"><block-child-8/></td></tr>`);
+    const timesheetsButtonBlock = createBlock(`<i class="fa fa-list-alt action-btn pointer text-info" title="View Timesheets for this task" block-handler-0="click"/>`);
+
+        const issueRowBlock = createBlock(`<tr block-attribute-0="class"><td class="text-center px-2 td-btn action-col"><block-child-0/><block-child-1/><block-child-9/></td><td class="priority-cell"><block-child-2/><block-child-3/></td><td class="stage-cell"><block-child-4/></td><td class="issue-desc-cell"><block-child-5/></td><block-child-6/><block-child-7/><td class="project-cell"><block-child-8/></td></tr>`);
     const startTimerButtonBlock = createBlock(`<i class="fa fa-play-circle action-btn pointer" title="Start the timer for the selected item" block-handler-0="click"/>`);
     const stopTimerButtonBlock  = createBlock(`<i class="text-danger fa fa-stop-circle action-btn pointer" title="Stop timer and record the time to Odoo timesheets" block-handler-0="click"/>`);
     const priorityStarBlock        = createBlock(`<span class="fa fa-star checked"/>`);
@@ -178,6 +180,7 @@ function createPopupAppTemplate(app, bdom, helpers) {
         const resetTimerHandler     = [ctx.resetTimer, ctx];
         const logoutHandler         = [ctx.logout, ctx];
         const openMessagesHandler   = [ctx.openMessages, ctx];
+        const openLogsHandler       = [ctx.openLogs,     ctx];
         const totalUnread           = ctx.state.msgUnreadTotal || 0;
         const msgBadgeStyle         = totalUnread > 0 ? '' : 'display:none';
         const msgBadgeText          = totalUnread > 99 ? '99+' : String(totalUnread || '');
@@ -233,6 +236,9 @@ function createPopupAppTemplate(app, bdom, helpers) {
 
             const projectNode = readMoreProject({ text: String(ir.project_id?.[1] || ''), limit: 22 }, key + `__proj__${ik}`, node, this, null);
 
+            const timesheetsNode = ctx.state.dataSource === DATA_SOURCE_TASK
+                ? timesheetsButtonBlock([[() => ctx.openTimesheets(ir), ctx]])
+                : null;
             issueChildren[i] = withKey(
                 issueRowBlock([rowClass], [
                     startTimerNode, stopTimerNode,
@@ -240,6 +246,7 @@ function createPopupAppTemplate(app, bdom, helpers) {
                     stageNode, labelNode,
                     effectiveHoursNode, remainingHoursNode,
                     projectNode,
+                    timesheetsNode,
                 ]),
                 ik
             );
@@ -266,6 +273,7 @@ function createPopupAppTemplate(app, bdom, helpers) {
                 toggleRecordHandler,
                 msgBadgeStyle,
                 msgBadgeText,
+                openLogsHandler,
             ],
             [
                 bootErrorNode, noRemotesNode, loginFormNode,
@@ -352,11 +360,18 @@ class PopupApp extends Component {
                     }
                 } catch (_) {}
             }, 3000);
+
+            // Background message polling (todo #13): poll Odoo directly when
+            // the Messages window may not be open, so the badge stays current.
+            this._bgMsgPollHandle = setInterval(async () => {
+                await this._backgroundMsgPoll();
+            }, 60000); // every 60 s
         });
 
         onWillUnmount(() => {
-            if (this._timerHandle) clearInterval(this._timerHandle);
+            if (this._timerHandle)     clearInterval(this._timerHandle);
             if (this._unreadSyncHandle) clearInterval(this._unreadSyncHandle);
+            if (this._bgMsgPollHandle)  clearInterval(this._bgMsgPollHandle);
         });
     }
 
@@ -910,6 +925,17 @@ class PopupApp extends Component {
         window.electronAPI?.openMessages?.();
     }
 
+    /** Open the task timesheets window for a specific task (todo #15). */
+    openTimesheets(issue) {
+        const taskName = this.issueLabel(issue) || `#${issue.id}`;
+        window.electronAPI?.openTimesheets?.(issue.id, taskName);
+    }
+
+    /** Open the internal logs viewer window (todo #4). */
+    openLogs() {
+        window.electronAPI?.logs?.openWindow?.();
+    }
+
     async logout() {
         if (this.state.activeTimerId) {
             await notify(`Please stop timer for ${this.itemLabelSingular} #${this.state.activeTimerId} before logging out.`);
@@ -918,7 +944,6 @@ class PopupApp extends Component {
         const ok = await confirmDialog('Are you sure you want to logout?');
         if (!ok) return;
 
-        const remote = this.currentRemote || {};
         try { await this.rpc.logout(); } catch {}
         await clearOdooSessionCookies(this.state.currentHost);
         await storage.remove(this.state.currentDatabase);
@@ -926,6 +951,48 @@ class PopupApp extends Component {
         Object.assign(this.state, {
             user: null, issues: [], projects: [], view: VIEW_LOGIN, useExistingSession: true,
         });
+    }
+
+    /**
+     * Background message poll (todo #13).
+     * Directly queries Odoo for latest message_ids on all visible tasks and
+     * updates the unread badge in the popup toolbar, even when the Messages
+     * window is closed.
+     */
+    async _backgroundMsgPoll() {
+        try {
+            if (!this.state.currentHost || !this.state.user?.id) return;
+            if (this.state.dataSource !== DATA_SOURCE_TASK) return;
+            if (!this.state.issues.length) return;
+
+            const ids = this.state.issues.map((task) => task.id);
+            const result = await this.rpc.searchRead(
+                this.state.dataSource,
+                [['id', 'in', ids]],
+                ['id', 'message_ids'],
+                { limit: 200 }
+            );
+            const freshMap = Object.fromEntries(
+                (result.records || []).map((record) => [record.id, (record.message_ids || []).slice(0, 10)])
+            );
+
+            let totalUnread = 0;
+            for (const task of this.state.issues) {
+                const freshIds = freshMap[task.id] || [];
+                const seenRaw  = await storage.get(`msg_seen_${task.id}`, []);
+                const seenSet  = new Set(Array.isArray(seenRaw) ? seenRaw : []);
+                const unread   = freshIds.filter((id) => !seenSet.has(id)).length;
+                totalUnread   += unread;
+            }
+
+            await storage.set('msg_total_unread', totalUnread);
+            if (totalUnread !== this.state.msgUnreadTotal) {
+                this.state.msgUnreadTotal = totalUnread;
+            }
+        } catch (err) {
+            // Non-critical — silently skip on error
+            console.debug('[PopupApp] Background poll skipped:', err.message);
+        }
     }
 }
 
@@ -940,4 +1007,14 @@ const templates = {
     PopupApp: createPopupAppTemplate,
 };
 
-mount(PopupApp, document.getElementById('app'), { dev: false, templates });
+try {
+    mount(PopupApp, document.getElementById('app'), { dev: false, templates });
+} catch (err) {
+    console.error('[PopupApp] Mount failed:', err);
+    const bootLoader = document.getElementById('boot-loader');
+    if (bootLoader) bootLoader.classList.add('hide');
+    const appRoot = document.getElementById('app');
+    if (appRoot) {
+        appRoot.innerHTML = `<div class="container no-remotes-set"><div class="alert alert-danger"><b>Startup error:</b> ${String(err?.message || err).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div></div>`;
+    }
+}

@@ -148,3 +148,20 @@ input[type="range"] {
 .rec-stop-btn:hover  { opacity: .88; }
 .rec-start-btn:active, .rec-stop-btn:active { transform: scale(.97); }
 .rec-start-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── Format & Audio selector buttons (todo #1, #2) ────────────── */
+.format-btns, .audio-btns {
+  display: flex; gap: 6px; flex-wrap: wrap;
+}
+.format-btn, .audio-btn {
+  flex: 1; min-width: 60px; padding: 7px 10px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--card); font-size: 12px; font-weight: 600;
+  color: var(--muted); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.format-btn:hover, .audio-btn:hover { border-color: var(--brand); color: var(--brand-dark); }
+.format-btn.active { border-color: #6366f1; color: #6366f1; background: #f0f0ff; }
+.audio-btn.active  { border-color: #059669; color: #059669;  background: #f0fdf4; }
+.format-btn:disabled, .audio-btn:disabled { opacity: .45; cursor: not-allowed; }

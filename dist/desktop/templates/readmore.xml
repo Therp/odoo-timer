@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  readmore.xml — OWL template source for the shared ReadMore component.
+  Compiled to: renderer/js/templates.js (ReadMore key)
+-->
+<templates xml:space="preserve">
+
+  <t t-name="ReadMore" owl="1">
+    <span class="readmore-inline">
+      <t t-if="props.href">
+        <a t-att-href="props.href" class="remote-link" target="_blank" rel="noreferrer">
+          <t t-esc="state.expanded or !needsTrim ? (props.text or '') : shortText"/>
+        </a>
+      </t>
+      <t t-else="">
+        <t t-esc="state.expanded or !needsTrim ? (props.text or '') : shortText"/>
+      </t>
+      <t t-if="needsTrim">
+        <a href="#" class="hmMoreClass" t-on-click.prevent="toggle">
+          <t t-if="state.expanded"> ▲</t>
+          <t t-else=""> ...</t>
+        </a>
+      </t>
+    </span>
+  </t>
+
+</templates>

@@ -13,7 +13,7 @@
   <div id="app">
     <!-- Mode tabs -->
     <div class="rec-tabs">
-      <button class="rec-tab active" data-mode="video" title="Record video (WebM)">
+      <button class="rec-tab active" data-mode="video" title="Record video">
         <i class="fa fa-video-camera"></i> Video
       </button>
       <button class="rec-tab" data-mode="gif" title="Record animated GIF">
@@ -38,13 +38,34 @@
           <i class="fa fa-crop"></i> Region
         </button>
       </div>
-      <!-- Window picker (hidden until "Window" selected) -->
-      <select id="window-picker" class="rec-select" style="display:none">
-        <option value="">Select a window…</option>
-      </select>
+      <div id="window-picker-wrap" style="display:none">
+        <select id="window-picker" class="rec-select">
+          <option value="">Select a window…</option>
+        </select>
+      </div>
     </div>
 
-    <!-- Screenshot options -->
+    <!-- Video format (todo #1) -->
+    <div class="rec-section" id="format-section">
+      <label class="rec-label"><i class="fa fa-file-video-o"></i> Output Format</label>
+      <div class="format-btns">
+        <button class="format-btn active" data-fmt="webm" title="WebM — best compatibility">WebM</button>
+        <button class="format-btn" data-fmt="mp4"  title="MP4 — widely supported">MP4</button>
+        <button class="format-btn" data-fmt="mkv"  title="MKV — Matroska container">MKV</button>
+      </div>
+    </div>
+
+    <!-- Audio source (todo #2) -->
+    <div class="rec-section" id="audio-section">
+      <label class="rec-label"><i class="fa fa-microphone"></i> Audio</label>
+      <div class="audio-btns">
+        <button class="audio-btn active" data-audio="none"        title="No audio">None</button>
+        <button class="audio-btn"        data-audio="microphone"  title="Capture microphone input"><i class="fa fa-microphone"></i> Mic</button>
+        <button class="audio-btn"        data-audio="system"      title="Capture system/speaker audio (Windows)"><i class="fa fa-volume-up"></i> System</button>
+      </div>
+    </div>
+
+    <!-- Delay before capture -->
     <div class="rec-section" id="delay-section">
       <label class="rec-label">
         <i class="fa fa-clock-o"></i>
@@ -70,7 +91,7 @@
       </div>
     </div>
 
-    <!-- GIF quality (gif only) -->
+    <!-- GIF quality -->
     <div class="rec-section" id="gif-quality-section" style="display:none">
       <label class="rec-label">
         <i class="fa fa-sliders"></i> GIF Frame Rate
@@ -98,12 +119,12 @@
       <div class="rec-countdown" id="rec-countdown"></div>
     </div>
 
-    <!-- Delay countdown -->
+    <!-- Delay countdown overlay -->
     <div class="rec-delay-count" id="delay-count" style="display:none">
       <span id="delay-count-num"></span>
     </div>
 
-    <!-- Main action button -->
+    <!-- Action buttons -->
     <div class="rec-action">
       <button id="start-btn" class="rec-start-btn">
         <i class="fa fa-circle"></i> Start

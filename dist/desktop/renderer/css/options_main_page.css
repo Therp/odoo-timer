@@ -431,3 +431,27 @@ body { overflow-y: auto; }
   font-size: 11.5px;
   color: #9ca3af;
 }
+
+/* ── Storage page folder row ──────────────────────────────── */
+.folder-path-display {
+  display: inline-block; font-size: 12px; color: #718096;
+  max-width: 300px; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; vertical-align: middle;
+}
+.folder-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.folder-row .btn { padding: 4px 10px; font-size: 12px; }
+
+/* ── Help page ordered list ───────────────────────────────── */
+.options-box ol.list-group { counter-reset: item; }
+.options-box ol.list-group .list-group-item { counter-increment: item; }
+.options-box ol.list-group .list-group-item::before {
+  content: counter(item) ". "; font-weight: 700; color: #33BAF6; margin-right: 4px;
+}
+.options-box code {
+  background: #f1f5f9; padding: 2px 6px; border-radius: 3px;
+  font-size: 11px; color: #475569;
+}
+.options-box kbd {
+  background: #2d3748; color: #fff; padding: 2px 6px;
+  border-radius: 3px; font-size: 11px; font-family: monospace;
+}
