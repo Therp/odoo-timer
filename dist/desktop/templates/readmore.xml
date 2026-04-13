@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  readmore.xml — OWL template source for the shared ReadMore component.
-  Compiled to: renderer/js/templates.js (ReadMore key)
+  readmore.xml — OWL template for the ReadMore component.
+  Compile: bash scripts/compile-templates.sh
+  NOTE: All expressions are JavaScript, not Python.
 -->
 <templates xml:space="preserve">
 
-  <t t-name="ReadMore" owl="1">
+  <t t-name="ReadMore">
     <span class="readmore-inline">
       <t t-if="props.href">
         <a t-att-href="props.href" class="remote-link" target="_blank" rel="noreferrer">
-          <t t-esc="state.expanded or !needsTrim ? (props.text or '') : shortText"/>
+          <t t-esc="(state.expanded || !needsTrim) ? (props.text || '') : shortText"/>
         </a>
       </t>
       <t t-else="">
-        <t t-esc="state.expanded or !needsTrim ? (props.text or '') : shortText"/>
+        <t t-esc="(state.expanded || !needsTrim) ? (props.text || '') : shortText"/>
       </t>
       <t t-if="needsTrim">
         <a href="#" class="hmMoreClass" t-on-click.prevent="toggle">

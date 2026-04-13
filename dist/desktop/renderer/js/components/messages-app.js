@@ -188,6 +188,29 @@ class MessagesApp extends Component {
     return task.followerType === 'follower' ? 'badge-follower' : 'badge-assigned';
   }
 
+  /** Toggle show-all-tasks (used by XML template button). */
+  toggleShowAll() {
+    this.state.showAllTasks = !this.state.showAllTasks;
+    storage.set('msg_show_all_tasks', this.state.showAllTasks);
+  }
+
+  /** normalizeText helper accessible from template. */
+  normalizeText(val) {
+    if (!val) return '';
+    if (Array.isArray(val) && val.length >= 2) return String(val[1]);
+    if (typeof val === 'object') return String(val.display_name || val.name || '');
+    return String(val);
+  }
+
+  /** Filter chip CSS classes (avoids inline ternaries in XML). */
+  get filterAllClass()     { return this.state.filterType === 'all'     ? 'filter-chip active' : 'filter-chip'; }
+  get filterCommentClass() { return this.state.filterType === 'comment' ? 'filter-chip active' : 'filter-chip'; }
+  get filterNoteClass()    { return this.state.filterType === 'note'    ? 'filter-chip active' : 'filter-chip'; }
+
+  /** Compose tab CSS classes. */
+  get composeCommentClass() { return this.state.composeType === 'comment' ? 'compose-tab active' : 'compose-tab'; }
+  get composeNoteClass()    { return this.state.composeType === 'note'    ? 'compose-tab active' : 'compose-tab'; }
+
   get filteredMessages() {
     const f = this.state.filterType;
     let msgs = this.state.messages;

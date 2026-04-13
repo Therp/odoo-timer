@@ -1,7 +1,7 @@
-/* ── Therp Timer Messages styles ─────────────────────────────────────────── */
+/* ── Therp Timer — Messages window styles ──────────────────────────────────── */
 
 :root {
-  --sidebar-w:  300px;
+  --sidebar-w:  290px;
   --brand:      #33BAF6;
   --brand-dark: #1FA7E6;
   --bg:         #f0f4f8;
@@ -13,118 +13,132 @@
   --success:    #38a169;
   --note-bg:    #fffbeb;
   --note-border:#f59e0b;
-  --comment-bg: #ffffff;
-  --comment-border: #e2e8f0;
-  --system-bg:  #f8fafc;
-  --system-border: #cbd5e1;
   --radius:     10px;
   --shadow:     0 2px 12px rgba(0,0,0,.08);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html, body { height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; font-size: 13px; background: var(--bg); color: var(--text); }
+html, body {
+  height: 100%; overflow: hidden;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 13px; background: var(--bg); color: var(--text);
+}
 
-#root {
+/* OWL mounts into #app — make it fill viewport */
+#app {
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Layout: sidebar + main ──────────────────────────────────────────────── */
+.messages-layout {
   display: flex;
   height: 100vh;
   overflow: hidden;
 }
 
-/* ── Error banner ────────────────────────────────────────────────────────── */
-.error-banner {
-  display: none;
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  background: var(--danger);
-  color: #fff;
-  padding: 8px 16px;
-  font-size: 13px;
-  z-index: 9999;
-  text-align: center;
-}
-
 /* ── Sidebar ─────────────────────────────────────────────────────────────── */
-.sidebar {
+.messages-sidebar {
   width: var(--sidebar-w);
-  min-width: 220px;
+  min-width: 200px;
   max-width: 340px;
   display: flex;
   flex-direction: column;
   background: var(--card);
   border-right: 1px solid var(--border);
   flex-shrink: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
-.sidebar-header {
-  padding: 14px 12px 10px;
-  border-bottom: 1px solid var(--border);
+.messages-search {
+  padding: 10px 12px 8px;
   background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.sidebar-title {
-  display: block;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  margin-bottom: 8px;
-}
-
-.sidebar-header input {
+.messages-search input[type="text"],
+.messages-search input:not([type="checkbox"]) {
   width: 100%;
   padding: 6px 10px;
   border: none;
   border-radius: 20px;
-  background: rgba(255,255,255,.9);
+  background: rgba(255,255,255,.92);
   font-size: 12px;
   outline: none;
   color: var(--text);
 }
 
-#task-list {
+/* ── Show for everyone checkbox label ── */
+.show-all-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: rgba(255,255,255,.9);
+  cursor: pointer;
+  user-select: none;
+  padding: 2px 4px;
+}
+.show-all-label input[type="checkbox"] {
+  accent-color: #fff;
+  width: 13px; height: 13px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.task-list {
   flex: 1;
   overflow-y: auto;
   padding: 4px 0;
 }
 
-.task-item {
+/* Task cards in sidebar */
+.task-card {
   padding: 10px 14px;
   cursor: pointer;
   border-bottom: 1px solid var(--border);
   transition: background 0.12s;
-  position: relative;
 }
-.task-item:hover   { background: #f0f9ff; }
-.task-item.active  { background: #e0f4ff; border-left: 3px solid var(--brand); }
+.task-card:hover  { background: #f0f9ff; }
+.task-card.active { background: #e0f4ff; border-left: 3px solid var(--brand); }
+.task-card.has-unread { border-left: 3px solid var(--brand); }
+.task-card.has-unread .task-title { font-weight: 700; }
 
-.task-item-main {
+.task-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+
+.task-meta {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 6px;
-}
-
-.task-item-name {
-  font-weight: 600;
-  font-size: 12.5px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: 1;
-}
-
-.task-project {
-  display: block;
   font-size: 11px;
   color: var(--muted);
-  margin-top: 2px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.task-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 130px;
 }
 
-.unread-badge {
+.msg-unread-badge {
   background: var(--brand);
   color: #fff;
   border-radius: 10px;
@@ -136,112 +150,50 @@ html, body { height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui,
   flex-shrink: 0;
 }
 
-.empty-state {
+.tasks-empty {
   text-align: center;
   color: var(--muted);
   padding: 32px 16px;
   font-size: 13px;
 }
 
-/* ── Chat pane ───────────────────────────────────────────────────────────── */
-.chat-pane {
+/* ── Main pane ───────────────────────────────────────────────────────────── */
+.messages-main {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   min-width: 0;
-}
-
-.no-selection {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: var(--muted);
-  gap: 16px;
-  background: var(--bg);
-}
-
-.chat-view {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
   height: 100%;
-  overflow: hidden;
 }
 
-/* ── Chat header ─────────────────────────────────────────────────────────── */
-.chat-header {
+/* ── Top bar ─────────────────────────────────────────────────────────────── */
+.messages-topbar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   padding: 10px 16px;
   background: var(--card);
   border-bottom: 1px solid var(--border);
   box-shadow: var(--shadow);
+  flex-shrink: 0;
   z-index: 10;
 }
 
-.task-title-link {
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--brand-dark);
-  text-decoration: none;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 280px;
-}
-.task-title-link:hover { text-decoration: underline; }
+.messages-topbar-title { display: flex; flex-direction: column; gap: 2px; }
+.messages-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.messages-subtitle { font-size: 11px; color: var(--muted); }
 
-.filter-bar {
+.messages-top-actions {
   display: flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
 }
 
-.pill {
-  padding: 3px 10px;
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  background: transparent;
-  font-size: 11.5px;
-  cursor: pointer;
-  color: var(--muted);
-  transition: all 0.15s;
-}
-.pill.active { background: var(--brand); color: #fff; border-color: var(--brand); }
-.pill:hover:not(.active) { background: #f0f9ff; }
-
-.legend {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  color: var(--muted);
-  flex-wrap: nowrap;
-}
-.dot {
-  display: inline-block;
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  margin-right: 2px;
-}
-.dot-comment { background: #3182ce; }
-.dot-note    { background: #d69e2e; }
-.dot-system  { background: #a0aec0; }
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
-}
-
-.header-actions button {
+.messages-btn {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -253,86 +205,111 @@ html, body { height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui,
   font-size: 12px;
   color: var(--text);
   transition: background 0.12s;
+  white-space: nowrap;
 }
-.header-actions button:hover { background: #f0f9ff; }
+.messages-btn:hover { background: #f0f9ff; border-color: var(--brand); color: var(--brand-dark); }
+.messages-btn:disabled { opacity: 0.6; cursor: default; }
 
+/* ── Thread header ───────────────────────────────────────────────────────── */
+.message-thread-header {
+  padding: 10px 16px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
 
+.message-thread-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--brand-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
 
-/* ── Messages list ───────────────────────────────────────────────────────── */
-.messages-list {
+.message-thread-title a {
+  color: var(--brand-dark);
+  text-decoration: none;
+}
+.message-thread-title a:hover { text-decoration: underline; }
+
+.message-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+/* Filter pills */
+.filter-chip {
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: transparent;
+  font-size: 11.5px;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.filter-chip .dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.filter-chip.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+.filter-chip.active .dot { background: #fff; }
+.filter-chip:hover:not(.active) { background: #f0f9ff; }
+
+/* Follower badges */
+.badge-assigned, .badge-follower {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  padding: 1px 6px; border-radius: 3px; margin-right: 4px;
+  vertical-align: middle; flex-shrink: 0;
+}
+.badge-assigned { background: #e6f0ff; color: #1a56db; }
+.badge-follower { background: #f0fff4; color: #276749; }
+
+/* ── Messages thread ─────────────────────────────────────────────────────── */
+.messages-thread {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   background: var(--bg);
 }
 
-.loading-msg {
-  text-align: center;
-  color: var(--muted);
-  padding: 32px;
-}
-
-.error-msg {
-  text-align: center;
-  color: var(--danger);
-  padding: 16px;
-}
-
 /* Message bubbles */
-.msg {
+.msg-bubble {
   border-radius: var(--radius);
   padding: 10px 14px;
   box-shadow: 0 1px 4px rgba(0,0,0,.06);
   border-left: 4px solid transparent;
-  max-width: 90%;
+  max-width: 92%;
+}
+.msg-comment { background: #fff; border-left-color: #3182ce; }
+.msg-note    { background: var(--note-bg); border-left-color: var(--note-border); }
+.msg-system  {
+  background: #f8fafc; border-left-color: #cbd5e1;
+  font-size: 12px; color: var(--muted); max-width: 100%;
 }
 
-.msg-comment {
-  background: var(--comment-bg);
-  border-left-color: #3182ce;
-}
-.msg-note {
-  background: var(--note-bg);
-  border-left-color: var(--note-border);
-}
-.msg-system {
-  background: var(--system-bg);
-  border-left-color: var(--system-border);
-  font-size: 12px;
-  color: var(--muted);
-  max-width: 100%;
-  border-radius: 6px;
-}
-
-.msg-meta {
+.msg-header {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 5px;
   flex-wrap: wrap;
 }
-
-.msg-author {
-  font-weight: 700;
-  font-size: 12.5px;
-  color: var(--text);
-}
-
-.msg-time {
-  font-size: 11px;
-  color: var(--muted);
-}
-
-.msg-type-badge {
-  font-size: 10px;
-  padding: 1px 6px;
-  background: rgba(0,0,0,.06);
-  border-radius: 10px;
-  color: var(--muted);
-}
+.msg-author { font-weight: 700; font-size: 12.5px; color: var(--text); }
+.msg-time   { font-size: 11px; color: var(--muted); }
 
 .msg-body {
   font-size: 13px;
@@ -348,7 +325,7 @@ html, body { height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui,
   gap: 6px;
 }
 
-.attachment-chip {
+.att-chip {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -357,27 +334,33 @@ html, body { height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui,
   border-radius: 20px;
   font-size: 11.5px;
   color: var(--brand-dark);
-  text-decoration: none;
   background: #fff;
+  cursor: pointer;
   transition: background 0.12s;
 }
-.attachment-chip:hover { background: #f0f9ff; }
+.att-chip:hover { background: #f0f9ff; }
+
+/* No-selection / loading states */
+.messages-thread > div[style*="text-align:center"],
+.messages-thread > div[style*="padding:32px"] {
+  margin: auto;
+}
 
 /* ── Compose area ────────────────────────────────────────────────────────── */
-.compose {
+.messages-compose {
   background: var(--card);
   border-top: 1px solid var(--border);
   padding: 10px 14px 12px;
   flex-shrink: 0;
 }
 
-.compose-type-tabs {
+.compose-tabs {
   display: flex;
   gap: 6px;
   margin-bottom: 8px;
 }
 
-.ctab {
+.compose-tab {
   padding: 4px 12px;
   border: 1px solid var(--border);
   border-radius: 20px;
@@ -390,33 +373,8 @@ html, body { height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui,
   gap: 5px;
   transition: all 0.15s;
 }
-.ctab.active {
-  background: var(--brand);
-  color: #fff;
-  border-color: var(--brand);
-}
-.ctab:hover:not(.active) { background: #f0f9ff; }
-
-.attachment-preview {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 10px;
-  background: #eff6ff;
-  border-radius: 6px;
-  margin-bottom: 6px;
-  font-size: 12px;
-  color: var(--brand-dark);
-}
-#clear-attach {
-  margin-left: auto;
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1;
-}
+.compose-tab.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+.compose-tab:hover:not(.active) { background: #f0f9ff; }
 
 .compose-body { position: relative; }
 
@@ -436,12 +394,10 @@ html, body { height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui,
 }
 #compose-text:focus { border-color: var(--brand); background: #fff; }
 
-/* @mention dropdown */
-.mention-list {
+.mention-dropdown {
   position: absolute;
   bottom: calc(100% + 4px);
-  left: 0;
-  right: 0;
+  left: 0; right: 0;
   background: #fff;
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -461,35 +417,13 @@ html, body { height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui,
   transition: background 0.1s;
 }
 .mention-item:hover { background: #f0f9ff; }
-.mention-email {
-  margin-left: auto;
-  font-size: 11px;
-  color: var(--muted);
-}
 
-.compose-footer {
+.compose-actions {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-top: 8px;
-}
-
-#attach-btn {
-  padding: 6px 10px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: #fff;
-  cursor: pointer;
-  font-size: 14px;
-  color: var(--muted);
-  transition: background 0.12s;
-}
-#attach-btn:hover { background: #f0f9ff; color: var(--brand-dark); }
-
-.compose-hint {
-  font-size: 11px;
-  color: var(--muted);
-  flex: 1;
+  flex-wrap: wrap;
 }
 
 .send-btn {
@@ -505,91 +439,12 @@ html, body { height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui,
   align-items: center;
   gap: 6px;
   transition: background 0.15s;
+  margin-left: auto;
 }
 .send-btn:hover    { background: var(--brand-dark); }
 .send-btn:disabled { opacity: 0.6; cursor: default; }
 
-/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+/* ── Scrollbars ──────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar       { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-
-/* ── Show-all-tasks toggle ─────────────────────────────────────── */
-.show-all-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11.5px;
-  color: rgba(255,255,255,.85);
-  cursor: pointer;
-  margin-top: 6px;
-  user-select: none;
-}
-.show-all-label input[type="checkbox"] {
-  accent-color: #fff;
-  width: 13px; height: 13px;
-  cursor: pointer;
-}
-
-/* ── Has-unread sidebar highlight ─────────────────────────────── */
-.task-item.has-unread .task-item-name {
-  font-weight: 700;
-  color: var(--text);
-}
-.task-item.has-unread {
-  border-left: 3px solid var(--brand);
-}
-
-/* ── Chat header two-row layout ────────────────────────────────── */
-.chat-header-top {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  flex-wrap: wrap;
-}
-
-.unread-info-badge {
-  display: inline-block;
-  background: var(--brand);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 10px;
-  white-space: nowrap;
-}
-
-/* ── Mark all read button ──────────────────────────────────────── */
-.mark-read-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
-  background: transparent;
-  border: 1px solid var(--brand);
-  border-radius: 6px;
-  color: var(--brand-dark);
-  font-size: 11.5px;
-  cursor: pointer;
-  transition: background .12s;
-}
-.mark-read-btn:hover {
-  background: var(--brand-soft, #eaf8ff);
-}
-
-/* ── No-selection hint ─────────────────────────────────────────── */
-.no-sel-hint {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 0;
-}
-
-/* ── Follower / assigned badge (todo #3) ──────────────────── */
-.badge-assigned, .badge-follower {
-  display: inline-block; font-size: 10px; font-weight: 700;
-  padding: 1px 6px; border-radius: 3px; margin-left: 4px;
-  vertical-align: middle;
-}
-.badge-assigned { background: #e6f0ff; color: #1a56db; }
-.badge-follower { background: #f0fff4; color: #276749; }

@@ -1,26 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  popup_app.xml — OWL template source for the PopupApp component.
-
-  Compile with:
-    bash scripts/compile-templates.sh
-
-  The compiled output is registered in renderer/js/templates.js as:
-    globalThis.__THERP_TIMER_TEMPLATES__.PopupApp
-
-  If the compiled template is not present, popup-app.js falls back to
-  the createBlock()-based template defined inline in the same file.
-
-  Author:  Therp BV
-  License: LGPL-3.0
+  popup_app.xml — OWL template for PopupApp.
+  Compile: bash scripts/compile-templates.sh
+  NOTE: All expressions are JavaScript, not Python.
 -->
 <templates xml:space="preserve">
 
-  <t t-name="PopupApp" owl="1">
+  <t t-name="PopupApp">
     <div class="app-root">
 
-      <!-- ── Loading screen ─────────────────────────────────────── -->
-      <div id="loader-container" t-att-class="state.view === 'loading' ? '' : 'hide'">
+      <!-- Loading -->
+      <div id="loader-container"
+        t-att-class="state.view === 'loading' ? '' : 'hide'">
         <div class="loader-card">
           <div class="loader-text">Loading current session and projects…</div>
           <div class="loader-subtext">Please wait — or grab a cup of coffee ☕</div>
@@ -28,8 +19,9 @@
         </div>
       </div>
 
-      <!-- ── Login screen ───────────────────────────────────────── -->
-      <div id="login" class="login-view" t-att-class="state.view === 'login' ? '' : 'hide'">
+      <!-- Login -->
+      <div id="login" class="login-view"
+        t-att-class="state.view === 'login' ? '' : 'hide'">
         <div class="popup-login-shell">
           <div class="form">
             <div class="logo"><img src="img/logo.png"/></div>
@@ -39,8 +31,8 @@
             <t t-if="!state.remotes.length">
               <div class="container no-remotes-set">
                 <div class="alert alert-warning">
-                  Hello <span class="fun-man">😉</span>, you have not configured any remotes.
-                  Open <b><i class="fa fa-cogs"/> Options</b> below and add one.
+                  Hello <span class="fun-man">😉</span>, you have not configured any
+                  remotes. Open <b><i class="fa fa-cogs"/> Options</b> below and add one.
                 </div>
               </div>
             </t>
@@ -51,19 +43,23 @@
                 </t>
                 <t t-if="!state.useExistingSession">
                   <input type="text" placeholder="Username"
-                    t-model="state.username"/>
+                    t-att-value="state.username"
+                    t-on-input="(ev) => { state.username = ev.target.value; }"/>
                   <div class="password-field">
                     <input t-att-type="state.showPassword ? 'text' : 'password'"
                       id="unique-password" placeholder="Password"
-                      t-model="state.password"/>
+                      t-att-value="state.password"
+                      t-on-input="(ev) => { state.password = ev.target.value; }"/>
                     <span class="pass-viewer" t-on-click.prevent="togglePassword">
-                      <i class="fa" t-att-class="state.showPassword ? 'fa-eye-slash' : 'fa-eye'"/>
+                      <i class="fa"
+                        t-att-class="state.showPassword ? 'fa-eye-slash' : 'fa-eye'"/>
                     </span>
                   </div>
                 </t>
                 <select id="remote-selection" class="form-control"
-                  t-on-change="(ev) => state.selectedRemoteIndex = ev.target.value">
-                  <t t-foreach="state.remotes" t-as="remote" t-key="remote.url + remote.database">
+                  t-on-change="(ev) => { state.selectedRemoteIndex = Number(ev.target.value); }">
+                  <t t-foreach="state.remotes" t-as="remote"
+                    t-key="remote.url + remote.database">
                     <option t-att-value="remote.__index"
                       t-att-selected="state.selectedRemoteIndex === remote.__index">
                       <t t-esc="remote.name"/>
@@ -72,7 +68,8 @@
                 </select>
                 <div class="checkbox">
                   <label>
-                    <input type="checkbox" t-model="state.useExistingSession"
+                    <input type="checkbox"
+                      t-att-checked="state.useExistingSession"
                       t-on-change="toggleUseExistingSession"/>
                     Use Existing Session
                   </label>
@@ -98,15 +95,14 @@
         </div>
       </div>
 
-      <!-- ── Main timer view ────────────────────────────────────── -->
+      <!-- Main -->
       <div id="wrapper" t-att-class="state.view === 'main' ? '' : 'hide'">
-
-        <!-- Toolbar -->
         <div class="toolbar-row">
           <input id="searchIssue" type="text"
             placeholder="Search by ID, name, user, priority, stage..."
-            t-model="state.searchQuery"/>
-          <select id="limitTo" t-model="state.limitTo"
+            t-att-value="state.searchQuery"
+            t-on-input="(ev) => { state.searchQuery = ev.target.value; }"/>
+          <select id="limitTo" t-att-value="state.limitTo"
             t-on-change="(ev) => updateLimitPreference(ev.target.value)">
             <option value="10">10</option>
             <option value="15">15</option>
@@ -115,57 +111,42 @@
           </select>
         </div>
 
-        <!-- Action bar -->
         <div class="container footer top-actions">
           <div class="auto_download_timesheet"
             title="Store timesheet locally when you stop timer on the current item">
             <input id="auto_download_timesheet_input" type="checkbox"
-              t-model="state.autoDownloadIssueTimesheet"
+              t-att-checked="state.autoDownloadIssueTimesheet"
               t-on-change="toggleAutoDownload"/>
             Auto Download Current Item Timesheet
           </div>
           <div class="row">
             <div class="mx-3 col-md-12 footer-btns pointer">
-              <i class="fa fa-download fa-2x"
-                title="Download current month timesheet"
+              <i class="fa fa-download fa-2x" title="Download current month timesheet"
                 t-on-click="downloadCurrentMonthTimesheets"/>
-              <i class="fa fa-hand-o-left fa-2x"
-                title="Switch between remotes"
+              <i class="fa fa-hand-o-left fa-2x" title="Switch between remotes"
                 t-on-click="switchBetweenRemotes"/>
-              <i class="fa fa-refresh fa-2x"
-                title="Refresh current items"
+              <i class="fa fa-refresh fa-2x" title="Refresh current items"
                 t-on-click="refreshAll"/>
-              <i class="fa fa-clock-o fa-2x"
-                title="Discard the active timer"
+              <i class="fa fa-clock-o fa-2x" title="Discard the active timer"
                 t-on-click="resetTimer"/>
-              <i class="fa fa-sign-out fa-2x"
-                title="Log out"
-                t-on-click="logout"/>
-              <!-- Messages icon with unread badge -->
+              <i class="fa fa-sign-out fa-2x" title="Log out" t-on-click="logout"/>
               <span class="msg-icon-wrap" title="Open Messages" t-on-click="openMessages">
                 <i class="fa fa-comments fa-2x"/>
                 <span class="msg-unread-badge"
-                  t-att-style="(state.msgUnreadTotal||0) > 0 ? '' : 'display:none'">
-                  <t t-esc="(state.msgUnreadTotal||0) > 99 ? '99+' : String(state.msgUnreadTotal||'')"/>
+                  t-att-style="(state.msgUnreadTotal || 0) > 0 ? '' : 'display:none'">
+                  <t t-esc="(state.msgUnreadTotal || 0) > 99 ? '99+' : String(state.msgUnreadTotal || '')"/>
                 </span>
               </span>
-              <!-- Screen recorder -->
-              <i class="fa fa-video-camera fa-2x"
-                title="Record screen"
+              <i class="fa fa-video-camera fa-2x" title="Record screen"
                 t-on-click="toggleRecording"/>
-              <!-- Options -->
               <a href="options_main_page.html" class="options-btn" title="Options">
                 <i class="fa fa-cogs fa-2x"/>
               </a>
-              <!-- Logs button (todo #4) -->
-              <i class="fa fa-bug fa-2x logs-btn"
-                title="View Logs"
-                t-on-click="openLogs"/>
+              <i class="fa fa-bug fa-2x logs-btn" title="View Logs" t-on-click="openLogs"/>
             </div>
           </div>
         </div>
 
-        <!-- Task / issue table -->
         <div class="table-scroll">
           <table class="table table-responsive-sm table-bordered table-fixed"
             id="table-task-issues">
@@ -177,7 +158,6 @@
                       <span class="startTimeCount"><t t-esc="formattedTimer"/></span>
                     </t>
                   </div>
-                  <t t-if="null"/><!-- placeholder child -->
                 </th>
                 <th class="priority-col">Priority</th>
                 <th class="stage-col">Stage</th>
@@ -188,7 +168,7 @@
                   </div>
                   <label class="allIssues">
                     <input id="showAllIssues" type="checkbox"
-                      t-model="state.allIssues"
+                      t-att-checked="state.allIssues"
                       t-on-input="(ev) => updateShowAllPreference(ev.target.checked)"/>
                     Show for everyone
                   </label>
@@ -215,40 +195,43 @@
                           title="Start the timer for the selected item"
                           t-on-click="() => startTimer(ir)"/>
                       </t>
-                      <!-- Timesheets button (todo #15, tasks only) -->
-                      <t t-if="state.dataSource === 'project.task'">
-                        <i class="fa fa-list-alt action-btn pointer text-info"
-                          title="View Timesheets for this task"
-                          t-on-click="() => openTimesheets(ir)"/>
-                      </t>
                     </td>
                     <td class="priority-cell">
-                      <t t-foreach="priorityStars(ir.priority)" t-as="s" t-key="s">
+                      <t t-foreach="priorityStarsArr(ir.priority)" t-as="s" t-key="s">
                         <span class="fa fa-star checked"/>
                       </t>
-                      <t t-foreach="Array.from({length: 3 - priorityStars(ir.priority).length})" t-as="o" t-key="o">
+                      <t t-foreach="priorityOutlineArr(ir.priority)" t-as="o" t-key="o">
                         <i class="fa fa-star-o"/>
                       </t>
                     </td>
                     <td class="stage-cell">
-                      <ReadMore text="ir.stage_id and ir.stage_id[1] or ''" limit="14"/>
+                      <ReadMore text="(ir.stage_id &amp;&amp; ir.stage_id[1]) || ''" limit="14"/>
                     </td>
                     <td class="issue-desc-cell">
                       <ReadMore text="issueLabel(ir)" limit="60" href="issueHref(ir)"/>
                     </td>
                     <t t-if="state.dataSource === 'project.task'">
-                      <td><ReadMore text="formatHours(ir.effective_hours)" limit="10"/></td>
-                      <td><ReadMore text="formatHours(ir.remaining_hours)" limit="10"/></td>
+                      <td class="hours-spent-cell">
+                        <div class="hours-cell-inner">
+                          <ReadMore text="formatHours(ir.effective_hours)" limit="10"/>
+                          <i class="fa fa-list-alt pointer"
+                            title="View Timesheets for this task"
+                            t-on-click="() => openTimesheets(ir)"/>
+                        </div>
+                      </td>
+                      <td>
+                        <ReadMore text="formatHours(ir.remaining_hours)" limit="10"/>
+                      </td>
                     </t>
                     <td class="project-cell">
-                      <ReadMore text="ir.project_id and ir.project_id[1] or ''" limit="22"/>
+                      <ReadMore text="(ir.project_id &amp;&amp; ir.project_id[1]) || ''" limit="22"/>
                     </td>
                   </tr>
                 </t>
               </t>
               <t t-else="">
                 <tr>
-                  <td t-att-colspan="state.dataSource === 'project.task' ? '9' : '7'"
+                  <td t-att-colspan="state.dataSource === 'project.task' ? '7' : '6'"
                     class="text-center text-danger">
                     No matching items are currently available
                   </td>
@@ -258,21 +241,21 @@
           </table>
         </div>
 
-        <!-- Footer info -->
         <div class="info-footer mx-3">
           <div class="row">
             <div class="remote-info-block col-md-12">
               <span><b>Odoo:</b> <t t-esc="state.serverVersion || 'N/A'"/></span><br/>
               <span><b>Host:</b> <t t-esc="state.currentHost"/></span><br/>
-              <span><b>OWL:</b> v<t t-esc="owl.__info__ and owl.__info__.version or '?'"/></span><br/>
+              <span><b>OWL:</b> <t t-esc="owlVersion"/></span><br/>
               <span><b>Database:</b> <t t-esc="state.currentDatabase"/></span><br/>
-              <span><b>Current User:</b> <t t-esc="state.user and state.user.display_name or '—'"/></span><br/>
+              <span><b>Current User:</b>
+                <t t-esc="(state.user &amp;&amp; state.user.display_name) || '—'"/>
+              </span><br/>
             </div>
           </div>
         </div>
-
-      </div><!-- end #wrapper -->
-    </div><!-- end .app-root -->
+      </div>
+    </div>
   </t>
 
 </templates>

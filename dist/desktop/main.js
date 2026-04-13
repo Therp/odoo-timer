@@ -27,7 +27,10 @@ app.commandLine.appendSwitch('disable-background-networking');
 app.commandLine.appendSwitch('disable-dev-shm-usage');
 // todo #6: Linux AppImage SUID sandbox workaround
 if (process.platform === 'linux') {
+  // Sandbox workaround for AppImage / namespaced /tmp environments.
+  // Fixes "Unable to access /tmp" errors when opening DevTools.
   app.commandLine.appendSwitch('no-sandbox');
+  app.commandLine.appendSwitch('disable-gpu-sandbox');
 }
 
 // ─── In-memory log ring buffer (todo #4) ─────────────────────────────────────
@@ -239,6 +242,120 @@ function createTray() {
   updateTray();
 }
 
+// ─── Application menu ────────────────────────────────────────────────────────
+/**
+ * Build and set the native application menu.
+ * Adds "Back to Timer" in the Window menu and full Help links.
+ */
+function buildAppMenu() {
+  const isMac = process.platform === 'darwin';
+
+  const template = [
+    // macOS app menu (File on other platforms)
+    ...(isMac ? [{ role: 'appMenu' }] : []),
+    { role: 'fileMenu' },
+    { role: 'editMenu' },
+    {
+      label: 'View',
+      submenu: [
+        {
+          label: 'Back to Timer',
+          accelerator: 'CmdOrCtrl+Shift+T',
+          click: () => showWindow('timer'),
+        },
+        { type: 'separator' },
+        { role: 'reload' },
+        { role: 'forceReload' },
+        {
+          label: 'Toggle Developer Tools',
+          accelerator: isMac ? 'Alt+Command+I' : 'Ctrl+Shift+I',
+          click: (_item, win) => { if (win) win.webContents.toggleDevTools(); },
+        },
+        { type: 'separator' },
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' },
+      ],
+    },
+    {
+      role: 'windowMenu',
+      submenu: [
+        { role: 'minimize' },
+        { role: 'zoom' },
+        { type: 'separator' },
+        {
+          label: 'Timer',
+          accelerator: 'CmdOrCtrl+1',
+          click: () => showWindow('timer'),
+        },
+        {
+          label: 'Messages',
+          accelerator: 'CmdOrCtrl+2',
+          click: () => showWindow('messages'),
+        },
+        {
+          label: 'Recorder',
+          accelerator: 'CmdOrCtrl+3',
+          click: () => showWindow('recorder'),
+        },
+        {
+          label: 'Options',
+          accelerator: 'CmdOrCtrl+,',
+          click: () => showWindow('options'),
+        },
+        { type: 'separator' },
+        ...(isMac ? [{ role: 'front' }] : [{ role: 'close' }]),
+      ],
+    },
+    {
+      role: 'help',
+      submenu: [
+        {
+          label: 'README & Documentation',
+          click: () => shell.openExternal('https://github.com/Therp/odoo-timer/blob/master/README.md'),
+        },
+        {
+          label: 'Report an Issue',
+          click: () => shell.openExternal('https://github.com/Therp/odoo-timer/issues/new'),
+        },
+        {
+          label: 'Community Discussions',
+          click: () => shell.openExternal('https://github.com/Therp/odoo-timer/issues'),
+        },
+        { type: 'separator' },
+        {
+          label: 'In-App Help Guide',
+          click: () => {
+            showWindow('options');
+            // Brief delay so the window loads before sending navigation
+            setTimeout(() => {
+              if (mainWindow) {
+                mainWindow.webContents.executeJavaScript(
+                  'if(window.__owl_app__) { /* navigate to help page */ }'
+                ).catch(() => {});
+              }
+            }, 500);
+          },
+        },
+        { type: 'separator' },
+        {
+          label: 'View Logs',
+          click: () => showWindow('logs'),
+        },
+        ...(!isMac ? [
+          { type: 'separator' },
+          { role: 'about' },
+        ] : []),
+      ],
+    },
+  ];
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+}
+
 // ─── IPC: Storage ─────────────────────────────────────────────────────────────
 ipcMain.handle('storage:get',    (_e,k,fb=null) => { try { const v=store.get(k,fb); return v!==undefined?v:fb; } catch { return fb; } });
 ipcMain.handle('storage:set',    (_e,k,v)       => { try { store.set(k,v); return true; } catch { return false; } });
@@ -375,6 +492,7 @@ ipcMain.handle('recorder:save', async (_e, dataArr, filename) => {
 
 // ─── Lifecycle ────────────────────────────────────────────────────────────────
 app.whenReady().then(() => {
+  buildAppMenu();
   createMainWindow();
   try { createTray(); } catch (e) { console.warn('Tray unavailable:', e.message); }
   app.on('activate', () => {

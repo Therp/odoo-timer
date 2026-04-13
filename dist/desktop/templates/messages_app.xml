@@ -1,69 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  messages_app.xml — OWL template source for the MessagesApp component.
-
-  Already compiled in renderer/js/templates.js (MessagesApp key).
-  This XML is the canonical source that should be used with:
-    bash scripts/compile-templates.sh
-
-  Changes from original:
-    - todo #3: Follower task badge (👤 Assigned / 👁 Follower)
-
-  Author:  Therp BV
-  License: LGPL-3.0
+  messages_app.xml — OWL template for MessagesApp.
+  Compile: bash scripts/compile-templates.sh
+  NOTE: All expressions are JavaScript, not Python.
 -->
 <templates xml:space="preserve">
 
-  <t t-name="MessagesApp" owl="1">
+  <t t-name="MessagesApp">
     <div class="messages-layout">
 
-      <!-- ── Sidebar ──────────────────────────────────────── -->
+      <!-- Sidebar -->
       <aside class="messages-sidebar" id="tasksPane">
         <div class="messages-search">
           <input id="task-search" placeholder="Search tasks/issues..."
-            t-model="state.taskSearch"/>
+            t-att-value="state.taskSearch"
+            t-on-input="(ev) => { state.taskSearch = ev.target.value; }"/>
         </div>
         <div class="task-list">
           <t t-if="state.loading">
             <div class="tasks-empty"><i class="fa fa-cog fa-spin"/> Loading…</div>
           </t>
-          <t t-if="!state.loading and !visibleTasks.length">
+          <t t-elif="!visibleTasks.length">
             <div class="tasks-empty">No matching tasks or issues.</div>
           </t>
           <t t-foreach="visibleTasks" t-as="task" t-key="task.id">
-            <div class="task-card"
-              t-att-class="task.id === state.selectedTask?.id ? 'task-card active' : 'task-card'"
+            <div t-att-class="state.selectedTask &amp;&amp; task.id === state.selectedTask.id ? 'task-card active' : 'task-card'"
               t-att-data-task-id="task.id"
               t-on-click="onTaskItemClick">
               <div class="task-title">
-                <!-- Follower badge (todo #3) -->
-                <span t-att-class="'badge-' + (task.followerType || 'assigned')"
-                  t-att-title="task.followerType === 'follower' ? 'You follow this task' : 'Assigned to you'">
-                  <t t-if="task.followerType === 'follower'">👁</t>
-                  <t t-else="">👤</t>
-                </span>
+                <t t-if="task.followerType === 'follower'">
+                  <span class="badge-follower">👁 Following</span>
+                </t>
+                <t t-else="">
+                  <span class="badge-assigned">👤 Assigned</span>
+                </t>
                 <t t-esc="task.name"/>
               </div>
               <div class="task-meta">
                 <span class="task-badge">
                   <i class="fa fa-folder-open-o"/>
-                  <t t-esc="task.project_id and task.project_id[1] or 'No project'"/>
+                  <t t-esc="normalizeText(task.project_id) || 'No project'"/>
                 </span>
-                <span><t t-esc="task.stage_id and task.stage_id[1] or 'No stage'"/></span>
-                <span>
-                  <t t-if="(state.unreadMap[task.id] or 0) > 0">
-                    <span class="msg-unread-badge">
-                      <t t-esc="state.unreadMap[task.id]"/>
-                    </span>
-                  </t>
-                </span>
+                <span><t t-esc="normalizeText(task.stage_id) || ''"/></span>
+                <t t-if="(state.unreadMap[task.id] || 0) > 0">
+                  <span class="msg-unread-badge">
+                    <t t-esc="state.unreadMap[task.id]"/>
+                  </span>
+                </t>
               </div>
             </div>
           </t>
         </div>
       </aside>
 
-      <!-- ── Main thread pane ──────────────────────────────── -->
+      <!-- Main pane -->
       <main class="messages-main">
 
         <!-- Top bar -->
@@ -71,13 +61,14 @@
           <div class="messages-topbar-title">
             <div class="messages-title">Inbox</div>
             <div class="messages-subtitle">
-              <t t-esc="totalUnread"/> unread recent messages ·
-              latest 10 per tracked item
+              <t t-esc="totalUnread"/> unread · latest 10 per tracked item
             </div>
           </div>
           <div class="messages-top-actions">
-            <button class="messages-btn" t-on-click="() => { state.showAllTasks = !state.showAllTasks; }">
-              <i class="fa fa-list"/> <t t-if="state.showAllTasks">My Tasks</t><t t-else="">All Tasks</t>
+            <button class="messages-btn" t-on-click="toggleShowAll">
+              <i class="fa fa-list"/>
+              <t t-if="state.showAllTasks">My Tasks</t>
+              <t t-else="">All Tasks</t>
             </button>
             <button class="messages-btn" t-on-click="openTaskInBrowser">
               <i class="fa fa-external-link"/> Open in Odoo
@@ -94,31 +85,30 @@
         <!-- Thread header -->
         <t t-if="state.selectedTask">
           <div class="message-thread-header">
-            <div class="message-thread-title compact-title">
-              <a href="#" id="task-title-link" t-on-click.prevent="openTaskInBrowser">
+            <div class="message-thread-title">
+              <a href="#" t-on-click.prevent="openTaskInBrowser">
                 <t t-esc="state.selectedTask.name"/>
               </a>
-              <!-- Follower type label (todo #3) -->
-              <span t-att-class="'badge-' + (state.selectedTask.followerType || 'assigned')"
-                style="margin-left:8px;">
-                <t t-if="state.selectedTask.followerType === 'follower'">👁 Follower</t>
-                <t t-else="">👤 Assigned</t>
-              </span>
-            </div>
-            <div class="messages-subtitle">
-              <t t-esc="state.selectedTask.project_id and state.selectedTask.project_id[1] or ''"/>
-            </div>
-            <!-- Filter pills -->
-            <div class="message-legend">
-              <t t-foreach="[['all','All'],['comment','Comments'],['note','Notes']]" t-as="f" t-key="f[0]">
-                <button class="filter-chip"
-                  t-att-class="state.filterType === f[0] ? 'filter-chip active' : 'filter-chip'"
-                  t-att-data-filter="f[0]"
-                  t-on-click="onFilterClick">
-                  <span class="dot"/>
-                  <t t-esc="f[1]"/>
-                </button>
+              <t t-if="state.selectedTask.followerType === 'follower'">
+                <span class="badge-follower" style="margin-left:8px;">👁 Following</span>
               </t>
+              <t t-else="">
+                <span class="badge-assigned" style="margin-left:8px;">👤 Assigned</span>
+              </t>
+            </div>
+            <div class="message-legend">
+              <button class="filter-chip" t-att-class="filterAllClass"
+                data-filter="all" t-on-click="onFilterClick">
+                <span class="dot"/> All
+              </button>
+              <button class="filter-chip" t-att-class="filterCommentClass"
+                data-filter="comment" t-on-click="onFilterClick">
+                <span class="dot"/> Comments
+              </button>
+              <button class="filter-chip" t-att-class="filterNoteClass"
+                data-filter="note" t-on-click="onFilterClick">
+                <span class="dot"/> Notes
+              </button>
             </div>
           </div>
         </t>
@@ -130,12 +120,14 @@
               <i class="fa fa-cog fa-spin fa-2x"/>
             </div>
           </t>
-          <t t-if="!state.loadingMessages and !filteredMessages.length and state.selectedTask">
-            <div style="padding:32px;text-align:center;color:#94a3b8;">No messages found.</div>
-          </t>
-          <t t-if="!state.selectedTask and !state.loadingMessages">
+          <t t-elif="!filteredMessages.length &amp;&amp; state.selectedTask">
             <div style="padding:32px;text-align:center;color:#94a3b8;">
-              ← Select a task from the sidebar to view messages.
+              No messages found.
+            </div>
+          </t>
+          <t t-elif="!state.selectedTask">
+            <div style="padding:32px;text-align:center;color:#94a3b8;">
+              Select a task from the sidebar to view messages.
             </div>
           </t>
           <t t-foreach="filteredMessages" t-as="msg" t-key="msg.id">
@@ -145,11 +137,10 @@
                 <span class="msg-time"><t t-esc="timeAgo(msg.date)"/></span>
               </div>
               <div class="msg-body" t-out="bodyMarkup(msg)"/>
-              <t t-if="msg.attachment_ids and msg.attachment_ids.length">
+              <t t-if="msg.attachment_ids &amp;&amp; msg.attachment_ids.length">
                 <div class="msg-attachments">
                   <t t-foreach="msg.attachment_ids" t-as="attId" t-key="attId">
-                    <span class="att-chip"
-                      t-att-data-att-id="attId"
+                    <span class="att-chip" t-att-data-att-id="attId"
                       t-on-click="onAttachmentClick">
                       <i class="fa fa-paperclip"/>
                       <t t-esc="getAttachmentName(attId)"/>
@@ -165,11 +156,11 @@
         <t t-if="state.selectedTask">
           <div class="messages-compose">
             <div class="compose-tabs">
-              <button t-att-class="state.composeType === 'comment' ? 'compose-tab active' : 'compose-tab'"
+              <button t-att-class="composeCommentClass"
                 data-compose-type="comment" t-on-click="onComposeTypeClick">
                 <i class="fa fa-comment"/> Comment
               </button>
-              <button t-att-class="state.composeType === 'note' ? 'compose-tab active' : 'compose-tab'"
+              <button t-att-class="composeNoteClass"
                 data-compose-type="note" t-on-click="onComposeTypeClick">
                 <i class="fa fa-sticky-note-o"/> Note
               </button>
@@ -177,16 +168,14 @@
             <div style="position:relative;">
               <textarea id="compose-text"
                 t-att-placeholder="composeHint"
-                t-model="state.composeText"
+                t-att-value="state.composeText"
                 t-on-input="handleComposeInput"
                 t-on-keydown="handleComposeKeydown"
                 rows="3"/>
-              <!-- @mention dropdown -->
               <t t-if="state.mentionResults.length">
                 <div class="mention-dropdown">
                   <t t-foreach="state.mentionResults" t-as="user" t-key="user.id">
-                    <div class="mention-item"
-                      t-att-data-user-id="user.id"
+                    <div class="mention-item" t-att-data-user-id="user.id"
                       t-on-click="onMentionClick">
                       <t t-esc="user.name"/>
                     </div>
@@ -199,15 +188,15 @@
                 <span class="att-chip">
                   <i class="fa fa-paperclip"/>
                   <t t-esc="state.attachment.name"/>
-                  <i class="fa fa-times" t-on-click="clearAttachment" style="cursor:pointer;margin-left:4px;"/>
+                  <i class="fa fa-times" t-on-click="clearAttachment"
+                    style="cursor:pointer;margin-left:4px;"/>
                 </span>
               </t>
               <button class="messages-btn" t-on-click="pickAttachment">
                 <i class="fa fa-paperclip"/> Attach
               </button>
               <button class="messages-btn send-btn"
-                t-att-disabled="state.sending"
-                t-on-click="sendMessage">
+                t-att-disabled="state.sending" t-on-click="sendMessage">
                 <i t-att-class="state.sending ? 'fa fa-cog fa-spin' : 'fa fa-send'"/>
                 <t t-if="state.sending">Sending…</t>
                 <t t-else="">Send (Ctrl+Enter)</t>

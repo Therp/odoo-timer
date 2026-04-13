@@ -525,6 +525,16 @@ class OptionsApp extends Component {
         await notify('Video folder cleared — will prompt on each save.');
     }
 
+    /** Open README in external browser. */
+    openReadme() {
+        window.electronAPI?.openExternal?.('https://github.com/Therp/odoo-timer/blob/master/README.md');
+    }
+
+    /** Open GitHub issues / community page. */
+    openIssues() {
+        window.electronAPI?.openExternal?.('https://github.com/Therp/odoo-timer/issues');
+    }
+
     async exportConfig() {
         const result = await window.electronAPI?.config?.export?.();
         if (!result) { await notify('Export not available.'); return; }

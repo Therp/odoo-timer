@@ -92,12 +92,12 @@ function createPopupAppTemplate(app, bdom, helpers) {
     const remainingHoursHeaderBlock = createBlock(`<th>Remaining Hours</th>`);
     const timesheetsButtonBlock = createBlock(`<i class="fa fa-list-alt action-btn pointer text-info" title="View Timesheets for this task" block-handler-0="click"/>`);
 
-        const issueRowBlock = createBlock(`<tr block-attribute-0="class"><td class="text-center px-2 td-btn action-col"><block-child-0/><block-child-1/><block-child-9/></td><td class="priority-cell"><block-child-2/><block-child-3/></td><td class="stage-cell"><block-child-4/></td><td class="issue-desc-cell"><block-child-5/></td><block-child-6/><block-child-7/><td class="project-cell"><block-child-8/></td></tr>`);
+        const issueRowBlock = createBlock(`<tr block-attribute-0="class"><td class="text-center px-2 td-btn action-col"><block-child-0/><block-child-1/></td><td class="priority-cell"><block-child-2/><block-child-3/></td><td class="stage-cell"><block-child-4/></td><td class="issue-desc-cell"><block-child-5/></td><block-child-6/><block-child-7/><td class="project-cell"><block-child-8/></td></tr>`);
     const startTimerButtonBlock = createBlock(`<i class="fa fa-play-circle action-btn pointer" title="Start the timer for the selected item" block-handler-0="click"/>`);
     const stopTimerButtonBlock  = createBlock(`<i class="text-danger fa fa-stop-circle action-btn pointer" title="Stop timer and record the time to Odoo timesheets" block-handler-0="click"/>`);
     const priorityStarBlock        = createBlock(`<span class="fa fa-star checked"/>`);
     const priorityStarOutlineBlock = createBlock(`<i class="fa fa-star-o"/>`);
-    const effectiveHoursCellBlock  = createBlock(`<td><block-child-0/></td>`);
+    const effectiveHoursCellBlock  = createBlock(`<td class="hours-spent-cell"><div class="hours-cell-inner"><block-child-0/><block-child-1/></div></td>`);
     const remainingHoursCellBlock  = createBlock(`<td><block-child-0/></td>`);
     const emptyIssuesRowBlock = createBlock(`<tr><td block-attribute-0="colspan" class="text-center text-danger">No matching items are currently available</td></tr>`);
 
@@ -226,8 +226,11 @@ function createPopupAppTemplate(app, bdom, helpers) {
 
             let effectiveHoursNode, remainingHoursNode;
             if (ctx.state.dataSource === DATA_SOURCE_TASK) {
+                // Timesheets icon lives inside the Hours Spent cell as a small inline button
+                const tsIconNode = timesheetsButtonBlock([[() => ctx.openTimesheets(ir), ctx]]);
                 effectiveHoursNode = effectiveHoursCellBlock([], [
                     readMoreEffectiveHours({ text: ctx.formatHours(ir.effective_hours), limit: 10 }, key + `__eff__${ik}`, node, this, null),
+                    tsIconNode,
                 ]);
                 remainingHoursNode = remainingHoursCellBlock([], [
                     readMoreRemainingHours({ text: ctx.formatHours(ir.remaining_hours), limit: 10 }, key + `__rem__${ik}`, node, this, null),
@@ -236,9 +239,6 @@ function createPopupAppTemplate(app, bdom, helpers) {
 
             const projectNode = readMoreProject({ text: String(ir.project_id?.[1] || ''), limit: 22 }, key + `__proj__${ik}`, node, this, null);
 
-            const timesheetsNode = ctx.state.dataSource === DATA_SOURCE_TASK
-                ? timesheetsButtonBlock([[() => ctx.openTimesheets(ir), ctx]])
-                : null;
             issueChildren[i] = withKey(
                 issueRowBlock([rowClass], [
                     startTimerNode, stopTimerNode,
@@ -246,14 +246,13 @@ function createPopupAppTemplate(app, bdom, helpers) {
                     stageNode, labelNode,
                     effectiveHoursNode, remainingHoursNode,
                     projectNode,
-                    timesheetsNode,
                 ]),
                 ik
             );
         }
         ctx = ctx.__proto__;
         if (issueCount) issuesListNode = list(issueChildren);
-        else emptyIssuesNode = emptyIssuesRowBlock([ctx.state.dataSource === DATA_SOURCE_TASK ? '9' : '7']);
+        else emptyIssuesNode = emptyIssuesRowBlock([ctx.state.dataSource === DATA_SOURCE_TASK ? '8' : '7']);
 
         return rootBlock(
             [
@@ -387,6 +386,21 @@ class PopupApp extends Component {
 
     get itemLabelSingular() { return this.state.dataSource === DATA_SOURCE_TASK ? 'task' : 'issue'; }
     get itemLabelPlural()   { return this.state.dataSource === DATA_SOURCE_TASK ? 'Tasks' : 'Issues'; }
+
+    /** OWL version string for display in footer (avoids inline JS in XML template). */
+    get owlVersion() { return `v${String(owl.__info__?.version || '?')}`; }
+
+    /** Filled star array for priority display (replaces inline Array.from in XML). */
+    priorityStarsArr(priority) {
+        const n = Number(priority || 0);
+        return n > 0 ? Array.from({ length: n }, (_, i) => i) : [];
+    }
+
+    /** Outline star array (3 - filled stars) for priority display. */
+    priorityOutlineArr(priority) {
+        const filled = this.priorityStarsArr(priority).length;
+        return Array.from({ length: 3 - filled }, (_, i) => i);
+    }
 
     async updateLimitPreference(value) {
         this.state.limitTo = value;
@@ -774,8 +788,31 @@ class PopupApp extends Component {
     }
 
     async refreshAll() {
-        try { await this.loadProjects(); await this.loadIssues(); }
-        catch (err) { await notify(err.message || 'Failed to refresh items.'); }
+        // Show spinner on the refresh icon while loading
+        const refreshIcon = document.querySelector('.fa-refresh');
+        if (refreshIcon) {
+            refreshIcon.classList.remove('fa-refresh');
+            refreshIcon.classList.add('fa-cog', 'fa-spin');
+        }
+        try {
+            await this.loadProjects();
+            await this.loadIssues();
+        } catch (err) {
+            await notify(err.message || 'Failed to refresh items.');
+        } finally {
+            const spinIcon = document.querySelector('.fa-spin.fa-cog');
+            if (spinIcon && spinIcon.title && spinIcon.title.includes('Refresh')) {
+                spinIcon.classList.remove('fa-cog', 'fa-spin');
+                spinIcon.classList.add('fa-refresh');
+            }
+            // Re-query since DOM may have re-rendered
+            document.querySelectorAll('.fa-cog.fa-spin').forEach((el) => {
+                if (el.closest('.footer-btns')) {
+                    el.classList.remove('fa-cog', 'fa-spin');
+                    el.classList.add('fa-refresh');
+                }
+            });
+        }
     }
 
     async startTimer(issue) {
@@ -820,10 +857,14 @@ class PopupApp extends Component {
 
     async stopTimer(issue) {
         try {
-            const issueDescription = (await promptDialog(
+            // promptDialog returns null when the user clicks "close" / cancels.
+            // Treat null as a cancellation — do NOT record time.
+            const descResult = await promptDialog(
                 `${this.itemLabelSingular.charAt(0).toUpperCase()}${this.itemLabelSingular.slice(1)} #${issue.id} Description`,
                 issue.name
-            )) || '';
+            );
+            if (descResult === null) return;   // user cancelled — nothing recorded
+            const issueDescription = descResult || '';
 
             const startIso = this.state.timerStartIso || (await storage.get(STORAGE_KEYS.timerStartIso, null));
             if (!startIso) throw new Error('No start time found for the active timer.');

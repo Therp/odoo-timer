@@ -557,8 +557,6 @@ body.unselectable {
 }
 .logs-btn:hover { color: #e53e3e; }
 
-/* ── Timesheets action button per task row (todo #15) ────────── */
-.fa.fa-list-alt.action-btn { font-size: 1em; vertical-align: middle; }
 
 /* ── Storage / folder path display (options Storage page) ───── */
 .folder-path-display {
@@ -568,3 +566,25 @@ body.unselectable {
   vertical-align: middle; margin-right: 6px;
 }
 .folder-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+
+
+/* ── Refresh spinner in toolbar ───────────────────────────────────────────── */
+.footer-btns .fa-cog.fa-spin { color: var(--brand-blue-strong, #33BAF6); }
+
+/* ── Hours Spent cell: flex row with value + timesheets icon ─────────────── */
+.hours-spent-cell { vertical-align: middle; white-space: nowrap; }
+.hours-cell-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+.hours-cell-inner .fa-list-alt {
+  font-size: 0.9rem;
+  color: var(--brand-blue-strong, #33BAF6);
+  cursor: pointer;
+  opacity: 0.75;
+  flex-shrink: 0;
+  transition: opacity .15s, color .15s;
+}
+.hours-cell-inner .fa-list-alt:hover { opacity: 1; color: #1FA7E6; }
