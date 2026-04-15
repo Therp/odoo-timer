@@ -52,229 +52,6 @@ const DEFAULTS = {
 
 // ─── Template registry ────────────────────────────────────────────────────────
 
-// ─── Compiled template (identical to chrome build) ────────────────────────────
-
-function createPopupAppTemplate(app, bdom, helpers) {
-    const { createBlock, list } = bdom;
-    const { prepareList, OwlError, withKey } = helpers;
-
-    const readMoreStage          = app.createComponent('ReadMore', true, false, false, ['text', 'limit']);
-    const readMoreIssueLabel     = app.createComponent('ReadMore', true, false, false, ['text', 'limit', 'href']);
-    const readMoreEffectiveHours = app.createComponent('ReadMore', true, false, false, ['text', 'limit']);
-    const readMoreRemainingHours = app.createComponent('ReadMore', true, false, false, ['text', 'limit']);
-    const readMoreProject        = app.createComponent('ReadMore', true, false, false, ['text', 'limit']);
-
-    const rootBlock = createBlock(
-        `<div class="app-root"><div id="loader-container" block-attribute-0="class"><div class="loader-card"><div class="loader-text">Loading current session and projects…</div><div class="loader-subtext">Please wait — or grab a cup of coffee ☕</div><i class="fa fa-cog fa-spin fa-5x"/></div></div><div id="login" class="login-view" block-attribute-1="class"><div class="popup-login-shell"><div class="form"><div class="logo"><img src="img/logo.png"/></div><block-child-0/><block-child-1/><block-child-2/></div></div><div class="cta forgotpwd footer-app-opts login-footer-bar"><a href="options_main_page.html"><i class="fa fa-cogs"/> Options</a></div></div><div id="wrapper" block-attribute-2="class"><div class="toolbar-row"><input id="searchIssue" type="text" placeholder="Search by ID, name, user, priority, stage..." block-property-3="value" block-handler-4="input"/><select id="limitTo" block-property-5="value" block-handler-6="change"><option value="10">10</option><option value="15">15</option><option value="25">25</option><option value="">All</option></select></div><div class="container footer top-actions"><div class="auto_download_timesheet" title="Store timesheet locally when you stop timer on the current item"><input id="auto_download_timesheet_input" type="checkbox" block-property-7="checked" block-handler-8="change"/> Auto Download Current Item Timesheet </div><div class="row"><div class="mx-3 col-md-12 footer-btns pointer"><i class="fa fa-download fa-2x" title="Download current month timesheet" block-handler-9="click"/><i class="fa fa-hand-o-left fa-2x" title="Switch between remotes" block-handler-10="click"/><i class="fa fa-refresh fa-2x" title="Refresh current items" block-handler-11="click"/><i class="fa fa-clock-o fa-2x" title="Discard the active timer" block-handler-12="click"/><i class="fa fa-sign-out fa-2x" title="Log out" block-handler-13="click"/><span class="msg-icon-wrap" title="Open Messages" block-handler-22="click"><i class="fa fa-comments fa-2x"/><span class="msg-unread-badge" block-attribute-25="style"><block-text-26/></span></span><i block-attribute-23="class" title="Record screen" block-handler-24="click"/><a href="options_main_page.html" class="options-btn" title="Options"><i class="fa fa-cogs fa-2x"/></a><i class="fa fa-bug fa-2x logs-btn" title="View Logs" block-handler-27="click"/></div></div></div><div class="table-scroll"><table class="table table-responsive-sm table-bordered table-fixed" id="table-task-issues"><thead><tr><th class="action-col"><div><block-child-3/></div><block-child-4/></th><th class="priority-col">Priority</th><th class="stage-col">Stage</th><th class="item-col"><div class="item-header-title"><block-text-14/> [<block-text-15/>]</div><label class="allIssues"><input id="showAllIssues" type="checkbox" block-property-16="checked" block-handler-17="input"/> Show for everyone</label></th><block-child-5/><block-child-6/><th class="project-col">Project</th></tr></thead><tbody><block-child-7/><block-child-8/></tbody></table></div><div class="info-footer mx-3"><div class="row"><div class="remote-info-block col-md-12"><span><b>Odoo:</b> <block-text-18/></span><br/><span><b>Host:</b> <block-text-19/></span><br/><span><b>OWL:</b> v${String(owl.__info__.version)}</span><br/><span><b>Database:</b> <block-text-20/></span><br/><span><b>Current User:</b> <block-text-21/></span><br/></div></div></div></div></div>`
-    );
-
-    const bootErrorBlock   = createBlock(`<div><p class="odooError"><block-text-0/></p></div>`);
-    const noRemotesBlock   = createBlock(`<div class="container no-remotes-set"><div class="alert alert-warning">Hello <span class="fun-man">😉</span>, you have not configured any remotes. Open <b><i class="fa fa-cogs"/> Options</b> below and add one.</div></div>`);
-    const loginFormBlock   = createBlock(`<form block-handler-0="submit.prevent"><block-child-0/><block-child-1/><div class="password-field"><block-child-2/><block-child-3/></div><select id="remote-selection" class="form-control" block-handler-1="change"><block-child-4/></select><div class="checkbox"><label><input type="checkbox" block-property-2="checked" block-handler-3="change"/> Use Existing Session</label></div><button class="login" type="submit">Login <block-child-5/></button><block-child-6/></form>`);
-    const loginErrorBlock  = createBlock(`<p class="odooError"><block-text-0/></p>`);
-    const usernameInputBlock = createBlock(`<input type="text" placeholder="Username" block-property-0="value" block-handler-1="input"/>`);
-    const passwordInputBlock = createBlock(`<input block-attribute-0="type" id="unique-password" placeholder="Password" block-property-1="value" block-handler-2="input"/>`);
-    const passwordToggleBlock = createBlock(`<span class="pass-viewer" block-handler-0="click"><i class="fa" block-attribute-1="class"/></span>`);
-    const remoteOptionBlock   = createBlock(`<option block-attribute-0="value" block-attribute-1="selected"><block-text-2/></option>`);
-    const loginSpinnerBlock   = createBlock(`<i class="fa fa-cog fa-spin"/>`);
-    const remoteInfoBlock     = createBlock(`<div class="remote-info small-note">Host: <block-text-0/> <span class="current-source-chip"><block-text-1/></span></div>`);
-    const activeTimerDurationBlock = createBlock(`<span class="startTimeCount"><block-text-0/></span>`);
-    const hoursSpentHeaderBlock    = createBlock(`<th>Hours Spent</th>`);
-    const remainingHoursHeaderBlock = createBlock(`<th>Remaining Hours</th>`);
-    const timesheetsButtonBlock = createBlock(`<i class="fa fa-list-alt action-btn pointer text-info" title="View Timesheets for this task" block-handler-0="click"/>`);
-
-        const issueRowBlock = createBlock(`<tr block-attribute-0="class"><td class="text-center px-2 td-btn action-col"><block-child-0/><block-child-1/></td><td class="priority-cell"><block-child-2/><block-child-3/></td><td class="stage-cell"><block-child-4/></td><td class="issue-desc-cell"><block-child-5/></td><block-child-6/><block-child-7/><td class="project-cell"><block-child-8/></td></tr>`);
-    const startTimerButtonBlock = createBlock(`<i class="fa fa-play-circle action-btn pointer" title="Start the timer for the selected item" block-handler-0="click"/>`);
-    const stopTimerButtonBlock  = createBlock(`<i class="text-danger fa fa-stop-circle action-btn pointer" title="Stop timer and record the time to Odoo timesheets" block-handler-0="click"/>`);
-    const priorityStarBlock        = createBlock(`<span class="fa fa-star checked"/>`);
-    const priorityStarOutlineBlock = createBlock(`<i class="fa fa-star-o"/>`);
-    const effectiveHoursCellBlock  = createBlock(`<td class="hours-spent-cell"><div class="hours-cell-inner"><block-child-0/><block-child-1/></div></td>`);
-    const remainingHoursCellBlock  = createBlock(`<td><block-child-0/></td>`);
-    const emptyIssuesRowBlock = createBlock(`<tr><td block-attribute-0="colspan" class="text-center text-danger">No matching items are currently available</td></tr>`);
-
-    return function template(ctx, node, key = '') {
-        let bootErrorNode, noRemotesNode, loginFormNode;
-        let timerDurationNode, hoursSpentHeaderNode, remainingHoursHeaderNode;
-        let issuesListNode, emptyIssuesNode;
-
-        const loaderClass = ctx.state.view === VIEW_LOADING ? '' : 'hide';
-        const loginClass  = ctx.state.view === VIEW_LOGIN  ? '' : 'hide';
-        const wrapperClass = ctx.state.view === VIEW_MAIN   ? '' : 'hide';
-
-        if (ctx.state.bootError) bootErrorNode = bootErrorBlock([ctx.state.bootError]);
-        if (!ctx.state.remotes.length) noRemotesNode = noRemotesBlock();
-
-        if (ctx.state.remotes.length) {
-            let loginErrorNode, usernameInputNode, passwordInputNode;
-            let passwordToggleNode, loginSpinnerNode, remoteInfoNode;
-
-            if (ctx.state.loginError) loginErrorNode = loginErrorBlock([ctx.state.loginError]);
-
-            if (!ctx.state.useExistingSession) {
-                usernameInputNode = usernameInputBlock([
-                    ctx.state.username,
-                    [(ev) => { ctx.state.username = ev.target.value; }],
-                ]);
-                passwordInputNode = passwordInputBlock([
-                    ctx.state.showPassword ? 'text' : 'password',
-                    ctx.state.password,
-                    [(ev) => { ctx.state.password = ev.target.value; }],
-                ]);
-                passwordToggleNode = passwordToggleBlock([
-                    [ctx.togglePassword, ctx],
-                    ctx.state.showPassword ? 'fa-eye-slash' : 'fa-eye',
-                ]);
-            }
-
-            ctx = Object.create(ctx);
-            const [remoteItems,, remoteCount, remoteChildren] = prepareList(ctx.state.remotes);
-            const seenRemoteKeys = new Set();
-            for (let i = 0; i < remoteCount; i++) {
-                ctx.remote = remoteItems[i];
-                const rk = ctx.remote.database + ctx.remote.url;
-                if (seenRemoteKeys.has(String(rk))) throw new OwlError(`Duplicate remote key: ${rk}`);
-                seenRemoteKeys.add(String(rk));
-                remoteChildren[i] = withKey(
-                    remoteOptionBlock([String(ctx.remote.__index), ctx.state.selectedRemoteIndex === String(ctx.remote.__index), ctx.remote.name]),
-                    rk
-                );
-            }
-            ctx = ctx.__proto__;
-            const remoteOptionsNode = list(remoteChildren);
-
-            if (ctx.state.loginLoading) loginSpinnerNode = loginSpinnerBlock();
-            if (ctx.currentRemote) {
-                remoteInfoNode = remoteInfoBlock([
-                    ctx.currentRemote.url,
-                    ctx.currentRemote.datasrc || DATA_SOURCE_ISSUE,
-                ]);
-            }
-
-            loginFormNode = loginFormBlock(
-                [
-                    ['prevent', ctx.login, ctx],
-                    [(ev) => { ctx.state.selectedRemoteIndex = ev.target.value; }],
-                    ctx.state.useExistingSession,
-                    [ctx.toggleUseExistingSession, ctx],
-                ],
-                [loginErrorNode, usernameInputNode, passwordInputNode, passwordToggleNode,
-                 remoteOptionsNode, loginSpinnerNode, remoteInfoNode]
-            );
-        }
-
-        const searchQueryHandler = [(ev) => { ctx.state.searchQuery = ev.target.value; }];
-        const limitHandler = [(ev) => { ctx.updateLimitPreference(ev.target.value); }];
-        const autoDownloadHandler = [ctx.toggleAutoDownload, ctx];
-        const downloadTimesheetHandler = [ctx.downloadCurrentMonthTimesheets, ctx];
-        const switchRemotesHandler  = [ctx.switchBetweenRemotes, ctx];
-        const refreshHandler        = [ctx.refreshAll, ctx];
-        const resetTimerHandler     = [ctx.resetTimer, ctx];
-        const logoutHandler         = [ctx.logout, ctx];
-        const openMessagesHandler   = [ctx.openMessages, ctx];
-        const openLogsHandler       = [ctx.openLogs,     ctx];
-        const totalUnread           = ctx.state.msgUnreadTotal || 0;
-        const msgBadgeStyle         = totalUnread > 0 ? '' : 'display:none';
-        const msgBadgeText          = totalUnread > 99 ? '99+' : String(totalUnread || '');
-        const recordIconClass     = 'fa fa-video-camera fa-2x';
-        const toggleRecordHandler = [ctx.toggleRecording, ctx];
-
-        if (ctx.state.timerStartIso) timerDurationNode = activeTimerDurationBlock([ctx.formattedTimer]);
-
-        if (ctx.state.dataSource === DATA_SOURCE_TASK) {
-            hoursSpentHeaderNode    = hoursSpentHeaderBlock();
-            remainingHoursHeaderNode = remainingHoursHeaderBlock();
-        }
-
-        ctx = Object.create(ctx);
-        const [issueItems,, issueCount, issueChildren] = prepareList(ctx.filteredIssues);
-        const seenIssueKeys = new Set();
-        for (let i = 0; i < issueCount; i++) {
-            const ir  = issueItems[i];
-            const ik  = ir.id;
-            if (seenIssueKeys.has(String(ik))) throw new OwlError(`Duplicate issue key: ${ik}`);
-            seenIssueKeys.add(String(ik));
-
-            let startTimerNode, stopTimerNode;
-            const rowClass = ctx.state.activeTimerId === ir.id ? 'active-row' : '';
-
-            if (ctx.state.activeTimerId === ir.id) {
-                stopTimerNode = stopTimerButtonBlock([[() => ctx.stopTimer(ir), ctx]]);
-            } else {
-                startTimerNode = startTimerButtonBlock([[() => ctx.startTimer(ir), ctx]]);
-            }
-
-            const priorityCount  = priorityStars(ir.priority);
-            const starsNode      = list(priorityCount.map((_, si) => withKey(priorityStarBlock(), `star_${ik}_${si}`)));
-            const outlineCount   = priorityStars(ir.priority).length;
-            const maxStars       = 3;
-            const outlines       = Array.from({ length: maxStars - outlineCount }, (_, oi) =>
-                withKey(priorityStarOutlineBlock(), `outline_${ik}_${oi}`)
-            );
-            const outlineNode    = list(outlines);
-
-            const stageNode      = readMoreStage({ text: String(ir.stage_id?.[1] || ''), limit: 14 }, key + `__stage__${ik}`, node, this, null);
-            const labelNode      = readMoreIssueLabel({ text: ctx.issueLabel(ir), limit: 60, href: ctx.issueHref(ir) }, key + `__label__${ik}`, node, this, null);
-
-            let effectiveHoursNode, remainingHoursNode;
-            if (ctx.state.dataSource === DATA_SOURCE_TASK) {
-                // Timesheets icon lives inside the Hours Spent cell as a small inline button
-                const tsIconNode = timesheetsButtonBlock([[() => ctx.openTimesheets(ir), ctx]]);
-                effectiveHoursNode = effectiveHoursCellBlock([], [
-                    readMoreEffectiveHours({ text: ctx.formatHours(ir.effective_hours), limit: 10 }, key + `__eff__${ik}`, node, this, null),
-                    tsIconNode,
-                ]);
-                remainingHoursNode = remainingHoursCellBlock([], [
-                    readMoreRemainingHours({ text: ctx.formatHours(ir.remaining_hours), limit: 10 }, key + `__rem__${ik}`, node, this, null),
-                ]);
-            }
-
-            const projectNode = readMoreProject({ text: String(ir.project_id?.[1] || ''), limit: 22 }, key + `__proj__${ik}`, node, this, null);
-
-            issueChildren[i] = withKey(
-                issueRowBlock([rowClass], [
-                    startTimerNode, stopTimerNode,
-                    starsNode, outlineNode,
-                    stageNode, labelNode,
-                    effectiveHoursNode, remainingHoursNode,
-                    projectNode,
-                ]),
-                ik
-            );
-        }
-        ctx = ctx.__proto__;
-        if (issueCount) issuesListNode = list(issueChildren);
-        else emptyIssuesNode = emptyIssuesRowBlock([ctx.state.dataSource === DATA_SOURCE_TASK ? '8' : '7']);
-
-        return rootBlock(
-            [
-                loaderClass, loginClass, wrapperClass,
-                ctx.state.searchQuery, searchQueryHandler,
-                ctx.state.limitTo, limitHandler,
-                ctx.state.autoDownloadIssueTimesheet, autoDownloadHandler,
-                downloadTimesheetHandler, switchRemotesHandler,
-                refreshHandler, resetTimerHandler, logoutHandler,
-                ctx.itemLabelPlural, String(ctx.filteredIssues.length),
-                ctx.state.allIssues, [(ev) => { ctx.updateShowAllPreference(ev.target.checked); }],
-                ctx.state.serverVersion || 'N/A',
-                ctx.state.currentHost, ctx.state.currentDatabase,
-                ctx.state.user?.display_name || '—',
-                openMessagesHandler,
-                recordIconClass,
-                toggleRecordHandler,
-                msgBadgeStyle,
-                msgBadgeText,
-                openLogsHandler,
-            ],
-            [
-                bootErrorNode, noRemotesNode, loginFormNode,
-                timerDurationNode, null,
-                hoursSpentHeaderNode, remainingHoursHeaderNode,
-                issuesListNode, emptyIssuesNode,
-            ]
-        );
-    };
-}
-
 // ─── PopupApp component ───────────────────────────────────────────────────────
 
 class PopupApp extends Component {
@@ -324,12 +101,14 @@ class PopupApp extends Component {
         this.switchBetweenRemotes        = this.switchBetweenRemotes.bind(this);
         this.logout                      = this.logout.bind(this);
         this.openMessages                = this.openMessages.bind(this);
+        this.openTimesheets              = this.openTimesheets.bind(this);
+        this.openLogs                    = this.openLogs.bind(this);
         this.toggleRecording             = this.toggleRecording.bind(this);
         this.toggleAutoDownload          = this.toggleAutoDownload.bind(this);
         this.toggleUseExistingSession    = this.toggleUseExistingSession.bind(this);
         this.togglePassword              = this.togglePassword.bind(this);
-        this.updateLimitPreference = this.updateLimitPreference.bind(this);
-        this.updateShowAllPreference = this.updateShowAllPreference.bind(this);
+        this.updateLimitPreference       = this.updateLimitPreference.bind(this);
+        this.updateShowAllPreference     = this.updateShowAllPreference.bind(this);
 
         onMounted(() => {
             const bootLoader = document.getElementById('boot-loader');
@@ -515,9 +294,7 @@ class PopupApp extends Component {
         this.state.busyMessage = DEFAULTS.busyMessage;
         await this.clearLegacyIssueCache();
 
-        this.state.remotes = (await readRemotes()).map((remote, idx) => ({
-            ...remote, __index: String(idx),
-        }));
+        this.state.remotes = await readRemotes();
 
         await this.loadStoredPopupState();
 
@@ -666,7 +443,7 @@ class PopupApp extends Component {
                     : r
             );
             await writeRemotes(updated);
-            this.state.remotes = updated.map((r, idx) => ({ ...r, __index: String(idx) }));
+            this.state.remotes = updated;
         }
 
         const userPromise = this.rpc
@@ -997,7 +774,16 @@ class PopupApp extends Component {
             if (this.state.dataSource !== DATA_SOURCE_TASK) return;
             if (!this.state.issues.length) return;
 
-            const ids = this.state.issues.map((task) => task.id);
+            // Only poll tasks ASSIGNED to the current user.
+            // Follower-task unread counts are handled by messages-app.js (which has
+            // the follower list) and stored in msg_total_unread when that window is open.
+            // This prevents the badge from ballooning to 99+ by counting all team tasks.
+            const myTasks = this.state.issues.filter(
+                (t) => t.user_id?.[0] === this.state.user.id
+            );
+            if (!myTasks.length) return;
+
+            const ids = myTasks.map((task) => task.id);
             const result = await this.rpc.searchRead(
                 this.state.dataSource,
                 [['id', 'in', ids]],
@@ -1009,7 +795,7 @@ class PopupApp extends Component {
             );
 
             let totalUnread = 0;
-            for (const task of this.state.issues) {
+            for (const task of myTasks) {
                 const freshIds = freshMap[task.id] || [];
                 const seenRaw  = await storage.get(`msg_seen_${task.id}`, []);
                 const seenSet  = new Set(Array.isArray(seenRaw) ? seenRaw : []);
@@ -1017,9 +803,14 @@ class PopupApp extends Component {
                 totalUnread   += unread;
             }
 
-            await storage.set('msg_total_unread', totalUnread);
-            if (totalUnread !== this.state.msgUnreadTotal) {
-                this.state.msgUnreadTotal = totalUnread;
+            // Only write if the messages window isn't already managing this value.
+            // The messages window (when open) sets a more accurate total that includes
+            // follower tasks — don't overwrite it with the narrower assigned-only count.
+            const existing = Number(await storage.get('msg_total_unread', 0)) || 0;
+            const finalTotal = Math.max(totalUnread, existing);
+            await storage.set('msg_total_unread', finalTotal);
+            if (finalTotal !== this.state.msgUnreadTotal) {
+                this.state.msgUnreadTotal = finalTotal;
             }
         } catch (err) {
             // Non-critical — silently skip on error
@@ -1030,16 +821,16 @@ class PopupApp extends Component {
 
 // ─── Mount ────────────────────────────────────────────────────────────────────
 
+// Use the compiled XML templates from templates.js (loaded by popup.html).
+// popup_app.xml + readmore.xml → compiled into globalThis.__THERP_TIMER_TEMPLATES__
 const compiledTemplates = globalThis.__THERP_TIMER_TEMPLATES__ || {};
-// PopupApp uses its own code-based template — the XML source (popup_app.xml)
-// is compiled only for reference/documentation. The code-based template is
-// kept in sync and avoids Electron path / call-signature mismatches.
 const templates = {
     ReadMore: compiledTemplates.ReadMore || createReadMoreTemplate,
-    PopupApp: createPopupAppTemplate,
+    PopupApp: compiledTemplates.PopupApp,
 };
 
 try {
+    if (!templates.PopupApp) throw new Error('PopupApp template missing — run: bash scripts/compile-templates.sh');
     mount(PopupApp, document.getElementById('app'), { dev: false, templates });
 } catch (err) {
     console.error('[PopupApp] Mount failed:', err);

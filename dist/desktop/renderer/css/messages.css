@@ -107,6 +107,8 @@ html, body {
 .task-card:hover  { background: #f0f9ff; }
 .task-card.active { background: #e0f4ff; border-left: 3px solid var(--brand); }
 .task-card.has-unread { border-left: 3px solid var(--brand); }
+.task-card.has-unread.is-follower { border-left-color: #3182ce; }
+.task-card.has-unread.is-assigned { border-left-color: #e53e3e; }
 .task-card.has-unread .task-title { font-weight: 700; }
 
 .task-title {
@@ -139,7 +141,6 @@ html, body {
 }
 
 .msg-unread-badge {
-  background: var(--brand);
   color: #fff;
   border-radius: 10px;
   font-size: 10px;
@@ -148,6 +149,14 @@ html, body {
   min-width: 18px;
   text-align: center;
   flex-shrink: 0;
+}
+/* Assigned tasks → red: "action needed by me" */
+.msg-unread-badge.msg-unread-assigned {
+  background: #e53e3e;
+}
+/* Follower tasks → blue: "watching, heads up" */
+.msg-unread-badge.msg-unread-follower {
+  background: #3182ce;
 }
 
 .tasks-empty {

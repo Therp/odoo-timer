@@ -27,10 +27,14 @@ app.commandLine.appendSwitch('disable-background-networking');
 app.commandLine.appendSwitch('disable-dev-shm-usage');
 // Linux AppImage SUID sandbox workaround
 if (process.platform === 'linux') {
-  // Sandbox workaround for AppImage / namespaced /tmp environments.
-  // Fixes "Unable to access /tmp" errors when opening DevTools.
+  // --no-sandbox:      disable the SUID sandbox (not set up in AppImage environments)
+  // --disable-gpu-sandbox: disable GPU process sandbox
+  // --no-zygote:       disable the pre-forked zygote renderer process, which also
+  //                    requires the sandbox and causes /tmp shared-memory errors when
+  //                    opening DevTools (ESRCH errno 3 in platform_shared_memory_region)
   app.commandLine.appendSwitch('no-sandbox');
   app.commandLine.appendSwitch('disable-gpu-sandbox');
+  app.commandLine.appendSwitch('no-zygote');
 }
 
 // ─── In-memory log ring buffer ─────────────────────────────────────

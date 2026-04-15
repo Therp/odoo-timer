@@ -14,7 +14,7 @@
         t-att-class="state.view === 'loading' ? '' : 'hide'">
         <div class="loader-card">
           <div class="loader-text">Loading current session and projects…</div>
-          <div class="loader-subtext">Please wait — or grab a cup of coffee ☕</div>
+          <div class="loader-subtext">Please wait -- or grab a cup of coffee ☕</div>
           <i class="fa fa-cog fa-spin fa-5x"/>
         </div>
       </div>
@@ -57,11 +57,11 @@
                   </div>
                 </t>
                 <select id="remote-selection" class="form-control"
-                  t-on-change="(ev) => { state.selectedRemoteIndex = Number(ev.target.value); }">
+                  t-on-change="(ev) => { state.selectedRemoteIndex = ev.target.value; }">
                   <t t-foreach="state.remotes" t-as="remote"
                     t-key="remote.url + remote.database">
-                    <option t-att-value="remote.__index"
-                      t-att-selected="state.selectedRemoteIndex === remote.__index">
+                    <option t-att-value="'' + remote_index"
+                      t-att-selected="state.selectedRemoteIndex === '' + remote_index">
                       <t t-esc="remote.name"/>
                     </option>
                   </t>
@@ -134,15 +134,15 @@
                 <i class="fa fa-comments fa-2x"/>
                 <span class="msg-unread-badge"
                   t-att-style="(state.msgUnreadTotal || 0) > 0 ? '' : 'display:none'">
-                  <t t-esc="(state.msgUnreadTotal || 0) > 99 ? '99+' : String(state.msgUnreadTotal || '')"/>
+                  <t t-esc="(state.msgUnreadTotal || 0) > 99 ? '99+' : '' + (state.msgUnreadTotal || '')"/>
                 </span>
               </span>
               <i class="fa fa-video-camera fa-2x" title="Record screen"
                 t-on-click="toggleRecording"/>
+              <i class="fa fa-bug fa-2x logs-btn" title="View Logs" t-on-click="openLogs"/>
               <a href="options_main_page.html" class="options-btn" title="Options">
                 <i class="fa fa-cogs fa-2x"/>
               </a>
-              <i class="fa fa-bug fa-2x logs-btn" title="View Logs" t-on-click="openLogs"/>
             </div>
           </div>
         </div>
@@ -164,7 +164,7 @@
                 <th class="item-col">
                   <div class="item-header-title">
                     <t t-esc="itemLabelPlural"/>
-                    [<t t-esc="String(filteredIssues.length)"/>]
+                    [<t t-esc="'' + filteredIssues.length"/>]
                   </div>
                   <label class="allIssues">
                     <input id="showAllIssues" type="checkbox"

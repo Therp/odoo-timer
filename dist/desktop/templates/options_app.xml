@@ -17,9 +17,9 @@
             <i class="fa fa-info-circle"/> <span>About Timer</span>
           </li>
           <li class="chooser list-group-item"
-            t-att-class="state.activePage === 'options' ? 'selected' : 'notselected'"
-            t-on-click="() => { state.activePage = 'options'; }">
-            <i class="fa fa-cogs"/> <span>Options</span>
+            t-att-class="state.activePage === 'help' ? 'selected' : 'notselected'"
+            t-on-click="() => { state.activePage = 'help'; }">
+            <i class="fa fa-question-circle"/> <span>Help</span>
           </li>
           <li class="chooser list-group-item"
             t-att-class="state.activePage === 'storage' ? 'selected' : 'notselected'"
@@ -32,9 +32,9 @@
             <i class="fa fa-shield"/> <span>Security</span>
           </li>
           <li class="chooser list-group-item"
-            t-att-class="state.activePage === 'help' ? 'selected' : 'notselected'"
-            t-on-click="() => { state.activePage = 'help'; }">
-            <i class="fa fa-question-circle"/> <span>Help</span>
+            t-att-class="state.activePage === 'options' ? 'selected' : 'notselected'"
+            t-on-click="() => { state.activePage = 'options'; }">
+            <i class="fa fa-cogs"/> <span>Options</span>
           </li>
         </ul>
         <hr/>
@@ -131,7 +131,7 @@
                     <input class="form-check-input" type="radio" value="project.issue"
                       id="FromIssues"
                       t-att-checked="state.form.remote_datasrc === 'project.issue'"
-                      t-on-change="(ev) => { if (ev.target.checked) state.form.remote_datasrc = 'project.issue'; }"/>
+                      t-on-change="() => { state.form.remote_datasrc = 'project.issue'; }"/>
                     <label class="form-check-label" for="FromIssues">From Issues</label>
                   </div>
                 </li>
@@ -140,7 +140,7 @@
                     <input class="form-check-input" type="radio" value="project.task"
                       id="FromTasks"
                       t-att-checked="state.form.remote_datasrc === 'project.task'"
-                      t-on-change="(ev) => { if (ev.target.checked) state.form.remote_datasrc = 'project.task'; }"/>
+                      t-on-change="() => { state.form.remote_datasrc = 'project.task'; }"/>
                     <label class="form-check-label" for="FromTasks">From Tasks</label>
                   </div>
                 </li>
@@ -159,7 +159,7 @@
             </t>
           </form>
 
-          <t t-if="state.showList && state.remotes.length">
+          <t t-if="state.showList &amp;&amp; state.remotes.length">
             <div class="remotes-table-info">
               <table class="table table-bordered">
                 <caption class="text-info caption-remotes">Available Remotes</caption>

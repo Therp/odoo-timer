@@ -10,6 +10,29 @@
   <link rel="stylesheet" href="css/lib/bootstrap-v4.0.0/bootstrap.min.css" />
   <link rel="stylesheet" href="css/popup.css" />
   <!-- OWL runtime (IIFE — sets globalThis.owl) -->
+    <!-- Forward renderer console output to the main-process log ring buffer.
+       Must be a non-module script so it runs synchronously first, before
+       any module code that calls console.*                               -->
+  <script>
+    (function () {
+      var PAGE = 'Timer';
+      var _lvl = { log: 'info', info: 'info', warn: 'warn', error: 'error', debug: 'debug' };
+      Object.keys(_lvl).forEach(function (method) {
+        var orig = console[method].bind(console);
+        console[method] = function () {
+          var args = Array.prototype.slice.call(arguments);
+          var msg  = '[' + PAGE + '] ' + args.map(function (a) {
+            if (!a && a !== 0) return String(a);
+            if (a instanceof Error) return a.message + (a.stack ? '\n' + a.stack : '');
+            if (typeof a === 'object') { try { return JSON.stringify(a); } catch (e) { return String(a); } }
+            return String(a);
+          }).join(' ');
+          try { window.electronAPI && window.electronAPI.logs && window.electronAPI.logs.append(_lvl[method], msg); } catch (e) {}
+          orig.apply(console, arguments);
+        };
+      });
+    })();
+  </script>
   <script src="js/lib/owl.iife.js"></script>
   <!-- alert.js custom dialog library -->
   <script src="js/lib/ripple.js"></script>

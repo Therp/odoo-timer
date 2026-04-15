@@ -24,7 +24,7 @@
             <div class="tasks-empty">No matching tasks or issues.</div>
           </t>
           <t t-foreach="visibleTasks" t-as="task" t-key="task.id">
-            <div t-att-class="state.selectedTask &amp;&amp; task.id === state.selectedTask.id ? 'task-card active' : 'task-card'"
+            <div t-att-class="(state.selectedTask &amp;&amp; task.id === state.selectedTask.id ? 'task-card active' : 'task-card') + ((state.unreadMap[task.id] || 0) > 0 ? ' has-unread ' + (task.followerType === 'follower' ? 'is-follower' : 'is-assigned') : '')"
               t-att-data-task-id="task.id"
               t-on-click="onTaskItemClick">
               <div class="task-title">
@@ -43,7 +43,7 @@
                 </span>
                 <span><t t-esc="normalizeText(task.stage_id) || ''"/></span>
                 <t t-if="(state.unreadMap[task.id] || 0) > 0">
-                  <span class="msg-unread-badge">
+                  <span t-att-class="task.followerType === 'follower' ? 'msg-unread-badge msg-unread-follower' : 'msg-unread-badge msg-unread-assigned'">
                     <t t-esc="state.unreadMap[task.id]"/>
                   </span>
                 </t>

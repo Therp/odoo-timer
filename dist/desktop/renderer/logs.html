@@ -8,77 +8,190 @@
   <title>Therp Timer — Logs</title>
   <link rel="stylesheet" href="css/lib/font-awesome-4.6.3/css/font-awesome.min.css"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; }
-    body { margin: 0; background: #0f1117; color: #e2e8f0; font-family: 'Consolas','Courier New',monospace; font-size: 13px; }
-    #toolbar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: #1a1f2e; border-bottom: 1px solid #2d3748; }
-    #toolbar h1 { margin: 0; font-size: 15px; color: #90cdf4; font-family: Arial, sans-serif; flex: 1; }
-    .tb-btn { padding: 6px 12px; border-radius: 4px; border: 1px solid #4a5568; background: #2d3748; color: #e2e8f0; cursor: pointer; font-size: 12px; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f1117; color: #e2e8f0;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 13px; display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+    }
+
+    /* ── Toolbar ── */
+    #toolbar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px; background: #1a1f2e;
+      border-bottom: 1px solid #2d3748; flex-shrink: 0;
+    }
+    #toolbar h1 { font-size: 14px; color: #90cdf4; font-family: Arial, sans-serif; flex: 1; }
+    #live-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #48bb78; box-shadow: 0 0 5px #48bb78;
+      animation: pulse 2s infinite; flex-shrink: 0;
+    }
+    #live-dot.paused { background: #718096; box-shadow: none; animation: none; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .tb-btn {
+      padding: 5px 11px; border-radius: 4px; border: 1px solid #4a5568;
+      background: #2d3748; color: #e2e8f0; cursor: pointer; font-size: 12px;
+    }
     .tb-btn:hover { background: #3d4a5f; }
-    #filter-bar { display: flex; gap: 8px; padding: 8px 16px; background: #141820; border-bottom: 1px solid #2d3748; }
-    .lvl-btn { padding: 4px 10px; border-radius: 3px; border: 1px solid transparent; cursor: pointer; font-size: 11px; font-weight: 600; }
+    .tb-btn.danger { color: #fc8181; }
+
+    /* ── Filter bar ── */
+    #filter-bar {
+      display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+      padding: 6px 14px; background: #141820;
+      border-bottom: 1px solid #2d3748; flex-shrink: 0;
+    }
+    .lvl-btn, .src-btn {
+      padding: 3px 9px; border-radius: 3px; border: 1px solid transparent;
+      cursor: pointer; font-size: 11px; font-weight: 600; background: transparent;
+    }
     .lvl-btn.active { border-color: currentColor; }
-    .lvl-all   { color: #a0aec0; } .lvl-all.active   { background: rgba(160,174,192,.15); }
-    .lvl-debug { color: #718096; } .lvl-debug.active { background: rgba(113,128,150,.15); }
-    .lvl-info  { color: #63b3ed; } .lvl-info.active  { background: rgba(99,179,237,.15); }
-    .lvl-warn  { color: #f6ad55; } .lvl-warn.active  { background: rgba(246,173,85,.15); }
-    .lvl-error { color: #fc8181; } .lvl-error.active { background: rgba(252,129,129,.15); }
-    #log-list { list-style: none; margin: 0; padding: 8px 0; overflow-y: auto; height: calc(100vh - 96px); }
-    #log-list li { display: flex; gap: 10px; padding: 3px 16px; line-height: 1.5; white-space: pre-wrap; word-break: break-all; }
-    #log-list li:hover { background: rgba(255,255,255,.04); }
-    .log-ts   { color: #4a5568; flex-shrink: 0; font-size: 11px; padding-top: 1px; }
-    .log-lvl  { flex-shrink: 0; font-size: 11px; font-weight: 700; width: 42px; padding-top: 1px; text-align: right; }
-    .log-msg  { flex: 1; }
-    .lvl-debug .log-lvl, li[data-level="debug"] .log-lvl { color: #718096; }
-    li[data-level="info"]  .log-lvl { color: #63b3ed; }
-    li[data-level="warn"]  .log-lvl { color: #f6ad55; }
-    li[data-level="error"] .log-lvl { color: #fc8181; }
-    #empty { text-align: center; color: #4a5568; padding: 60px; display: none; }
+    .src-btn { color: #718096; border-color: #2d3748; }
+    .src-btn.active { border-color: #63b3ed; color: #90cdf4; background: rgba(99,179,237,.08); }
+    .lvl-all   { color: #a0aec0; } .lvl-all.active   { background: rgba(160,174,192,.12); }
+    .lvl-debug { color: #718096; } .lvl-debug.active { background: rgba(113,128,150,.12); }
+    .lvl-info  { color: #63b3ed; } .lvl-info.active  { background: rgba(99,179,237,.12); }
+    .lvl-warn  { color: #f6ad55; } .lvl-warn.active  { background: rgba(246,173,85,.12); }
+    .lvl-error { color: #fc8181; } .lvl-error.active { background: rgba(252,129,129,.12); }
+    .filter-sep { width: 1px; height: 18px; background: #2d3748; margin: 0 2px; flex-shrink: 0; }
+    #entry-count { margin-left: auto; color: #4a5568; font-size: 11px; white-space: nowrap; }
+
+    /* ── Log list ── */
+    #log-wrap { flex: 1; overflow-y: auto; }
+    #log-list { list-style: none; padding: 4px 0; }
+    #log-list li {
+      display: flex; align-items: baseline;
+      padding: 2px 0; line-height: 1.5;
+      border-bottom: 1px solid rgba(255,255,255,.025);
+    }
+    #log-list li:hover { background: rgba(255,255,255,.03); }
+    .log-ts  { color: #3d4a60; font-size: 11px; flex-shrink: 0; padding: 0 8px; min-width: 88px; }
+    .log-lvl {
+      flex-shrink: 0; font-size: 10px; font-weight: 700;
+      width: 46px; text-align: center; padding: 1px 4px;
+      border-radius: 3px; margin-right: 6px; letter-spacing: .5px;
+    }
+    li[data-level="debug"] .log-lvl { color: #718096; background: rgba(113,128,150,.1); }
+    li[data-level="info"]  .log-lvl { color: #63b3ed; background: rgba(99,179,237,.1); }
+    li[data-level="warn"]  .log-lvl { color: #f6ad55; background: rgba(246,173,85,.1); }
+    li[data-level="error"] .log-lvl { color: #fc8181; background: rgba(252,129,129,.1); }
+    .log-src {
+      flex-shrink: 0; font-size: 10px; font-weight: 600;
+      padding: 1px 5px; border-radius: 3px; margin-right: 6px;
+      min-width: 64px; text-align: center;
+    }
+    .src-Timer      { color: #68d391; background: rgba(104,211,145,.1); }
+    .src-Messages   { color: #76e4f7; background: rgba(118,228,247,.1); }
+    .src-Options    { color: #d6bcfa; background: rgba(214,188,250,.1); }
+    .src-Timesheets { color: #fbd38d; background: rgba(251,211,141,.1); }
+    .src-Recorder   { color: #fc8181; background: rgba(252,129,129,.1); }
+    .src-Main       { color: #a0aec0; background: rgba(160,174,192,.1); }
+    .log-msg { flex: 1; white-space: pre-wrap; word-break: break-all; padding-right: 10px; color: #cbd5e0; }
+    li[data-level="warn"]  .log-msg { color: #fefcbf; }
+    li[data-level="error"] .log-msg { color: #fed7d7; }
+
+    /* ── Empty state ── */
+    #empty {
+      display: none; flex-direction: column; align-items: center;
+      justify-content: center; height: 200px;
+      color: #4a5568; gap: 10px; padding: 40px; text-align: center;
+    }
+    #empty i { font-size: 30px; }
+    #empty p { font-size: 13px; line-height: 1.6; }
+    #empty small { font-size: 11px; color: #2d3748; }
   </style>
 </head>
 <body>
   <div id="toolbar">
-    <h1><i class="fa fa-terminal" style="color:#63b3ed;margin-right:8px;"></i>Therp Timer — Internal Logs</h1>
+    <div id="live-dot" title="Live — refreshes every 2s"></div>
+    <h1><i class="fa fa-terminal" style="color:#63b3ed;margin-right:6px;"></i>Therp Timer — Internal Logs</h1>
+    <button class="tb-btn" id="btn-pause"><i class="fa fa-pause"></i> Pause</button>
     <button class="tb-btn" id="btn-refresh"><i class="fa fa-refresh"></i> Refresh</button>
-    <button class="tb-btn" id="btn-clear"  style="color:#fc8181;"><i class="fa fa-trash"></i> Clear</button>
+    <button class="tb-btn danger" id="btn-clear"><i class="fa fa-trash"></i> Clear</button>
   </div>
+
   <div id="filter-bar">
-    <button class="lvl-btn lvl-all   active" data-level="all">ALL</button>
-    <button class="lvl-btn lvl-debug"        data-level="debug">DEBUG</button>
+    <button class="lvl-btn lvl-all active" data-level="all">ALL</button>
+    <button class="lvl-btn lvl-debug"       data-level="debug">DEBUG</button>
     <button class="lvl-btn lvl-info"         data-level="info">INFO</button>
     <button class="lvl-btn lvl-warn"         data-level="warn">WARN</button>
     <button class="lvl-btn lvl-error"        data-level="error">ERROR</button>
+    <div class="filter-sep"></div>
+    <button class="src-btn active" data-src="all">All Pages</button>
+    <button class="src-btn" data-src="Timer">Timer</button>
+    <button class="src-btn" data-src="Messages">Messages</button>
+    <button class="src-btn" data-src="Options">Options</button>
+    <button class="src-btn" data-src="Timesheets">Timesheets</button>
+    <button class="src-btn" data-src="Recorder">Recorder</button>
+    <button class="src-btn" data-src="Main">Main</button>
+    <span id="entry-count">0 entries</span>
   </div>
-  <ul id="log-list"></ul>
-  <div id="empty">No log entries yet.</div>
+
+  <div id="log-wrap">
+    <ul id="log-list"></ul>
+    <div id="empty">
+      <i class="fa fa-inbox"></i>
+      <p>No log entries yet.<br>Logs appear here as you use the app — try logging in or switching pages.</p>
+      <small>Main process events are captured automatically.<br>
+             Renderer pages forward via the console patch injected in each HTML page.</small>
+    </div>
+  </div>
 
   <script>
-    const api = window.electronAPI;
-    let allLogs   = [];
+    const api       = window.electronAPI;
+    let allLogs     = [];
     let activeLevel = 'all';
+    let activeSrc   = 'all';
+    let paused      = false;
+    let autoScroll  = true;
+    const logWrap   = document.getElementById('log-wrap');
+    const logList   = document.getElementById('log-list');
+    const emptyEl   = document.getElementById('empty');
+    const countEl   = document.getElementById('entry-count');
+    const liveDot   = document.getElementById('live-dot');
 
     function esc(s) {
-      return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    /** Extract the [PageName] source prefix written by the console patch. */
+    function parseSrc(msg) {
+      const m = String(msg || '').match(/^\[([A-Za-z]+)\] ?/);
+      return m ? { src: m[1], rest: msg.slice(m[0].length) } : { src: 'Main', rest: msg };
     }
 
     function render() {
-      const list = document.getElementById('log-list');
-      const empty = document.getElementById('empty');
-      const filtered = activeLevel === 'all'
-        ? allLogs
-        : allLogs.filter((e) => e.level === activeLevel);
-      if (!filtered.length) { list.innerHTML = ''; empty.style.display = 'block'; return; }
-      empty.style.display = 'none';
-      list.innerHTML = filtered.map((e) => {
-        const ts  = e.ts ? e.ts.replace('T', ' ').slice(0, 23) : '';
+      const filtered = allLogs.filter((e) => {
+        if (activeLevel !== 'all' && e.level !== activeLevel) return false;
+        if (activeSrc   !== 'all' && parseSrc(e.msg).src !== activeSrc) return false;
+        return true;
+      });
+
+      countEl.textContent = filtered.length + (filtered.length === 1 ? ' entry' : ' entries');
+
+      if (!filtered.length) {
+        logList.innerHTML = '';
+        emptyEl.style.display = 'flex';
+        return;
+      }
+      emptyEl.style.display = 'none';
+
+      const atBottom = logWrap.scrollHeight - logWrap.scrollTop <= logWrap.clientHeight + 60;
+
+      logList.innerHTML = filtered.map((e) => {
+        const ts  = (e.ts || '').replace('T', ' ').slice(0, 23);
         const lvl = (e.level || 'info').toUpperCase().slice(0, 5);
-        return `<li data-level="${esc(e.level)}">
-          <span class="log-ts">${esc(ts)}</span>
-          <span class="log-lvl">${esc(lvl)}</span>
-          <span class="log-msg">${esc(e.msg)}</span>
-        </li>`;
+        const { src, rest } = parseSrc(e.msg);
+        return '<li data-level="' + esc(e.level) + '">' +
+          '<span class="log-ts">'  + esc(ts)  + '</span>' +
+          '<span class="log-lvl">' + esc(lvl) + '</span>' +
+          '<span class="log-src src-' + esc(src) + '">' + esc(src) + '</span>' +
+          '<span class="log-msg">' + esc(rest) + '</span>' +
+          '</li>';
       }).join('');
-      // Auto-scroll to bottom
-      list.scrollTop = list.scrollHeight;
+
+      if (autoScroll && atBottom) logWrap.scrollTop = logWrap.scrollHeight;
     }
 
     async function refresh() {
@@ -86,9 +199,24 @@
       render();
     }
 
+    logWrap.addEventListener('scroll', () => {
+      autoScroll = logWrap.scrollHeight - logWrap.scrollTop <= logWrap.clientHeight + 60;
+    });
+
     document.getElementById('btn-refresh').addEventListener('click', refresh);
+
     document.getElementById('btn-clear').addEventListener('click', async () => {
-      await api.logs.clear(); allLogs = []; render();
+      await api.logs.clear();
+      allLogs = []; render();
+    });
+
+    const pauseBtn = document.getElementById('btn-pause');
+    pauseBtn.addEventListener('click', () => {
+      paused = !paused;
+      liveDot.classList.toggle('paused', paused);
+      pauseBtn.innerHTML = paused
+        ? '<i class="fa fa-play"></i> Resume'
+        : '<i class="fa fa-pause"></i> Pause';
     });
 
     document.querySelectorAll('.lvl-btn').forEach((btn) => {
@@ -100,9 +228,17 @@
       });
     });
 
-    // Initial load + auto-refresh every 3s
+    document.querySelectorAll('.src-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.src-btn').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeSrc = btn.dataset.src;
+        render();
+      });
+    });
+
     refresh();
-    setInterval(refresh, 3000);
+    setInterval(() => { if (!paused) refresh(); }, 2000);
   </script>
 </body>
 </html>
