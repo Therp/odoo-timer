@@ -130,6 +130,8 @@
               <i class="fa fa-clock-o fa-2x" title="Discard the active timer"
                 t-on-click="resetTimer"/>
               <i class="fa fa-sign-out fa-2x" title="Log out" t-on-click="logout"/>
+              <i class="fa fa-video-camera fa-2x" title="Record screen"
+                t-on-click="toggleRecording"/>
               <span class="msg-icon-wrap" title="Open Messages" t-on-click="openMessages">
                 <i class="fa fa-comments fa-2x"/>
                 <span class="msg-unread-badge"
@@ -137,12 +139,10 @@
                   <t t-esc="(state.msgUnreadTotal || 0) > 99 ? '99+' : '' + (state.msgUnreadTotal || '')"/>
                 </span>
               </span>
-              <i class="fa fa-video-camera fa-2x" title="Record screen"
-                t-on-click="toggleRecording"/>
+              <i class="fa fa-bug fa-2x logs-btn" title="View Logs" t-on-click="openLogs"/>
               <a href="options_main_page.html" class="options-btn" title="Options">
                 <i class="fa fa-cogs fa-2x"/>
               </a>
-              <i class="fa fa-bug fa-2x logs-btn" title="View Logs" t-on-click="openLogs"/>
             </div>
           </div>
         </div>
