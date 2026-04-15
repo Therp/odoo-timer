@@ -1,0 +1,272 @@
+/* Therp Timer — Recorder window styles */
+
+:root {
+  --brand: #33BAF6;
+  --brand-dark: #1FA7E6;
+  --bg: #f5f7fa;
+  --card: #ffffff;
+  --text: #3f4854;
+  --muted: #6b7280;
+  --border: #dde3ee;
+  --danger: #e53e3e;
+  --radius: 8px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 380px; height: 100%; min-height: 100vh;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 13px; background: var(--bg); color: var(--text);
+  overflow-x: hidden;
+}
+
+#app { display: flex; flex-direction: column; gap: 0; padding-bottom: 16px; }
+
+/* ── Mode tabs ──────────────────────────────────────────────── */
+.rec-tabs {
+  display: flex; background: var(--card);
+  border-bottom: 2px solid var(--border);
+}
+.rec-tab {
+  flex: 1; padding: 12px 8px; border: none; background: none;
+  font-size: 12.5px; font-weight: 600; color: var(--muted);
+  cursor: pointer; display: flex; align-items: center;
+  justify-content: center; gap: 6px;
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+  transition: color .15s, border-color .15s;
+}
+.rec-tab:hover  { color: var(--brand-dark); }
+.rec-tab.active { color: var(--brand); border-bottom-color: var(--brand); }
+
+/* ── Sections ───────────────────────────────────────────────── */
+.rec-section {
+  padding: 12px 16px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.rec-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11.5px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .04em;
+  margin-bottom: 8px;
+}
+.rec-unit { font-weight: normal; font-size: 11px; margin-left: 2px; }
+
+/* Source buttons */
+.source-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.source-btn {
+  flex: 1; min-width: 80px; padding: 8px 10px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--card); font-size: 12px; color: var(--muted);
+  cursor: pointer; display: flex; align-items: center;
+  justify-content: center; gap: 5px;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.source-btn:hover  { border-color: var(--brand); color: var(--brand-dark); }
+.source-btn.active { border-color: var(--brand); color: var(--brand); background: #eaf8ff; font-weight: 700; }
+
+.rec-select {
+  width: 100%; margin-top: 8px; padding: 7px 10px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--card); font-size: 13px; color: var(--text);
+  outline: none; cursor: pointer;
+}
+.rec-select:focus { border-color: var(--brand); }
+
+/* Sliders */
+.rec-slider-row { display: flex; align-items: center; gap: 10px; }
+input[type="range"] {
+  flex: 1; accent-color: var(--brand); height: 4px; cursor: pointer;
+}
+.rec-slider-val {
+  min-width: 36px; text-align: right; font-size: 13px;
+  font-weight: 700; color: var(--brand-dark);
+}
+
+/* Folder row */
+.folder-row { display: flex; align-items: center; gap: 8px; }
+.folder-path {
+  flex: 1; font-size: 12px; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.rec-btn-sm {
+  padding: 5px 10px; border: 1px solid var(--border);
+  border-radius: 6px; background: var(--card); font-size: 12px;
+  cursor: pointer; color: var(--text); white-space: nowrap;
+  transition: background .12s;
+}
+.rec-btn-sm:hover { background: #eaf8ff; border-color: var(--brand); }
+
+/* ── Status ─────────────────────────────────────────────────── */
+.rec-status {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; background: #fff8f8;
+  border-bottom: 1px solid #fed7d7;
+}
+.rec-status-icon .fa { font-size: 14px; animation: recpulse 1s infinite; }
+@keyframes recpulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.rec-dot   { color: var(--danger); }
+.gif-dot   { color: #9333ea; }
+.scrn-dot  { color: var(--brand); animation: none; }
+.rec-status-text { font-size: 12.5px; font-weight: 600; color: var(--danger); flex: 1; }
+.rec-countdown {
+  font-size: 18px; font-weight: 800; color: var(--danger);
+  font-variant-numeric: tabular-nums; min-width: 48px; text-align: right;
+}
+
+/* ── Delay countdown overlay ────────────────────────────────── */
+.rec-delay-count {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.5); z-index: 999;
+}
+#delay-count-num {
+  font-size: 80px; font-weight: 900; color: #fff;
+  text-shadow: 0 4px 20px rgba(0,0,0,.6);
+  animation: countpop .8s ease-out;
+}
+@keyframes countpop {
+  from { transform: scale(1.6); opacity: .4; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+/* ── Action buttons ─────────────────────────────────────────── */
+.rec-action {
+  padding: 14px 16px 2px;
+  display: flex; gap: 8px; justify-content: center;
+}
+.rec-start-btn, .rec-stop-btn {
+  flex: 1; padding: 11px 0; border: none; border-radius: var(--radius);
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: opacity .15s, transform .1s;
+}
+.rec-start-btn { background: var(--brand); color: #fff; }
+.rec-start-btn:hover { background: var(--brand-dark); }
+.rec-stop-btn  { background: var(--danger); color: #fff; }
+.rec-stop-btn:hover  { opacity: .88; }
+.rec-start-btn:active, .rec-stop-btn:active { transform: scale(.97); }
+.rec-start-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── Format & Audio selector buttons (todo #1, #2) ────────────── */
+.format-btns, .audio-btns {
+  display: flex; gap: 6px; flex-wrap: wrap;
+}
+.format-btn, .audio-btn {
+  flex: 1; min-width: 60px; padding: 7px 10px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--card); font-size: 12px; font-weight: 600;
+  color: var(--muted); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.format-btn:hover, .audio-btn:hover { border-color: var(--brand); color: var(--brand-dark); }
+.format-btn.active { border-color: #6366f1; color: #6366f1; background: #f0f0ff; }
+.audio-btn.active  { border-color: #059669; color: #059669;  background: #f0fdf4; }
+.format-btn:disabled, .audio-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ── PiP Camera section ─────────────────────────────────────────────────────── */
+
+.pip-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 0;
+}
+
+/* Toggle switch */
+.pip-toggle-wrap {
+  position: relative; display: inline-flex; align-items: center;
+  cursor: pointer; user-select: none;
+}
+.pip-toggle-wrap input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; }
+.pip-toggle-track {
+  width: 38px; height: 22px; border-radius: 11px;
+  background: #d1d5db; transition: background .2s;
+  display: flex; align-items: center; padding: 2px;
+}
+.pip-toggle-wrap input:checked + .pip-toggle-track { background: var(--brand); }
+.pip-toggle-thumb {
+  width: 18px; height: 18px; border-radius: 50%; background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  transition: transform .2s;
+}
+.pip-toggle-wrap input:checked + .pip-toggle-track .pip-toggle-thumb { transform: translateX(16px); }
+
+/* PiP controls block */
+#pip-controls { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+
+.pip-row { display: flex; align-items: center; gap: 10px; }
+.pip-sub-label {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .04em;
+  min-width: 62px; flex-shrink: 0;
+}
+
+/* Camera preview */
+.pip-preview-wrap {
+  position: relative; width: 100%; aspect-ratio: 16/9;
+  background: #0f1117; border-radius: 8px; overflow: hidden;
+  border: 1px solid var(--border);
+}
+.pip-preview-video {
+  width: 100%; height: 100%; object-fit: cover;
+  display: block; border-radius: 8px;
+}
+.pip-preview-err {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 6px;
+  color: #fc8181; font-size: 12px; text-align: center; padding: 12px;
+}
+.pip-preview-err .fa { font-size: 22px; }
+
+/* Position indicator on preview */
+.pip-pos-overlay {
+  position: absolute; inset: 0; pointer-events: none;
+}
+.pip-pos-indicator {
+  position: absolute;
+  width: 28%; aspect-ratio: 16/9;
+  border: 2px solid rgba(255,255,255,0.7);
+  border-radius: 4px;
+  background: rgba(51,186,246,0.25);
+  box-shadow: 0 0 6px rgba(51,186,246,0.5);
+  transition: top .2s, left .2s, bottom .2s, right .2s;
+}
+
+/* Position picker 2×2 grid */
+.pip-pos-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 4px; width: 80px;
+}
+.pip-pos-btn {
+  padding: 5px; border: 1px solid var(--border);
+  border-radius: 5px; background: var(--card);
+  font-size: 10px; cursor: pointer; color: var(--muted);
+  display: flex; align-items: center; justify-content: center; gap: 1px;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.pip-pos-btn:hover  { border-color: var(--brand); color: var(--brand); }
+.pip-pos-btn.active { border-color: var(--brand); color: var(--brand); background: #eaf8ff; }
+.pip-pos-btn .fa { font-size: 9px; }
+
+/* Size buttons */
+.pip-size-btns { display: flex; gap: 5px; }
+.pip-size-btn {
+  flex: 1; padding: 5px 8px;
+  border: 1px solid var(--border); border-radius: 5px;
+  background: var(--card); font-size: 11px; font-weight: 600;
+  color: var(--muted); cursor: pointer;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.pip-size-btn:hover  { border-color: var(--brand); color: var(--brand); }
+.pip-size-btn.active { border-color: var(--brand); color: var(--brand); background: #eaf8ff; }
+
+/* Hint text (reused for gif section too) */
+.rec-hint {
+  font-size: 11px; color: #888; margin-top: 4px;
+  display: flex; align-items: flex-start; gap: 5px;
+  line-height: 1.4;
+}
+.rec-hint .fa { margin-top: 1px; flex-shrink: 0; }

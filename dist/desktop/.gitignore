@@ -1,0 +1,16 @@
+# Local Node environment (created by scripts/setup.sh)
+.nodeenv/
+.tools-venv/
+
+# npm dependencies (run npm install to restore)
+node_modules/
+
+# Packaged release output
+release/
+
+#OWL
+owl/
+
+# OS noise
+.DS_Store
+Thumbs.db

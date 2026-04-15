@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src *;"/>
+  <title>Therp Timer — Recorder</title>
+  <link rel="stylesheet" href="css/lib/font-awesome-4.6.3/css/font-awesome.min.css"/>
+  <link rel="stylesheet" href="css/recorder.css"/>
+</head>
+<body>
+  <div id="app">
+
+    <!-- ── Mode tabs ─────────────────────────────────────────────────────── -->
+    <div class="rec-tabs">
+      <button class="rec-tab active" data-mode="video" title="Record video">
+        <i class="fa fa-video-camera"></i> Video
+      </button>
+      <button class="rec-tab" data-mode="gif" title="Record animated GIF">
+        <i class="fa fa-film"></i> GIF
+      </button>
+      <button class="rec-tab" data-mode="screenshot" title="Take screenshot (PNG)">
+        <i class="fa fa-camera"></i> Screenshot
+      </button>
+    </div>
+
+    <!-- ── Source ─────────────────────────────────────────────────────────── -->
+    <div class="rec-section" id="source-section">
+      <label class="rec-label">Source</label>
+      <div class="source-btns">
+        <button class="source-btn active" data-src="screen">
+          <i class="fa fa-desktop"></i> Full Screen
+        </button>
+        <button class="source-btn" data-src="window">
+          <i class="fa fa-window-maximize"></i> Window
+        </button>
+        <button class="source-btn" data-src="region">
+          <i class="fa fa-crop"></i> Region
+        </button>
+      </div>
+      <div id="window-picker-wrap" style="display:none">
+        <select id="window-picker" class="rec-select">
+          <option value="">Select a window…</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ── Video format ───────────────────────────────────────────────────── -->
+    <div class="rec-section" id="format-section">
+      <label class="rec-label"><i class="fa fa-file-video-o"></i> Output Format</label>
+      <div class="format-btns">
+        <button class="format-btn active" data-fmt="webm" title="WebM — best compatibility">WebM</button>
+        <button class="format-btn" data-fmt="mp4"  title="MP4 — widely supported">MP4</button>
+        <button class="format-btn" data-fmt="mkv"  title="MKV — Matroska container">MKV</button>
+      </div>
+    </div>
+
+    <!-- ── Audio ──────────────────────────────────────────────────────────── -->
+    <div class="rec-section" id="audio-section">
+      <label class="rec-label"><i class="fa fa-microphone"></i> Audio</label>
+      <div class="audio-btns">
+        <button class="audio-btn active" data-audio="none">None</button>
+        <button class="audio-btn" data-audio="microphone">
+          <i class="fa fa-microphone"></i> Mic
+        </button>
+        <button class="audio-btn" data-audio="system" title="System audio (Windows/Linux with PulseAudio loopback)">
+          <i class="fa fa-volume-up"></i> System
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Camera PiP ──────────────────────────────────────────────────────── -->
+    <div class="rec-section" id="pip-section">
+      <!-- Toggle -->
+      <div class="pip-header">
+        <label class="rec-label" style="margin-bottom:0;">
+          <i class="fa fa-video-camera"></i> Camera Overlay
+          <span class="rec-unit">picture-in-picture</span>
+        </label>
+        <label class="pip-toggle-wrap">
+          <input type="checkbox" id="pip-toggle"/>
+          <span class="pip-toggle-track">
+            <span class="pip-toggle-thumb"></span>
+          </span>
+        </label>
+      </div>
+
+      <!-- Camera controls (shown when enabled) -->
+      <div id="pip-controls" style="display:none">
+
+        <!-- Camera device -->
+        <div class="pip-row">
+          <label class="pip-sub-label"><i class="fa fa-camera"></i> Camera</label>
+          <select id="pip-camera-select" class="rec-select" style="margin-top:0;"></select>
+        </div>
+
+        <!-- Live preview -->
+        <div class="pip-preview-wrap">
+          <video id="pip-preview-video" autoplay muted playsinline class="pip-preview-video"></video>
+          <div id="pip-preview-err" class="pip-preview-err" style="display:none">
+            <i class="fa fa-exclamation-triangle"></i>
+            <span id="pip-preview-err-msg">Camera unavailable</span>
+          </div>
+          <!-- PiP position indicator overlay on preview -->
+          <div class="pip-pos-overlay" id="pip-pos-overlay">
+            <div class="pip-pos-indicator" id="pip-pos-indicator"></div>
+          </div>
+        </div>
+
+        <!-- Position picker -->
+        <div class="pip-row">
+          <label class="pip-sub-label"><i class="fa fa-arrows"></i> Position</label>
+          <div class="pip-pos-grid">
+            <button class="pip-pos-btn" data-pos="tl" title="Top-left"><i class="fa fa-arrow-up"></i><i class="fa fa-arrow-left"></i></button>
+            <button class="pip-pos-btn" data-pos="tr" title="Top-right"><i class="fa fa-arrow-up"></i><i class="fa fa-arrow-right"></i></button>
+            <button class="pip-pos-btn active" data-pos="br" title="Bottom-right (default)"><i class="fa fa-arrow-down"></i><i class="fa fa-arrow-right"></i></button>
+            <button class="pip-pos-btn" data-pos="bl" title="Bottom-left"><i class="fa fa-arrow-down"></i><i class="fa fa-arrow-left"></i></button>
+          </div>
+        </div>
+
+        <!-- Size picker -->
+        <div class="pip-row">
+          <label class="pip-sub-label"><i class="fa fa-expand"></i> Size</label>
+          <div class="pip-size-btns">
+            <button class="pip-size-btn" data-size="sm">Small</button>
+            <button class="pip-size-btn active" data-size="md">Medium</button>
+            <button class="pip-size-btn" data-size="lg">Large</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Delay ───────────────────────────────────────────────────────────── -->
+    <div class="rec-section" id="delay-section">
+      <label class="rec-label">
+        <i class="fa fa-clock-o"></i>
+        <span id="delay-label">Delay before screenshot</span>
+        <span class="rec-unit">seconds</span>
+      </label>
+      <div class="rec-slider-row">
+        <input type="range" id="delay-slider" min="0" max="30" value="0" step="1"/>
+        <span id="delay-value" class="rec-slider-val">0s</span>
+      </div>
+    </div>
+
+    <!-- ── Duration ───────────────────────────────────────────────────────── -->
+    <div class="rec-section" id="duration-section" style="display:none">
+      <label class="rec-label">
+        <i class="fa fa-hourglass-half"></i>
+        Auto-stop after
+        <span class="rec-unit">seconds (0 = manual)</span>
+      </label>
+      <div class="rec-slider-row">
+        <input type="range" id="duration-slider" min="0" max="300" value="0" step="5"/>
+        <span id="duration-value" class="rec-slider-val">∞</span>
+      </div>
+    </div>
+
+    <!-- ── GIF quality ────────────────────────────────────────────────────── -->
+    <div class="rec-section" id="gif-quality-section" style="display:none">
+      <label class="rec-label">
+        <i class="fa fa-sliders"></i> GIF Frame Rate
+        <span class="rec-unit">fps</span>
+      </label>
+      <div class="rec-slider-row">
+        <input type="range" id="fps-slider" min="5" max="20" value="10" step="1"/>
+        <span id="fps-value" class="rec-slider-val">10</span>
+      </div>
+      <div class="rec-hint">
+        <i class="fa fa-info-circle"></i>
+        Frames auto-scale to max 800px wide. Use Region or lower FPS for long recordings.
+      </div>
+      <div id="gif-frame-counter" style="display:none" class="rec-hint">
+        <i class="fa fa-film"></i>
+        <span id="gif-frame-count">0</span> frames
+        · <span id="gif-mem-est">0</span> MB est.
+      </div>
+    </div>
+
+    <!-- ── Screenshot save folder ─────────────────────────────────────────── -->
+    <div class="rec-section" id="folder-section" style="display:none">
+      <label class="rec-label"><i class="fa fa-folder-open"></i> Save to folder</label>
+      <div class="folder-row">
+        <span id="folder-path" class="folder-path">~/Pictures</span>
+        <button id="pick-folder-btn" class="rec-btn-sm">Browse…</button>
+      </div>
+    </div>
+
+    <!-- ── Status / countdown ─────────────────────────────────────────────── -->
+    <div class="rec-status" id="rec-status" style="display:none">
+      <div class="rec-status-icon"><i class="fa fa-circle rec-dot"></i></div>
+      <div class="rec-status-text" id="rec-status-text">Recording…</div>
+      <div class="rec-countdown" id="rec-countdown"></div>
+    </div>
+
+    <!-- ── Delay overlay ──────────────────────────────────────────────────── -->
+    <div class="rec-delay-count" id="delay-count" style="display:none">
+      <span id="delay-count-num"></span>
+    </div>
+
+    <!-- ── Action buttons ─────────────────────────────────────────────────── -->
+    <div class="rec-action">
+      <button id="start-btn" class="rec-start-btn">
+        <i class="fa fa-circle"></i> Start
+      </button>
+      <button id="stop-btn" class="rec-stop-btn" style="display:none">
+        <i class="fa fa-stop"></i> Stop &amp; Save
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Console → main-process log forwarder -->
+  <script>
+    (function () {
+      var PAGE = 'Recorder';
+      var _lvl = { log: 'info', info: 'info', warn: 'warn', error: 'error', debug: 'debug' };
+      Object.keys(_lvl).forEach(function (method) {
+        var orig = console[method].bind(console);
+        console[method] = function () {
+          var args = Array.prototype.slice.call(arguments);
+          var msg  = '[' + PAGE + '] ' + args.map(function (a) {
+            if (!a && a !== 0) return String(a);
+            if (a instanceof Error) return a.message + (a.stack ? '\n' + a.stack : '');
+            if (typeof a === 'object') { try { return JSON.stringify(a); } catch (e) { return String(a); } }
+            return String(a);
+          }).join(' ');
+          try { window.electronAPI && window.electronAPI.logs && window.electronAPI.logs.append(_lvl[method], msg); } catch (e) {}
+          orig.apply(console, arguments);
+        };
+      });
+    })();
+  </script>
+  <script type="module" src="js/recorder.js"></script>
+</body>
+</html>

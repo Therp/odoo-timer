@@ -542,7 +542,6 @@ class PopupApp extends Component {
         await storage.set(STORAGE_KEYS.showAllItems, !!value);
     }
 
-
     /**
      * Issues filtered by current UI settings.
      */ 

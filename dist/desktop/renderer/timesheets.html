@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src *;"/>
+  <title>Therp Timer — Task Timesheets</title>
+  <link rel="stylesheet" href="css/lib/font-awesome-4.6.3/css/font-awesome.min.css"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand:      #33BAF6;
+      --brand-dark: #1FA7E6;
+      --bg:         #f0f4f8;
+      --card:       #fff;
+      --border:     #dde3ee;
+      --text:       #3f4854;
+      --muted:      #6b7280;
+      --danger:     #c53030;
+      --radius:     8px;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 13px;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;           /* no outer scroll */
+    }
+
+    /* ── Full-height flex column ── */
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      padding: 0;
+    }
+
+    /* ── Top header bar ── */
+    .ts-header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px 10px;
+      flex-shrink: 0;
+    }
+    .ts-header h2 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ts-header h2 i { color: var(--brand); margin-right: 6px; }
+
+    /* ── Toolbar row ── */
+    .ts-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 20px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .ts-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--card);
+      color: var(--text);
+      font-size: 12.5px;
+      cursor: pointer;
+      transition: background .12s, border-color .12s;
+    }
+    .ts-btn:hover { background: #f0f9ff; border-color: var(--brand); color: var(--brand-dark); }
+    .ts-btn:disabled { opacity: .55; cursor: not-allowed; }
+    .ts-month-label {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ── Scrollable table area ── */
+    .ts-table-wrap {
+      flex: 1;
+      overflow-y: auto;
+      background: var(--card);
+      margin: 12px 16px 0;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    .ts-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .ts-table thead {
+      background: #42475a;
+      color: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    .ts-table thead th {
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .ts-table thead th:last-child { text-align: right; }
+
+    .ts-table tbody tr { border-bottom: 1px solid var(--border); }
+    .ts-table tbody tr:hover { background: #f7fafc; }
+    .ts-table tbody td { padding: 9px 14px; color: var(--text); }
+    .ts-table tbody td.td-date  { white-space: nowrap; width: 100px; }
+    .ts-table tbody td.td-name  { width: 160px; }
+    .ts-table tbody td.td-hours { text-align: right; font-weight: 600; white-space: nowrap; width: 80px; }
+
+    /* Month total row */
+    .ts-total-row td {
+      background: #f7fafc;
+      font-weight: 700;
+      border-top: 2px solid #42475a !important;
+    }
+    .ts-total-row .total-label {
+      text-align: right;
+      color: var(--text);
+    }
+    .ts-total-row .total-amount { text-align: right; }
+
+    /* Empty / error states */
+    .ts-empty-cell { text-align: center; color: var(--muted); padding: 32px !important; }
+    .ts-error-wrap {
+      margin: 20px 16px;
+      padding: 14px 18px;
+      background: #fff5f5;
+      border: 1px solid #feb2b2;
+      border-radius: var(--radius);
+      color: var(--danger);
+    }
+
+    /* ── Summary totals — compact right-aligned panel like Odoo invoice totals ── */
+    .ts-summary-block {
+      flex-shrink: 0;
+      /* sits below table wrap, flush right */
+      display: flex;
+      justify-content: flex-end;
+      padding: 0 16px 14px;
+      background: transparent;
+    }
+
+    /* Inner card — fixed width so it doesn't stretch full-width */
+    .ts-summary-inner {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 0 0 var(--radius) var(--radius);
+      overflow: hidden;
+      min-width: 280px;
+      max-width: 380px;
+      width: 100%;
+    }
+
+    .ts-summary-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .ts-summary-table tr { border-bottom: 1px solid var(--border); }
+    .ts-summary-table tr:last-child { border-bottom: none; }
+    .ts-summary-table td { padding: 10px 16px; font-size: 13px; }
+
+    .ts-sum-label {
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: .04em;
+      white-space: nowrap;
+    }
+    .ts-sum-value {
+      text-align: right;
+      font-size: 20px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .ts-sum-planned          { color: #1a56db; }
+    .ts-sum-spent            { color: #1d6a36; }
+    .ts-sum-spent.over       { color: var(--danger); }
+    .ts-sum-remaining        { color: #c05621; }
+    .ts-sum-remaining.negative { color: var(--danger); }
+
+    .ts-over-msg {
+      background: #fff5f5;
+      border-top: 1px solid #feb2b2;
+      padding: 8px 16px;
+      font-size: 12px;
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    /* Loading skeleton */
+    .ts-loading {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="ts-loading">
+      <i class="fa fa-cog fa-spin fa-2x" style="color:var(--brand);"></i>
+      <span>Loading timesheets…</span>
+    </div>
+  </div>
+    <!-- Forward renderer console output to the main-process log ring buffer.
+       Must be a non-module script so it runs synchronously first, before
+       any module code that calls console.*                               -->
+  <script>
+    (function () {
+      var PAGE = 'Timesheets';
+      var _lvl = { log: 'info', info: 'info', warn: 'warn', error: 'error', debug: 'debug' };
+      Object.keys(_lvl).forEach(function (method) {
+        var orig = console[method].bind(console);
+        console[method] = function () {
+          var args = Array.prototype.slice.call(arguments);
+          var msg  = '[' + PAGE + '] ' + args.map(function (a) {
+            if (!a && a !== 0) return String(a);
+            if (a instanceof Error) return a.message + (a.stack ? '\n' + a.stack : '');
+            if (typeof a === 'object') { try { return JSON.stringify(a); } catch (e) { return String(a); } }
+            return String(a);
+          }).join(' ');
+          try { window.electronAPI && window.electronAPI.logs && window.electronAPI.logs.append(_lvl[method], msg); } catch (e) {}
+          orig.apply(console, arguments);
+        };
+      });
+    })();
+  </script>
+  <script type="module" src="js/components/timesheets-app.js"></script>
+</body>
+</html>

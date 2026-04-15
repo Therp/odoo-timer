@@ -1,0 +1,12 @@
+Therp Timer desktop cleanup bundle
+
+Changes included:
+- Added Chromium flag: --disable-dev-shm-usage in main.js to reduce /dev/shm crashes when opening DevTools or secondary renderer processes on Linux.
+- Kept Linux --no-sandbox behavior already present.
+- Fixed popup-app.js so _backgroundMsgPoll is inside PopupApp instead of being stranded outside the class.
+- Added mount error fallbacks for popup/options/messages pages so startup failures show an error in the UI instead of leaving a blank/stuck loader.
+- Fixed OWL template expressions in templates/options_app.xml that were using unsupported or fragile syntax for the compiler.
+- Recompiled renderer/js/templates.js from the XML templates and restored global template registry assignment.
+
+Note:
+- A broken or missing /dev/shm on the host can still be a system issue. The new Chromium flag is an app-side workaround, not a full OS repair.

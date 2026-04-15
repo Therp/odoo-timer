@@ -1,38 +1,51 @@
-# JetBrains IDE project files
+# ─── IDE / editor ──────────────────────────────────────────────────────────────
 .idea/
 *.iml
-
-# Visual Studio/VS Code
 .vs/
 .vscode/
-
-# VS Code extension local history
 .history/
 
-# Python virtual environments and local tooling
+# ─── Python virtual environments & tooling ─────────────────────────────────────
 .nodeenv/
 .tools-venv/
 .venv/
 venv/
 env/
-
-# Temporary build helpers
-.tmp-owl-templates/
-
-# Local Owl clone used for template compilation
-/owl/
-
-# Python compiled/cache files
 __pycache__/
 *.py[cod]
 *$py.class
-
-# Optional Python tool caches
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 .coverage
 htmlcov/
 
-# macOS/Linux editor noise
+# ─── Node / npm ────────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.npm/
+
+# Desktop app — local Node environment (created by scripts/setup.sh)
+dist/desktop/.nodeenv/
+dist/desktop/.tools-venv/
+dist/desktop/node_modules/
+
+# ─── Build artefacts ───────────────────────────────────────────────────────────
+# Browser extensions — generated JS is committed so the ext can be used without
+# a build step, but certain large or regenerated files are excluded.
+dist/chrome/.gitignore
+dist/firefox/.gitignore
+
+# Desktop packaged releases
+dist/desktop/release/
+
+# ─── Temporary build helpers ───────────────────────────────────────────────────
+.tmp-owl-templates/
+
+# ─── Local OWL clone (used for template compilation) ──────────────────────────
+/owl/
+
+# ─── macOS / Linux editor noise ────────────────────────────────────────────────
 .DS_Store
+Thumbs.db

@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  options_app.xml — OWL template for OptionsApp component.
+  Compile: bash scripts/compile-templates.sh
+-->
+<templates xml:space="preserve">
+
+  <t t-name="OptionsApp">
+    <div>
+      <!-- Sidebar -->
+      <div id="navigation">
+        <h1 class="title-app">Timer Options</h1>
+        <ul class="list-group">
+          <li class="chooser list-group-item"
+            t-att-class="state.activePage === 'about' ? 'selected' : 'notselected'"
+            t-on-click="() => { state.activePage = 'about'; refreshStoragePaths(); }">
+            <i class="fa fa-info-circle"/> <span>About Timer</span>
+          </li>
+          <li class="chooser list-group-item"
+            t-att-class="state.activePage === 'help' ? 'selected' : 'notselected'"
+            t-on-click="() => { state.activePage = 'help'; }">
+            <i class="fa fa-question-circle"/> <span>Help</span>
+          </li>
+          <li class="chooser list-group-item"
+            t-att-class="state.activePage === 'storage' ? 'selected' : 'notselected'"
+            t-on-click="() => { state.activePage = 'storage'; refreshStoragePaths(); }">
+            <i class="fa fa-hdd-o"/> <span>Storage</span>
+          </li>
+          <li class="chooser list-group-item"
+            t-att-class="state.activePage === 'security' ? 'selected' : 'notselected'"
+            t-on-click="() => { state.activePage = 'security'; }">
+            <i class="fa fa-shield"/> <span>Security</span>
+          </li>
+          <li class="chooser list-group-item"
+            t-att-class="state.activePage === 'options' ? 'selected' : 'notselected'"
+            t-on-click="() => { state.activePage = 'options'; }">
+            <i class="fa fa-cogs"/> <span>Options</span>
+          </li>
+        </ul>
+        <hr/>
+        <div class="footer-app">
+          <a href="popup.html" class="back-left">
+            <i class="fa fa-arrow-circle-left fa-2x"/>
+          </a>
+        </div>
+      </div>
+
+      <!-- About -->
+      <div class="options-box box"
+        t-att-class="state.activePage === 'about' ? 'active_page' : 'inactive_page'">
+        <h1><div class="logo"><img src="img/logo.png"/></div></h1><hr/>
+        <div class="about-app">
+          <h4 class="title-app text-center">Description</h4><hr/>
+          Therp Timer Desktop is a native Electron application for logging work hours
+          directly into Odoo timesheets. Supports tasks, issues, screen recording,
+          chatter messaging, and runs in the system tray.
+          <hr/>
+          <h4 class="title-app text-center">Features</h4><hr/>
+          <ul class="list-group">
+            <li class="list-group-item"><i class="fa fa-clock-o"/> Start/stop timer — posts timesheet lines to Odoo</li>
+            <li class="list-group-item"><i class="fa fa-tasks"/> project.task and project.issue support</li>
+            <li class="list-group-item"><i class="fa fa-video-camera"/> Screen recorder — WebM, MP4, MKV</li>
+            <li class="list-group-item"><i class="fa fa-microphone"/> Audio recording — microphone or system audio</li>
+            <li class="list-group-item"><i class="fa fa-camera"/> Screenshot tool with configurable folder</li>
+            <li class="list-group-item"><i class="fa fa-film"/> Animated GIF capture</li>
+            <li class="list-group-item"><i class="fa fa-comments"/> Chatter — read/post messages, @mentions, attachments</li>
+            <li class="list-group-item"><i class="fa fa-bell"/> Desktop notifications for new messages</li>
+            <li class="list-group-item"><i class="fa fa-table"/> Task timesheets — planned vs. spent summary</li>
+            <li class="list-group-item"><i class="fa fa-download"/> Download monthly timesheet as CSV</li>
+            <li class="list-group-item"><i class="fa fa-exchange"/> Multi-remote — switch between Odoo instances</li>
+            <li class="list-group-item"><i class="fa fa-database"/> Config backup and restore (JSON)</li>
+            <li class="list-group-item"><i class="fa fa-desktop"/> Runs in system tray — keeps timing in background</li>
+          </ul>
+          <h4 class="title-app text-center" style="margin-top:16px;">Packages</h4><hr/>
+          <ul class="list-group">
+            <li class="list-group-item"><b>electron</b> ^29.4.6 — Desktop framework</li>
+            <li class="list-group-item"><b>electron-builder</b> ^24.13.3 — Packaging</li>
+            <li class="list-group-item"><b>electron-store</b> ^8.1.0 — Persistent storage</li>
+            <li class="list-group-item"><b>owl</b> 2.8.2 — Odoo Web Library UI framework</li>
+            <li class="list-group-item"><b>font-awesome</b> 4.6.3 — Icon set</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Options / remotes form -->
+      <div class="options-box box"
+        t-att-class="state.activePage === 'options' ? 'active_page' : 'inactive_page'">
+        <div class="form remote-options-form">
+          <form t-on-submit.prevent="addRemote">
+            <h4 class="remote-title text-info">Add Remote</h4><hr/>
+            <div class="form-group">
+              <label for="remote-host">Odoo Host</label>
+              <input type="text" class="form-control" id="remote-host"
+                placeholder="https://your-odoo-host.example"
+                t-att-value="state.form.remote_host"
+                t-on-input="(ev) => { state.form.remote_host = ev.target.value; }"/>
+            </div>
+            <div class="form-group">
+              <label for="remote-name">Display Name</label>
+              <input type="text" class="form-control" id="remote-name"
+                placeholder="My Odoo"
+                t-att-value="state.form.remote_name"
+                t-on-input="(ev) => { state.form.remote_name = ev.target.value; }"/>
+            </div>
+            <div class="form-group">
+              <label for="remote-database">Odoo Database</label>
+              <input type="text" class="form-control" id="remote-database"
+                placeholder="myodoodatabase"
+                t-att-value="state.form.remote_database"
+                t-on-input="(ev) => { state.form.remote_database = ev.target.value; }"/>
+            </div>
+            <div class="form-group">
+              <label for="remote-odoo-version">Odoo Version</label>
+              <input type="text" class="form-control" id="remote-odoo-version"
+                placeholder="16.0"
+                t-att-value="state.form.remote_odoo_version"
+                t-on-input="(ev) => { state.form.remote_odoo_version = ev.target.value; }"/>
+            </div>
+            <div class="form-group">
+              <label for="remote-poll">Message Poll Interval (seconds, 0=off)</label>
+              <input type="number" class="form-control" id="remote-poll"
+                placeholder="60" min="0"
+                t-att-value="state.form.remote_poll_interval"
+                t-on-input="(ev) => { state.form.remote_poll_interval = ev.target.value; }"/>
+            </div>
+            <div class="form-group">
+              <label>Data Source</label>
+              <ul class="data-source-list list-group">
+                <li class="list-group-item">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" value="project.issue"
+                      id="FromIssues"
+                      t-att-checked="state.form.remote_datasrc === 'project.issue'"
+                      t-on-change="() => { state.form.remote_datasrc = 'project.issue'; }"/>
+                    <label class="form-check-label" for="FromIssues">From Issues</label>
+                  </div>
+                </li>
+                <li class="list-group-item">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" value="project.task"
+                      id="FromTasks"
+                      t-att-checked="state.form.remote_datasrc === 'project.task'"
+                      t-on-change="() => { state.form.remote_datasrc = 'project.task'; }"/>
+                    <label class="form-check-label" for="FromTasks">From Tasks</label>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <span class="caption-remotes">Controls</span>
+            <div class="remotes-control-btns col-md-12 text-center text-info pointer">
+              <i title="Add a remote host" class="fa fa-2x fa-plus-circle" t-on-click="addRemote"/>
+              <i title="Refresh remotes" class="fa fa-2x fa-refresh" t-on-click="loadRemotes"/>
+              <i title="Toggle remote list" class="fa fa-2x fa-eye"
+                t-on-click="() => { state.showList = !state.showList; }"/>
+              <i title="Remove all remotes" class="fa fa-2x fa-minus-circle" t-on-click="removeAllRemotes"/>
+            </div>
+            <t t-if="state.error">
+              <div class="remote-error"><t t-esc="state.error"/></div>
+            </t>
+          </form>
+
+          <t t-if="state.showList &amp;&amp; state.remotes.length">
+            <div class="remotes-table-info">
+              <table class="table table-bordered">
+                <caption class="text-info caption-remotes">Available Remotes</caption>
+                <thead>
+                  <tr>
+                    <th>Name</th><th>Host</th><th>Database</th>
+                    <th>Version</th><th>Source</th><th>State</th><th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <t t-foreach="state.remotes" t-as="remote"
+                    t-key="remote.url + remote.database">
+                    <tr>
+                      <td class="text-info">
+                        <ReadMore text="remote.name || ''" limit="18"/>
+                      </td>
+                      <td><ReadMore text="remote.url || ''" limit="28"/></td>
+                      <td><ReadMore text="remote.database || ''" limit="18"/></td>
+                      <td><ReadMore text="remote.odooVersion || '—'" limit="10"/></td>
+                      <td><ReadMore text="remote.datasrc || 'project.issue'" limit="18"/></td>
+                      <td><ReadMore text="remote.state || 'Inactive'" limit="12"/></td>
+                      <td class="remote-row-actions">
+                        <i class="fa fa-pencil text-info" t-on-click="() => editRemote(remote)"/>
+                        <i class="fa fa-trash text-danger" t-on-click="() => removeRemote(remote)"/>
+                      </td>
+                    </tr>
+                  </t>
+                </tbody>
+              </table>
+            </div>
+          </t>
+        </div>
+      </div>
+
+      <!-- Storage -->
+      <div class="options-box box"
+        t-att-class="state.activePage === 'storage' ? 'active_page' : 'inactive_page'">
+        <h4 class="title-app"><i class="fa fa-hdd-o"/> Storage Preferences</h4><hr/>
+        <div class="about-app">
+          <p class="text-muted" style="font-size:13px;">
+            Set save folders for recordings and screenshots.
+            When set, files save directly without a dialog.
+          </p>
+          <div class="form-group">
+            <label>Screenshot Save Folder</label>
+            <div class="folder-row">
+              <span class="folder-path-display">
+                <t t-esc="state.screenshotFolder || 'Not set (will prompt)'"/>
+              </span>
+              <button class="btn btn-sm btn-default" t-on-click="pickScreenshotFolder">Browse…</button>
+              <button class="btn btn-sm btn-danger" t-on-click="clearScreenshotFolder">Clear</button>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:12px;">
+            <label>Video / GIF Save Folder</label>
+            <div class="folder-row">
+              <span class="folder-path-display">
+                <t t-esc="state.videoFolder || 'Not set (will prompt)'"/>
+              </span>
+              <button class="btn btn-sm btn-default" t-on-click="pickVideoFolder">Browse…</button>
+              <button class="btn btn-sm btn-danger" t-on-click="clearVideoFolder">Clear</button>
+            </div>
+          </div>
+          <hr/>
+          <h4 class="title-app"><i class="fa fa-database"/> Backup and Restore</h4>
+          <p class="text-muted" style="font-size:13px;">
+            Export all configuration to JSON, or import a previous backup.
+          </p>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-default" t-on-click="exportConfig">
+              <i class="fa fa-download"/> Export Config
+            </button>
+            <button class="btn btn-default" t-on-click="importConfig">
+              <i class="fa fa-upload"/> Import Config
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="options-box box"
+        t-att-class="state.activePage === 'security' ? 'active_page' : 'inactive_page'">
+        <h4 class="title-app"><i class="fa fa-shield"/> Security and Sandbox</h4><hr/>
+        <div class="about-app">
+          <h5>Linux AppImage — Sandbox</h5>
+          <p class="text-muted" style="font-size:13px;">
+            On Linux the AppImage SUID sandbox helper may not be set up correctly.
+            The app applies --no-sandbox automatically. To restore full sandboxing:
+          </p>
+          <ul class="list-group">
+            <li class="list-group-item">
+              sudo chown root /tmp/.mount_Therp-*/chrome-sandbox and
+              sudo chmod 4755 /tmp/.mount_Therp-*/chrome-sandbox
+            </li>
+          </ul>
+          <h5 style="margin-top:16px;">Session Cookies</h5>
+          <p class="text-muted" style="font-size:13px;">
+            Odoo session cookies are stored in the Electron Chromium session and cleared on logout.
+            No passwords are stored in plain text.
+          </p>
+        </div>
+      </div>
+
+      <!-- Help -->
+      <div class="options-box box"
+        t-att-class="state.activePage === 'help' ? 'active_page' : 'inactive_page'">
+        <h4 class="title-app"><i class="fa fa-question-circle"/> Help and Tutorial</h4><hr/>
+        <div class="about-app">
+          <h5>Getting Started</h5>
+          <ol class="list-group">
+            <li class="list-group-item">Go to Options → Options and click + to add an Odoo remote.</li>
+            <li class="list-group-item">Return to Timer, choose your remote, log in.</li>
+            <li class="list-group-item">Click the play icon next to any task to start timing.</li>
+            <li class="list-group-item">Click the stop icon to post time to Odoo timesheets.</li>
+          </ol>
+          <h5 style="margin-top:16px;">Links</h5>
+          <ul class="list-group">
+            <li class="list-group-item">
+              <a href="https://github.com/Therp/odoo-timer/blob/master/README.md"
+                t-on-click.prevent="openReadme">
+                <i class="fa fa-book"/> README and Documentation
+              </a>
+            </li>
+            <li class="list-group-item">
+              <a href="https://github.com/Therp/odoo-timer/issues"
+                t-on-click.prevent="openIssues">
+                <i class="fa fa-bug"/> Report an Issue / Community Discussions
+              </a>
+            </li>
+          </ul>
+          <h5 style="margin-top:16px;">Keyboard Shortcuts</h5>
+          <ul class="list-group">
+            <li class="list-group-item">Ctrl+Enter — Send message in chatter compose box</li>
+            <li class="list-group-item">Escape — Close mention dropdown in chatter</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </t>
+
+</templates>
