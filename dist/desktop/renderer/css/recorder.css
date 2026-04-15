@@ -165,3 +165,108 @@ input[type="range"] {
 .format-btn.active { border-color: #6366f1; color: #6366f1; background: #f0f0ff; }
 .audio-btn.active  { border-color: #059669; color: #059669;  background: #f0fdf4; }
 .format-btn:disabled, .audio-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ── PiP Camera section ─────────────────────────────────────────────────────── */
+
+.pip-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 0;
+}
+
+/* Toggle switch */
+.pip-toggle-wrap {
+  position: relative; display: inline-flex; align-items: center;
+  cursor: pointer; user-select: none;
+}
+.pip-toggle-wrap input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; }
+.pip-toggle-track {
+  width: 38px; height: 22px; border-radius: 11px;
+  background: #d1d5db; transition: background .2s;
+  display: flex; align-items: center; padding: 2px;
+}
+.pip-toggle-wrap input:checked + .pip-toggle-track { background: var(--brand); }
+.pip-toggle-thumb {
+  width: 18px; height: 18px; border-radius: 50%; background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  transition: transform .2s;
+}
+.pip-toggle-wrap input:checked + .pip-toggle-track .pip-toggle-thumb { transform: translateX(16px); }
+
+/* PiP controls block */
+#pip-controls { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+
+.pip-row { display: flex; align-items: center; gap: 10px; }
+.pip-sub-label {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .04em;
+  min-width: 62px; flex-shrink: 0;
+}
+
+/* Camera preview */
+.pip-preview-wrap {
+  position: relative; width: 100%; aspect-ratio: 16/9;
+  background: #0f1117; border-radius: 8px; overflow: hidden;
+  border: 1px solid var(--border);
+}
+.pip-preview-video {
+  width: 100%; height: 100%; object-fit: cover;
+  display: block; border-radius: 8px;
+}
+.pip-preview-err {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 6px;
+  color: #fc8181; font-size: 12px; text-align: center; padding: 12px;
+}
+.pip-preview-err .fa { font-size: 22px; }
+
+/* Position indicator on preview */
+.pip-pos-overlay {
+  position: absolute; inset: 0; pointer-events: none;
+}
+.pip-pos-indicator {
+  position: absolute;
+  width: 28%; aspect-ratio: 16/9;
+  border: 2px solid rgba(255,255,255,0.7);
+  border-radius: 4px;
+  background: rgba(51,186,246,0.25);
+  box-shadow: 0 0 6px rgba(51,186,246,0.5);
+  transition: top .2s, left .2s, bottom .2s, right .2s;
+}
+
+/* Position picker 2×2 grid */
+.pip-pos-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 4px; width: 80px;
+}
+.pip-pos-btn {
+  padding: 5px; border: 1px solid var(--border);
+  border-radius: 5px; background: var(--card);
+  font-size: 10px; cursor: pointer; color: var(--muted);
+  display: flex; align-items: center; justify-content: center; gap: 1px;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.pip-pos-btn:hover  { border-color: var(--brand); color: var(--brand); }
+.pip-pos-btn.active { border-color: var(--brand); color: var(--brand); background: #eaf8ff; }
+.pip-pos-btn .fa { font-size: 9px; }
+
+/* Size buttons */
+.pip-size-btns { display: flex; gap: 5px; }
+.pip-size-btn {
+  flex: 1; padding: 5px 8px;
+  border: 1px solid var(--border); border-radius: 5px;
+  background: var(--card); font-size: 11px; font-weight: 600;
+  color: var(--muted); cursor: pointer;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.pip-size-btn:hover  { border-color: var(--brand); color: var(--brand); }
+.pip-size-btn.active { border-color: var(--brand); color: var(--brand); background: #eaf8ff; }
+
+/* Hint text (reused for gif section too) */
+.rec-hint {
+  font-size: 11px; color: #888; margin-top: 4px;
+  display: flex; align-items: flex-start; gap: 5px;
+  line-height: 1.4;
+}
+.rec-hint .fa { margin-top: 1px; flex-shrink: 0; }

@@ -14,7 +14,7 @@
         t-att-class="state.view === 'loading' ? '' : 'hide'">
         <div class="loader-card">
           <div class="loader-text">Loading current session and projects…</div>
-          <div class="loader-subtext">Please wait -- or grab a cup of coffee ☕</div>
+          <div class="loader-subtext">Please wait — or grab a cup of coffee ☕</div>
           <i class="fa fa-cog fa-spin fa-5x"/>
         </div>
       </div>
@@ -139,10 +139,10 @@
               </span>
               <i class="fa fa-video-camera fa-2x" title="Record screen"
                 t-on-click="toggleRecording"/>
-              <i class="fa fa-bug fa-2x logs-btn" title="View Logs" t-on-click="openLogs"/>
               <a href="options_main_page.html" class="options-btn" title="Options">
                 <i class="fa fa-cogs fa-2x"/>
               </a>
+              <i class="fa fa-bug fa-2x logs-btn" title="View Logs" t-on-click="openLogs"/>
             </div>
           </div>
         </div>

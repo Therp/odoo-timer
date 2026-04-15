@@ -115,7 +115,7 @@ function createMessagesWindow() {
 function createRecorderWindow() {
   if (recorderWindow) { recorderWindow.show(); recorderWindow.focus(); return; }
   recorderWindow = makeWindow({
-    width: 410, height: 620, resizable: false, minimizable: false, maximizable: false,
+    width: 420, height: 740, resizable: false, minimizable: false, maximizable: false,
     alwaysOnTop: true, title: 'Therp Timer — Recorder',
   });
   recorderWindow.loadFile(RENDERER('recorder.html'));
