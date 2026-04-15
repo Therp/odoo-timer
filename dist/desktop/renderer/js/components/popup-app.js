@@ -52,15 +52,6 @@ const DEFAULTS = {
 
 // ─── Template registry ────────────────────────────────────────────────────────
 
-function getTemplateRegistry() {
-    return globalThis.__THERP_TIMER_TEMPLATES__ || {};
-}
-
-function resolveTemplate(name, fallbackTemplate) {
-    const registry = getTemplateRegistry();
-    return typeof registry[name] === 'function' ? registry[name] : fallbackTemplate;
-}
-
 // ─── Compiled template (identical to chrome build) ────────────────────────────
 
 function createPopupAppTemplate(app, bdom, helpers) {
@@ -115,7 +106,7 @@ function createPopupAppTemplate(app, bdom, helpers) {
 
         if (ctx.state.remotes.length) {
             let loginErrorNode, usernameInputNode, passwordInputNode;
-            let passwordToggleNode, remoteOptionsNode, loginSpinnerNode, remoteInfoNode;
+            let passwordToggleNode, loginSpinnerNode, remoteInfoNode;
 
             if (ctx.state.loginError) loginErrorNode = loginErrorBlock([ctx.state.loginError]);
 
@@ -149,7 +140,7 @@ function createPopupAppTemplate(app, bdom, helpers) {
                 );
             }
             ctx = ctx.__proto__;
-            remoteOptionsNode = list(remoteChildren);
+            const remoteOptionsNode = list(remoteChildren);
 
             if (ctx.state.loginLoading) loginSpinnerNode = loginSpinnerBlock();
             if (ctx.currentRemote) {
@@ -360,7 +351,7 @@ class PopupApp extends Component {
                 } catch (_) {}
             }, 3000);
 
-            // Background message polling (todo #13): poll Odoo directly when
+            // Background message polling: poll Odoo directly when
             // the Messages window may not be open, so the badge stays current.
             this._bgMsgPollHandle = setInterval(async () => {
                 await this._backgroundMsgPoll();
@@ -966,13 +957,13 @@ class PopupApp extends Component {
         window.electronAPI?.openMessages?.();
     }
 
-    /** Open the task timesheets window for a specific task (todo #15). */
+    /** Open the task timesheets window for a specific task. */
     openTimesheets(issue) {
         const taskName = this.issueLabel(issue) || `#${issue.id}`;
         window.electronAPI?.openTimesheets?.(issue.id, taskName);
     }
 
-    /** Open the internal logs viewer window (todo #4). */
+    /** Open the internal logs viewer window. */
     openLogs() {
         window.electronAPI?.logs?.openWindow?.();
     }
@@ -995,7 +986,7 @@ class PopupApp extends Component {
     }
 
     /**
-     * Background message poll (todo #13).
+     * Background message poll.
      * Directly queries Odoo for latest message_ids on all visible tasks and
      * updates the unread badge in the popup toolbar, even when the Messages
      * window is closed.

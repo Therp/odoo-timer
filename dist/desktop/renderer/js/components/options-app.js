@@ -77,7 +77,7 @@ function createOptionsAppTemplate(app, bdom, helpers) {
         `<li class="list-group-item"><b>font-awesome</b> 4.6.3 — Icon set</li>` +
         `</ul></div></div></div>` +
         // ── Options / Add-remote form ──
-        // ── Storage page (todo #1) ──
+        // ── Storage page ──
         `<div class="options-box box" block-attribute-34="class">` +
         `<h4 class="title-app"><i class="fa fa-hdd-o"/> Storage Preferences</h4><hr/>` +
         `<div class="about-app">` +
@@ -96,7 +96,7 @@ function createOptionsAppTemplate(app, bdom, helpers) {
         `<button class="btn btn-default" block-handler-39="click"><i class="fa fa-download"/> Export Config</button>` +
         `<button class="btn btn-default" block-handler-40="click"><i class="fa fa-upload"/> Import Config</button>` +
         `</div></div></div>` +
-        // ── Security page (todo #6) ──
+        // ── Security page ──
         `<div class="options-box box" block-attribute-41="class">` +
         `<h4 class="title-app"><i class="fa fa-shield"/> Security &amp; Sandbox</h4><hr/>` +
         `<div class="about-app">` +
@@ -111,7 +111,7 @@ function createOptionsAppTemplate(app, bdom, helpers) {
         `<h5 style="margin-top:16px;">Data Storage</h5>` +
         `<p class="text-muted" style="font-size:13px;">All settings are stored in <b>electron-store</b> (OS user data directory). No data is sent to third parties.</p>` +
         `</div></div>` +
-        // ── Help / Tutorial page (todo #8) ──
+        // ── Help / Tutorial page ──
         `<div class="options-box box" block-attribute-42="class">` +
         `<h4 class="title-app"><i class="fa fa-question-circle"/> Help &amp; Tutorial</h4><hr/>` +
         `<div class="about-app">` +

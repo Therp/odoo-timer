@@ -21,13 +21,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getAll: ()       => ipcRenderer.invoke('prefs:getAll'),
   },
 
-  // ── Config backup/restore (todo #14) ─────────────────────────────────────
+  // ── Config backup/restore ─────────────────────────────────────
   config: {
     export: ()       => ipcRenderer.invoke('config:export'),
     import: ()       => ipcRenderer.invoke('config:import'),
   },
 
-  // ── Logs (todo #4) ───────────────────────────────────────────────────────
+  // ── Logs ───────────────────────────────────────────────────────
   logs: {
     get:        ()          => ipcRenderer.invoke('logs:get'),
     clear:      ()          => ipcRenderer.invoke('logs:clear'),
@@ -43,7 +43,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openExternal: (url) => ipcRenderer.invoke('shell:openExternal', url),
   openMessages: ()    => ipcRenderer.invoke('messages:open'),
 
-  // ── Task timesheets window (todo #15) ─────────────────────────────────────
+  // ── Task timesheets window ─────────────────────────────────────
   openTimesheets: (taskId, taskName) => ipcRenderer.invoke('timesheets:open', taskId, taskName),
 
   // ── Notifications ─────────────────────────────────────────────────────────

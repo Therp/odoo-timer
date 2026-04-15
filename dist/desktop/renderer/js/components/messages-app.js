@@ -13,11 +13,7 @@
 
 import {
   storage,
-  readRemotes,
   normalizeHost,
-  notify,
-  confirmDialog,
-  promptDialog,
 } from '../lib/common.js';
 
 const { Component, mount, useState, onMounted, onWillUnmount, markup } = owl;
@@ -128,7 +124,7 @@ class MessagesApp extends Component {
       }
     } catch (_) {}
 
-    // Resolve partner_id for follower queries (todo #3)
+    // Resolve partner_id for follower queries
     if (this.state.user?.id) {
       try {
         const ur = await this._searchRead('res.users', [['id','=',this.state.user.id]], ['partner_id'], { limit: 1 });
@@ -167,7 +163,7 @@ class MessagesApp extends Component {
     if (this.state.showAllTasks) {
       tasks = this.state.allTasks;
     } else {
-      // Show assigned tasks + follower tasks (todo #3)
+      // Show assigned tasks + follower tasks
       tasks = this.state.allTasks.filter(
         (t) => t.followerType === 'follower' ||
                !this.state.user?.id ||
@@ -178,12 +174,12 @@ class MessagesApp extends Component {
     return tasks;
   }
 
-  /** Label for a task's relationship type (todo #3). */
+  /** Label for a task's relationship type. */
   followerLabel(task) {
     return task.followerType === 'follower' ? '👁 Follower' : '👤 Assigned';
   }
 
-  /** CSS class for a task's relationship badge (todo #3). */
+  /** CSS class for a task's relationship badge. */
   followerClass(task) {
     return task.followerType === 'follower' ? 'badge-follower' : 'badge-assigned';
   }
@@ -252,14 +248,9 @@ class MessagesApp extends Component {
     return this.state.attachmentDetails[attId]?.name || `Attachment #${attId}`;
   }
 
-  /** Wrap message body in owl.markup() so t-out renders HTML instead of escaping it */
-  bodyMarkup(msg) {
-    return markup(msg.body || '');
-  }
-
   /**
    * Wrap msg.body in OWL's markup() so t-out renders it as real HTML
-   * instead of escaping it as text.  Odoo chatter HTML is server-trusted.
+   * instead of escaping it as text. Odoo chatter HTML is server-trusted.
    */
   bodyMarkup(msg) {
     return markup(msg.body || '');
@@ -267,7 +258,7 @@ class MessagesApp extends Component {
 
   // ── Task loading ───────────────────────────────────────────────────────────
   /**
-   * Load tasks: assigned tasks + tasks where user is a follower (todo #3).
+   * Load tasks: assigned tasks + tasks where user is a follower.
    * Each task record is annotated with followerType: 'assigned' | 'follower'.
    */
   async _loadTasks() {
@@ -281,7 +272,7 @@ class MessagesApp extends Component {
       const assignedTasks = (result.records || []).map((t) => ({ ...t, followerType: 'assigned' }));
       const assignedIds   = new Set(assignedTasks.map((t) => t.id));
 
-      // Follower tasks (todo #3): tasks where current partner is a follower
+      // Follower tasks: tasks where current partner is a follower
       let followerTasks = [];
       if (this.state.partnerId) {
         try {

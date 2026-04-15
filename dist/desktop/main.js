@@ -13,7 +13,7 @@ const fs    = require('fs');
 const os    = require('os');
 const Store = require('electron-store');
 
-// ─── Single-instance lock (todo #12) ─────────────────────────────────────────
+// ─── Single-instance lock ─────────────────────────────────────────
 const gotSingleInstanceLock = app.requestSingleInstanceLock();
 if (!gotSingleInstanceLock) { app.quit(); process.exit(0); }
 app.on('second-instance', () => { if (mainWindow) { mainWindow.show(); mainWindow.focus(); } });
@@ -25,7 +25,7 @@ const store = new Store({ name: 'odoo-timer-data' });
 app.commandLine.appendSwitch('disable-databases');
 app.commandLine.appendSwitch('disable-background-networking');
 app.commandLine.appendSwitch('disable-dev-shm-usage');
-// todo #6: Linux AppImage SUID sandbox workaround
+// Linux AppImage SUID sandbox workaround
 if (process.platform === 'linux') {
   // Sandbox workaround for AppImage / namespaced /tmp environments.
   // Fixes "Unable to access /tmp" errors when opening DevTools.
@@ -33,7 +33,7 @@ if (process.platform === 'linux') {
   app.commandLine.appendSwitch('disable-gpu-sandbox');
 }
 
-// ─── In-memory log ring buffer (todo #4) ─────────────────────────────────────
+// ─── In-memory log ring buffer ─────────────────────────────────────
 const _appLogs = [];
 const MAX_LOGS = 500;
 function _addLog(level, msg) {
@@ -118,7 +118,7 @@ function createRecorderWindow() {
   recorderWindow.on('closed', () => { recorderWindow = null; });
 }
 
-// ─── Timesheets window (todo #15) ─────────────────────────────────────────────
+// ─── Timesheets window ─────────────────────────────────────────────
 function createTimesheetsWindow(taskId, taskName) {
   if (timesheetsWindow) {
     timesheetsWindow.show(); timesheetsWindow.focus();
@@ -136,7 +136,7 @@ function createTimesheetsWindow(taskId, taskName) {
   timesheetsWindow.on('closed', () => { timesheetsWindow = null; });
 }
 
-// ─── Logs window (todo #4) ────────────────────────────────────────────────────
+// ─── Logs window ────────────────────────────────────────────────────
 function createLogsWindow() {
   if (logsWindow) { logsWindow.show(); logsWindow.focus(); return; }
   logsWindow = makeWindow({ width: 900, height: 600, minWidth: 700, minHeight: 400, title: 'Therp Timer — Logs' });
@@ -168,7 +168,7 @@ function createOverlay() {
   });
 }
 
-// ─── Quick screenshot from tray (todo #7) ─────────────────────────────────────
+// ─── Quick screenshot from tray ─────────────────────────────────────
 async function takeQuickScreenshot() {
   try {
     const sources = await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: { width: 1920, height: 1080 } });
@@ -210,7 +210,7 @@ function showWindow(which) {
   else createMainWindow();
 }
 
-// ─── Tray (todo #7) ──────────────────────────────────────────────────────────
+// ─── Tray ──────────────────────────────────────────────────────────
 function updateTray() {
   if (!tray) return;
   const icon = (recState.active || timerActive) ? ICON_ACTIVE : ICON_IDLE;
@@ -373,7 +373,7 @@ ipcMain.handle('prefs:getAll', () => {
   } catch { return {}; }
 });
 
-// ─── IPC: Config backup/restore (todo #14) ────────────────────────────────────
+// ─── IPC: Config backup/restore ────────────────────────────────────
 ipcMain.handle('config:export', async () => {
   try {
     const data = JSON.stringify(store.store, null, 2);
@@ -401,7 +401,7 @@ ipcMain.handle('config:import', async () => {
   } catch (err) { return { ok: false, reason: err.message }; }
 });
 
-// ─── IPC: Logs (todo #4) ─────────────────────────────────────────────────────
+// ─── IPC: Logs ─────────────────────────────────────────────────────
 ipcMain.handle('logs:get',         () => [..._appLogs]);
 ipcMain.handle('logs:clear',       () => { _appLogs.length = 0; return true; });
 ipcMain.handle('logs:append',      (_e, level, msg) => { _addLog(level, msg); return true; });

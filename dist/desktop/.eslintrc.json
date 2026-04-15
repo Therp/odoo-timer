@@ -13,7 +13,7 @@
     "no-console": "off",
     "semi": ["error", "always"],
     "no-undef": "warn",
-    "eqeqeq": ["warn", "always"],
+    "eqeqeq": ["warn", "always", { "null": "ignore" }],
     "no-var": "error",
     "prefer-const": "warn"
   },
