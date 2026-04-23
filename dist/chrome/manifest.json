@@ -31,5 +31,9 @@
   "permissions": [
     "storage",
     "cookies"
+  ],
+  "host_permissions": [
+    "https://*/*",
+    "http://*/*"
   ]
 }
