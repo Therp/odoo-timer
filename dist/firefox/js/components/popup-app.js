@@ -763,7 +763,6 @@ class PopupApp extends Component {
             ]);
 
             if (sessionInfo?.uid) {
-                // FIX: must return here so we don't fall through to VIEW_LOGIN below.
                 await this.completeSession(sessionInfo, this.state.remotes[remoteIndex] || null);
                 return;
             }
@@ -841,8 +840,6 @@ class PopupApp extends Component {
     }
 
     issueLabel(issue) {
-        // [FIX #36] For tasks, use issue.name only — display_name already
-        // contains the code prefix in Odoo, causing it to appear twice.
         if (this.state.dataSource === DATA_SOURCE_TASK) {
             const code = this.normalizeText(issue.code);
             const issueName = this.normalizeText(issue.name || issue.description || '');
@@ -1289,23 +1286,22 @@ class PopupApp extends Component {
      * Download a CSV with current month timesheet rows.
      */
     async downloadCurrentMonthTimesheets() {
-        // [FEATURE] Remind user about auto-download setting if not enabled
         const autoDownloadEnabled = await storage.get('auto_download_issue_timesheet', false);
         if (!autoDownloadEnabled) {
-            const reminderText = `
-                <div style="text-align: center; padding: 20px;">
-                    <h3 style="margin-bottom: 15px;">💡 Tip: Enable Auto-Download</h3>
-                    <p style="margin-bottom: 10px;">
-                        You can enable <b>Auto Download Current Item Timesheet</b> 
-                        in the Options menu to automatically download timesheets 
-                        when you stop the timer.
-                    </p>
-                    <p style="color: #666; font-size: 0.9em;">
-                        This is just a reminder - you can still download manually.
-                    </p>
-                </div>
-            `;
-            await alert.show(reminderText, ['Got it, continue']);
+            const blockingText = 
+              '<div style="text-align: center; padding: 20px;">' +
+                '<h5 style="margin-bottom: 15px; color: #d32f2f;">⚠️ Auto-Download Not Enabled</h5>' +
+                '<p style="margin-bottom: 15px; font-size: 16px;">' +
+                  'Please enable <b>Auto Download Current Item Timesheet</b> ' +
+                  'in the Options menu before downloading timesheets.' +
+                '</p>' +
+                '<p style="color: #666; font-size: 14px;">' +
+                  'Click the <b>⚙️ Options</b> icon, then check the box under General Settings.' +
+                '</p>' +
+              '</div>';
+            
+            await alert.show(blockingText, ['OK']);
+            return; // STOP - do not proceed with download
         }
 
         try {

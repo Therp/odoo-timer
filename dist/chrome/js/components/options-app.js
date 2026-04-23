@@ -20,6 +20,15 @@ const STORAGE_KEYS = {
   remoteHostInfo: 'remote_host_info',
 };
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 
 function getTemplateRegistry() {
   return globalThis.__THERP_TIMER_TEMPLATES__ || {};
@@ -96,7 +105,6 @@ function createOptionsAppTemplate(app, bdom, helpers) {
     const reloadRemotesHandler = [ctx.loadRemotes, ctx];
     const toggleListHandler = [() => { ctx.state.showList = !ctx.state.showList; }, ctx];
     const removeAllRemotesHandler = [ctx.removeAllRemotes, ctx];
-    // [FIX #38] Auto-download preference
     const autoDownloadChecked = ctx.state.autoDownloadIssueTimesheet;
     const autoDownloadHandler = [(ev) => { ctx.toggleAutoDownload(ev); }];
 
@@ -124,10 +132,11 @@ function createOptionsAppTemplate(app, bdom, helpers) {
         const sourceNode = readMoreSource({ text: ctx.remote.datasrc || DEFAULT_DATA_SOURCE, limit: 18 }, key + `__4__${remoteKey}`, node, this, null);
         const stateNode = readMoreState({ text: ctx.remote.state || 'Inactive', limit: 18 }, key + `__5__${remoteKey}`, node, this, null);
         const remoteItem = ctx.remote;
+        const editHandler = [() => ctx.editRemote(remoteItem), ctx];
         const deleteHandler = [() => ctx.removeRemote(remoteItem), ctx];
 
         remoteChildren[i] = withKey(
-          remoteRowBlock([deleteHandler], [nameNode, hostNode, databaseNode, sourceNode, stateNode]),
+          remoteRowBlock([editHandler, deleteHandler], [nameNode, hostNode, databaseNode, sourceNode, stateNode]),
           remoteKey
         );
       }
@@ -159,8 +168,8 @@ function createOptionsAppTemplate(app, bdom, helpers) {
         reloadRemotesHandler,
         toggleListHandler,
         removeAllRemotesHandler,
-        autoDownloadChecked,     // 21 [FIX #38]
-        autoDownloadHandler,     // 22 [FIX #38]
+        autoDownloadChecked,     
+        autoDownloadHandler,
       ],
       [errorNode, remoteListNode]
     );
@@ -175,12 +184,15 @@ class OptionsApp extends Component {
   static template = 'OptionsApp';
 
   setup() {
+    this.removeRemote = this.removeRemote.bind(this);
+    this.editRemote = this.editRemote.bind(this);
+
     this.state = useState({
       activePage: PAGE_OPTIONS,
       remotes: [],
       showList: true,
       error: '',
-      autoDownloadIssueTimesheet: false,  // [FIX #38]
+      autoDownloadIssueTimesheet: false,
       form: {
         remote_host: '',
         remote_name: '',
@@ -192,7 +204,7 @@ class OptionsApp extends Component {
     onWillStart(async () => {
       await this.loadRemotes();
       const saved = await storage.get('auto_download_issue_timesheet', false);
-      this.state.autoDownloadIssueTimesheet = !!saved;  // [FIX #38]
+      this.state.autoDownloadIssueTimesheet = !!saved;
     });
   }
 
@@ -216,7 +228,7 @@ class OptionsApp extends Component {
   }
 
   /**
-   * [FIX #38] Toggle the auto-download timesheet preference and persist it.
+   * Toggle the auto-download timesheet preference and persist it.
    * @param {Event} ev
    */
   async toggleAutoDownload(ev) {
@@ -290,79 +302,7 @@ class OptionsApp extends Component {
    * @returns {Promise<void>}
    */
   async removeRemote(remote) {
-    const confirmed = await confirmDialog(`Are you sure you want to remove remote [${remote.url}
-
-  /**
-   * [FEATURE] Edit an existing remote configuration
-   * @param {Object} remote - The remote to edit
-   */
-  async editRemote(remote) {
-    // Create a simple modal/popup for editing
-    const editHtml = `
-      <div style="text-align: left; max-width: 400px;">
-        <h3 style="margin-bottom: 20px;">Edit Remote: ${remote.name}</h3>
-        <div style="margin-bottom: 15px;">
-          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Host:</label>
-          <input id="edit-host" type="text" value="${remote.url}" 
-                 style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"/>
-        </div>
-        <div style="margin-bottom: 15px;">
-          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Name:</label>
-          <input id="edit-name" type="text" value="${remote.name}"
-                 style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"/>
-        </div>
-        <div style="margin-bottom: 15px;">
-          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Database:</label>
-          <input id="edit-database" type="text" value="${remote.database}"
-                 style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"/>
-        </div>
-        <div style="margin-bottom: 15px;">
-          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Data Source:</label>
-          <select id="edit-datasource" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-            <option value="project.issue" ${remote.datasrc === 'project.issue' ? 'selected' : ''}>From Issues</option>
-            <option value="project.task" ${remote.datasrc === 'project.task' ? 'selected' : ''}>From Tasks</option>
-          </select>
-        </div>
-      </div>
-    `;
-
-    // Show the edit form
-    const result = await alert.show(editHtml, ['Cancel', 'Save']);
-    
-    if (result === 'Save') {
-      // Get edited values
-      const newHost = document.getElementById('edit-host').value.trim();
-      const newName = document.getElementById('edit-name').value.trim();
-      const newDatabase = document.getElementById('edit-database').value.trim();
-      const newDatasource = document.getElementById('edit-datasource').value;
-
-      // Validate
-      if (!newHost || !newName || !newDatabase) {
-        await alert.show('All fields are required!', ['OK']);
-        return;
-      }
-
-      // Find and update the remote
-      const remotes = await storage.getRemotes();
-      const index = remotes.findIndex(r => 
-        r.url === remote.url && r.database === remote.database
-      );
-
-      if (index !== -1) {
-        remotes[index] = {
-          ...remotes[index],
-          url: newHost,
-          name: newName,
-          database: newDatabase,
-          datasrc: newDatasource
-        };
-
-        await storage.setRemotes(remotes);
-        await this.loadRemotes();
-        await alert.show('Remote updated successfully!', ['OK']);
-      }
-    }
-  }]?`);
+    const confirmed = await confirmDialog(`Are you sure you want to remove remote [${remote.url}]?`);
     if (!confirmed) {
       return;
     }
@@ -377,11 +317,131 @@ class OptionsApp extends Component {
     await this.loadRemotes();
     await notify(`[${remote.url}] removed successfully!`);
   }
+
   /**
-   * Expose the About page constant to Owl XML expressions.
+   * Edit an existing remote configuration.
    *
-   * @returns {string}
+   * @param {object} remote Remote row to edit.
+   * @returns {Promise<void>}
    */
+  async editRemote(remote) {
+    this.state.error = '';
+
+    const currentHost = remote.url || '';
+    const currentName = remote.name || '';
+    const currentDatabase = remote.database || '';
+    const currentDatasource = remote.datasrc || DEFAULT_DATA_SOURCE;
+
+    const customAlert = globalThis.alert && typeof globalThis.alert.show === 'function'
+      ? globalThis.alert
+      : null;
+
+    let host = currentHost;
+    let name = currentName;
+    let database = currentDatabase;
+    let datasrc = currentDatasource;
+
+    if (customAlert) {
+      const inputSuffix = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const hostId = `edit-remote-host-${inputSuffix}`;
+      const nameId = `edit-remote-name-${inputSuffix}`;
+      const databaseId = `edit-remote-database-${inputSuffix}`;
+      const datasourceId = `edit-remote-datasource-${inputSuffix}`;
+      const html = `
+        <div style="min-width:340px;max-width:520px;text-align:left;">
+          <div style="margin-bottom:14px;font-weight:700;font-size:18px;color:#42475a;text-align:center;">Edit Remote</div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <label style="display:flex;flex-direction:column;gap:6px;font-weight:600;color:#334155;">
+              <span>Odoo Host</span>
+              <input id="${hostId}" type="text" value="${escapeHtml(currentHost)}" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #cbd5e1;border-radius:4px;font:14px Arial,Helvetica,sans-serif;color:#111827;background:#fff;" />
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px;font-weight:600;color:#334155;">
+              <span>Display Name</span>
+              <input id="${nameId}" type="text" value="${escapeHtml(currentName)}" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #cbd5e1;border-radius:4px;font:14px Arial,Helvetica,sans-serif;color:#111827;background:#fff;" />
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px;font-weight:600;color:#334155;">
+              <span>Odoo Database</span>
+              <input id="${databaseId}" type="text" value="${escapeHtml(currentDatabase)}" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #cbd5e1;border-radius:4px;font:14px Arial,Helvetica,sans-serif;color:#111827;background:#fff;" />
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px;font-weight:600;color:#334155;">
+              <span>Data Source</span>
+              <select id="${datasourceId}" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #cbd5e1;border-radius:4px;font:14px Arial,Helvetica,sans-serif;color:#111827;background:#fff;">
+                <option value="project.issue" ${currentDatasource === DEFAULT_DATA_SOURCE ? 'selected' : ''}>From Issues</option>
+                <option value="project.task" ${currentDatasource === 'project.task' ? 'selected' : ''}>From Tasks</option>
+              </select>
+            </label>
+          </div>
+        </div>
+      `;
+
+      const result = await customAlert.show(html, ['Cancel', 'Save']);
+      if (result !== 'Save') {
+        return;
+      }
+
+      const hostEl = document.getElementById(hostId);
+      const nameEl = document.getElementById(nameId);
+      const databaseEl = document.getElementById(databaseId);
+      const datasourceEl = document.getElementById(datasourceId);
+
+      host = normalizeHost(hostEl ? hostEl.value : currentHost);
+      name = ((nameEl ? nameEl.value : currentName) || '').trim();
+      database = ((databaseEl ? databaseEl.value : currentDatabase) || '').trim();
+      datasrc = datasourceEl ? datasourceEl.value : currentDatasource;
+    } else {
+      return;
+    }
+
+    if (!host || !name || !database) {
+      this.state.error = 'Fields cannot be empty';
+      return;
+    }
+
+    if (!validURL(host)) {
+      this.state.error = 'Invalid URL syntax';
+      return;
+    }
+
+    const remotes = await readRemotes();
+    const duplicate = remotes.find(
+      (item) => !(item.url === currentHost && item.database === currentDatabase)
+        && item.url === host
+        && item.database === database
+    );
+    if (duplicate) {
+      this.state.error = `${host} and ${database} already exist; duplicates are not allowed`;
+      return;
+    }
+
+    const index = remotes.findIndex(
+      (item) => item.url === currentHost && item.database === currentDatabase
+    );
+    if (index === -1) {
+      this.state.error = 'Remote not found';
+      return;
+    }
+
+    remotes[index] = {
+      ...remotes[index],
+      url: host,
+      name,
+      database,
+      datasrc,
+    };
+
+    await writeRemotes(remotes);
+
+    if (host !== currentHost) {
+      await clearOdooSessionCookies(currentHost);
+    }
+    if (database !== currentDatabase) {
+      await storage.remove(currentDatabase);
+    }
+
+    await this.loadRemotes();
+    await notify(`Remote [${name}] updated successfully.`);
+  }
+
   get PAGE_ABOUT() {
       return PAGE_ABOUT;
   }
