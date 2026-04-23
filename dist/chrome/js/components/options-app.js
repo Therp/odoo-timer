@@ -58,7 +58,8 @@ function createOptionsAppTemplate(app, bdom, helpers) {
     `<div class="remotes-table-info"><table class="table table-bordered"><caption class="text-info caption-remotes">List of Available Remotes</caption><thead><tr><th scope="col">Remote</th><th scope="col">Host</th><th scope="col">Database</th><th scope="col">Source</th><th scope="col">State</th><th></th></tr></thead><tbody><block-child-0/></tbody></table></div>`
   );
   const remoteRowBlock = createBlock(
-    `<tr><td class="text-info"><block-child-0/></td><td><block-child-1/></td><td><block-child-2/></td><td><block-child-3/></td><td><block-child-4/></td><td class="remote-row-actions"><i class="fa fa-trash text-danger" title="Remove remote" block-handler-0="click"/></td></tr>`
+    `<tr><td class="text-info"><block-child-0/></td><td><block-child-1/></td><td><block-child-2/></td><td><block-child-3/></td><td><block-child-4/></td><td class="remote-row-actions"><i class="fa fa-pencil text-primary" title="Edit remote" block-handler-0="click" style="margin-right: 10px; cursor: pointer;"/>
+                        <i class="fa fa-trash text-danger" title="Remove remote" block-handler-1="click" style="cursor: pointer;"/></td></tr>`
   );
 
   return function template(ctx, node, key = '') {
@@ -289,7 +290,79 @@ class OptionsApp extends Component {
    * @returns {Promise<void>}
    */
   async removeRemote(remote) {
-    const confirmed = await confirmDialog(`Are you sure you want to remove remote [${remote.url}]?`);
+    const confirmed = await confirmDialog(`Are you sure you want to remove remote [${remote.url}
+
+  /**
+   * [FEATURE] Edit an existing remote configuration
+   * @param {Object} remote - The remote to edit
+   */
+  async editRemote(remote) {
+    // Create a simple modal/popup for editing
+    const editHtml = `
+      <div style="text-align: left; max-width: 400px;">
+        <h3 style="margin-bottom: 20px;">Edit Remote: ${remote.name}</h3>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Host:</label>
+          <input id="edit-host" type="text" value="${remote.url}" 
+                 style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"/>
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Name:</label>
+          <input id="edit-name" type="text" value="${remote.name}"
+                 style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"/>
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Database:</label>
+          <input id="edit-database" type="text" value="${remote.database}"
+                 style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"/>
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Data Source:</label>
+          <select id="edit-datasource" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            <option value="project.issue" ${remote.datasrc === 'project.issue' ? 'selected' : ''}>From Issues</option>
+            <option value="project.task" ${remote.datasrc === 'project.task' ? 'selected' : ''}>From Tasks</option>
+          </select>
+        </div>
+      </div>
+    `;
+
+    // Show the edit form
+    const result = await alert.show(editHtml, ['Cancel', 'Save']);
+    
+    if (result === 'Save') {
+      // Get edited values
+      const newHost = document.getElementById('edit-host').value.trim();
+      const newName = document.getElementById('edit-name').value.trim();
+      const newDatabase = document.getElementById('edit-database').value.trim();
+      const newDatasource = document.getElementById('edit-datasource').value;
+
+      // Validate
+      if (!newHost || !newName || !newDatabase) {
+        await alert.show('All fields are required!', ['OK']);
+        return;
+      }
+
+      // Find and update the remote
+      const remotes = await storage.getRemotes();
+      const index = remotes.findIndex(r => 
+        r.url === remote.url && r.database === remote.database
+      );
+
+      if (index !== -1) {
+        remotes[index] = {
+          ...remotes[index],
+          url: newHost,
+          name: newName,
+          database: newDatabase,
+          datasrc: newDatasource
+        };
+
+        await storage.setRemotes(remotes);
+        await this.loadRemotes();
+        await alert.show('Remote updated successfully!', ['OK']);
+      }
+    }
+  }]?`);
     if (!confirmed) {
       return;
     }

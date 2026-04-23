@@ -1289,6 +1289,25 @@ class PopupApp extends Component {
      * Download a CSV with current month timesheet rows.
      */
     async downloadCurrentMonthTimesheets() {
+        // [FEATURE] Remind user about auto-download setting if not enabled
+        const autoDownloadEnabled = await storage.get('auto_download_issue_timesheet', false);
+        if (!autoDownloadEnabled) {
+            const reminderText = `
+                <div style="text-align: center; padding: 20px;">
+                    <h3 style="margin-bottom: 15px;">💡 Tip: Enable Auto-Download</h3>
+                    <p style="margin-bottom: 10px;">
+                        You can enable <b>Auto Download Current Item Timesheet</b> 
+                        in the Options menu to automatically download timesheets 
+                        when you stop the timer.
+                    </p>
+                    <p style="color: #666; font-size: 0.9em;">
+                        This is just a reminder - you can still download manually.
+                    </p>
+                </div>
+            `;
+            await alert.show(reminderText, ['Got it, continue']);
+        }
+
         try {
             if (!this.state.user?.id) {
                 throw new Error('Login first.');

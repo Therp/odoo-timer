@@ -232,9 +232,16 @@
                       </td>
                       <td class="remote-row-actions">
                         <i
+                          class="fa fa-pencil text-primary"
+                          title="Edit remote"
+                          t-on-click="() => editRemote(remote)"
+                          style="margin-right: 10px; cursor: pointer;"
+                        />
+                        <i
                           class="fa fa-trash text-danger"
                           title="Remove remote"
                           t-on-click="() => removeRemote(remote)"
+                          style="cursor: pointer;"
                         />
                       </td>
                     </tr>
