@@ -32,7 +32,7 @@
     "storage",
     "cookies"
   ],
-  "optional_host_permissions": [
+  "host_permissions": [
     "https://*/*",
     "http://*/*"
   ]

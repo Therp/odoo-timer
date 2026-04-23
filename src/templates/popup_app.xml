@@ -165,19 +165,6 @@
         </div>
 
         <div class="container footer top-actions">
-          <div
-            class="auto_download_timesheet"
-            title="Store timesheet locally when you stop timer on the current item"
-          >
-            <input
-              id="auto_download_timesheet_input"
-              type="checkbox"
-              t-att-checked="state.autoDownloadIssueTimesheet"
-              t-on-change="toggleAutoDownload"
-            />
-            Auto Download Current Item Timesheet
-          </div>
-
           <div class="row">
             <div class="mx-3 col-md-12 footer-btns pointer">
               <i
@@ -250,8 +237,8 @@
                 </th>
 
                 <t t-if="state.dataSource === 'project.task'">
-                  <th>Hours Spent</th>
-                  <th>Remaining Hours</th>
+                  <th class="text-center">Hours Spent</th>
+                  <th class="text-center">Hours Left</th>
                 </t>
 
                 <th class="project-col">Project</th>
@@ -317,13 +304,13 @@
                     </td>
 
                     <t t-if="state.dataSource === 'project.task'">
-                      <td>
+                      <td class="text-center">
                         <ReadMore
                           text="normalizeText(formatHours(issue.effective_hours))"
                           limit="9"
                         />
                       </td>
-                      <td>
+                      <td class="text-center">
                         <ReadMore
                           text="normalizeText(formatHours(issue.remaining_hours))"
                           limit="9"
