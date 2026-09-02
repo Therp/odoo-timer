@@ -17,6 +17,20 @@ import {
     promptDialog,
 } from '../lib/common.js';
 import { ReadMore, createReadMoreTemplate } from './readmore.js';
+import {
+    DATA_SOURCE_ISSUE,
+    DATA_SOURCE_TASK,
+    DATA_SOURCE_HELPDESK,
+    resourceLabels,
+    inspectHelpdeskCapabilities,
+    helpdeskUnavailableMessage,
+    helpdeskTimesheetUnavailableMessage,
+    isAssignedToUser,
+    isHelpdeskTimesheetEnabled,
+    resourceRelation,
+    resourceHours,
+    timesheetBinding,
+} from '../lib/resource-adapters.js';
 
 const {Component, mount, useState, onMounted, onWillUnmount} = owl;
 
@@ -24,14 +38,12 @@ const VIEW_LOADING = 'loading';
 const VIEW_LOGIN = 'login';
 const VIEW_MAIN = 'main';
 
-const DATA_SOURCE_ISSUE = 'project.issue';
-const DATA_SOURCE_TASK = 'project.task';
-
 const STORAGE_KEYS = {
     useExistingSession: 'useExistingSession',
     autoDownloadIssueTimesheet: 'auto_download_issue_timesheet',
     timerStartIso: 'start_date_time',
     activeTimerId: 'active_timer_id',
+    activeTimerContext: 'active_timer_context',
     currentHost: 'current_host',
     currentDatabase: 'current_host_db',
     currentDataSource: 'current_host_datasrc',
@@ -464,6 +476,9 @@ class PopupApp extends Component {
             serverVersion: '',
             odooOWLVersion: owl.__info__.version,
             supportedFields: {},
+            sourceCapabilities: {},
+            sourceError: '',
+            activeTimerContext: null,
             busyMessage: DEFAULTS.busyMessage,
             loadingTable: false,
         });
@@ -521,11 +536,30 @@ class PopupApp extends Component {
     }
 
     get itemLabelSingular() {
-        return this.state.dataSource === DATA_SOURCE_TASK ? 'task' : 'issue';
+        return resourceLabels(this.state.dataSource).singular;
     }
 
     get itemLabelPlural() {
-        return this.state.dataSource === DATA_SOURCE_TASK ? 'Tasks' : 'Issues';
+        return resourceLabels(this.state.dataSource).plural;
+    }
+
+    get isHelpdeskSource() {
+        return this.state.dataSource === DATA_SOURCE_HELPDESK;
+    }
+
+    get showHelpdeskHours() {
+        return this.isHelpdeskSource && Boolean(this.state.sourceCapabilities.hoursField);
+    }
+
+    get relationHeaderLabel() {
+        return this.isHelpdeskSource && !this.state.sourceCapabilities.projectField
+            ? 'Team'
+            : 'Project';
+    }
+
+    get tableColumnCount() {
+        if (this.state.dataSource === DATA_SOURCE_TASK) return 7;
+        return this.showHelpdeskHours ? 6 : 5;
     }
 
     async updateLimitPreference(value) {
@@ -548,8 +582,8 @@ class PopupApp extends Component {
         let issues = [...this.state.issues];
 
         issues.sort((a, b) => {
-        if (a.id === this.state.activeTimerId) return -1;
-        if (b.id === this.state.activeTimerId) return 1;
+        if (this.isActiveTimerItem(a)) return -1;
+        if (this.isActiveTimerItem(b)) return 1;
         const priorityDelta = Number(b.priority || 0) - Number(a.priority || 0);
         if (priorityDelta !== 0) return priorityDelta;
         const stageDelta = Number(a.stage_sequence ?? 9999) - Number(b.stage_sequence ?? 9999);
@@ -564,8 +598,15 @@ class PopupApp extends Component {
         } else if (this.state.user?.id) {
         issues = issues.filter(
             (issue) =>
-            issue.id === this.state.activeTimerId ||
-            (issue.user_id?.[0] === this.state.user.id && matchesSearch(issue))
+            this.isActiveTimerItem(issue) ||
+            (
+                isAssignedToUser(
+                    issue,
+                    this.state.sourceCapabilities.assignmentField || 'user_id',
+                    this.state.user.id,
+                    this.state.sourceCapabilities.assignmentType
+                ) && matchesSearch(issue)
+            )
         );
         } else {
         issues = issues.filter(matchesSearch);
@@ -626,6 +667,8 @@ class PopupApp extends Component {
         this.state.serverVersion = '';
         this.state.odooOWLVersion = owl.__info__.version;
         this.state.supportedFields = {};
+        this.state.sourceCapabilities = {};
+        this.state.sourceError = '';
         this.state.view = VIEW_LOGIN;
         this.state.loginLoading = false;
         this.state.loadingTable = false;
@@ -685,6 +728,7 @@ class PopupApp extends Component {
             autoDownloadIssueTimesheet,
             timerStartIso,
             activeTimerIdRaw,
+            activeTimerContext,
             currentHost,
             currentDb,
             currentSrc,
@@ -695,6 +739,7 @@ class PopupApp extends Component {
             storage.get(STORAGE_KEYS.autoDownloadIssueTimesheet, false),
             storage.get(STORAGE_KEYS.timerStartIso, null),
             storage.get(STORAGE_KEYS.activeTimerId, null),
+            storage.get(STORAGE_KEYS.activeTimerContext, null),
             storage.get(STORAGE_KEYS.currentHost, ''),
             storage.get(STORAGE_KEYS.currentDatabase, ''),
             storage.get(STORAGE_KEYS.currentDataSource, DEFAULTS.dataSource),
@@ -709,6 +754,17 @@ class PopupApp extends Component {
         this.state.currentHost = currentHost || '';
         this.state.currentDatabase = currentDb || '';
         this.state.dataSource = currentSrc || DEFAULTS.dataSource;
+        this.state.activeTimerContext = activeTimerContext || (
+            this.state.activeTimerId
+                ? {
+                    host: this.state.currentHost,
+                    database: this.state.currentDatabase,
+                    model: this.state.dataSource,
+                    resId: this.state.activeTimerId,
+                    startedAt: this.state.timerStartIso,
+                }
+                : null
+        );
         this.state.limitTo = searchLimit ?? DEFAULTS.searchLimit;
         this.state.allIssues = !!showAllItems;
     }
@@ -833,6 +889,25 @@ class PopupApp extends Component {
         return this.normalizeText(value);
     }
 
+    resourceRelationValue(issue) {
+        return resourceRelation(issue, this.state.dataSource, this.state.sourceCapabilities);
+    }
+
+    helpdeskHoursValue(issue) {
+        return resourceHours(issue, this.state.dataSource, this.state.sourceCapabilities);
+    }
+
+    isActiveTimerItem(issue) {
+        if (!issue?.id || Number(issue.id) !== Number(this.state.activeTimerId)) return false;
+        const context = this.state.activeTimerContext;
+        if (!context) return true;
+        return (
+            context.model === this.state.dataSource &&
+            context.host === this.state.currentHost &&
+            context.database === this.state.currentDatabase
+        );
+    }
+
     issueHref(issue) {
         if (!this.state.currentHost || !issue?.id) {
             return null;
@@ -841,6 +916,12 @@ class PopupApp extends Component {
     }
 
     issueLabel(issue) {
+        if (this.state.dataSource === DATA_SOURCE_HELPDESK) {
+            const referenceField = this.state.sourceCapabilities.ticketReferenceField;
+            const reference = this.normalizeText(referenceField ? issue[referenceField] : '');
+            const name = this.normalizeText(issue.name || issue.display_name || issue.description || '');
+            return [reference || `#${issue.id}`, name].filter(Boolean).join(' - ');
+        }
         if (this.state.dataSource === DATA_SOURCE_TASK) {
             const code = this.normalizeText(issue.code);
             const issueName = this.normalizeText(issue.name || issue.description || '');
@@ -999,7 +1080,15 @@ class PopupApp extends Component {
      * Load project records required to resolve analytic accounts.
      */
     async loadProjects() {
-        const result = await this.rpc.searchRead('project.project', [], ['analytic_account_id']);
+        const projectFields = await this.getSupportedFieldsForModel('project.project');
+        if (!projectFields) {
+            this.state.projects = [];
+            return;
+        }
+        const fields = ['name', 'analytic_account_id', 'account_id'].filter((field) =>
+            Object.prototype.hasOwnProperty.call(projectFields, field)
+        );
+        const result = await this.rpc.searchRead('project.project', [], fields);
         this.state.projects = result.records || [];
     }
 
@@ -1019,6 +1108,55 @@ class PopupApp extends Component {
         }
 
         return availableFields;
+    }
+
+    /**
+     * Detect the installed Helpdesk implementation and its timesheet relation.
+     * Enterprise uses helpdesk_ticket_id; OCA uses ticket_id.
+     */
+    async inspectSelectedSource() {
+        this.state.sourceError = '';
+        if (this.state.dataSource !== DATA_SOURCE_HELPDESK) {
+            this.state.sourceCapabilities = { canRecordTime: true, assignmentField: 'user_id' };
+            return true;
+        }
+
+        let ticketFields;
+        try {
+            ticketFields = await this.rpc.fieldsGet(DATA_SOURCE_HELPDESK, [
+                'type', 'string', 'relation', 'required', 'readonly',
+            ]);
+            this.state.supportedFields[DATA_SOURCE_HELPDESK] = ticketFields || {};
+        } catch (err) {
+            this.state.sourceCapabilities = { available: false, canRecordTime: false };
+            this.state.sourceError = helpdeskUnavailableMessage(err);
+            this.state.issues = [];
+            return false;
+        }
+
+        let timesheetFields = {};
+        let timesheetError = null;
+        try {
+            timesheetFields = await this.rpc.fieldsGet('account.analytic.line', [
+                'type', 'string', 'relation', 'required', 'readonly',
+            ]);
+            this.state.supportedFields['account.analytic.line'] = timesheetFields || {};
+        } catch (err) {
+            timesheetError = err;
+        }
+
+        const capabilities = inspectHelpdeskCapabilities(ticketFields, timesheetFields);
+        this.state.sourceCapabilities = capabilities;
+
+        const warnings = [];
+        if (!capabilities.assignmentField) {
+            warnings.push('The ticket assignment field could not be detected; assigned-only filtering is unavailable.');
+        }
+        if (!capabilities.canRecordTime) {
+            warnings.push(helpdeskTimesheetUnavailableMessage(timesheetError));
+        }
+        this.state.sourceError = warnings.join(' ');
+        return true;
     }
 
     /**
@@ -1055,15 +1193,45 @@ class PopupApp extends Component {
         this.state.busyMessage = 'Loading tasks…';
 
         try {
-            const domain = [
-                '|',
-                ['id', '=', this.state.activeTimerId || 0],
-                '&',
-                ['stage_id.name', 'not ilike', '%Done%'],
-                '&',
-                ['stage_id.name', 'not ilike', '%Cancel%'],
-                ['stage_id.name', 'not ilike', '%Hold%'],
-            ];
+            if (!(await this.inspectSelectedSource())) return;
+
+            const capabilities = this.state.sourceCapabilities;
+            const availableFields = await this.getSupportedFieldsForModel(model);
+            if (!availableFields) {
+                if (model === DATA_SOURCE_HELPDESK) {
+                    this.state.sourceError = helpdeskUnavailableMessage();
+                    this.state.issues = [];
+                    return;
+                }
+                throw new Error(`Could not inspect fields for ${model}.`);
+            }
+
+            let openDomain;
+            if (model === DATA_SOURCE_HELPDESK && capabilities.closedField) {
+                openDomain = [[capabilities.closedField, '=', false]];
+            } else if (model === DATA_SOURCE_HELPDESK && capabilities.activeField) {
+                openDomain = [[capabilities.activeField, '=', true]];
+            } else {
+                openDomain = [
+                    '&',
+                    ['stage_id.name', 'not ilike', '%Done%'],
+                    '&',
+                    ['stage_id.name', 'not ilike', '%Cancel%'],
+                    ['stage_id.name', 'not ilike', '%Hold%'],
+                ];
+            }
+
+            const timerContext = this.state.activeTimerContext;
+            const activeId = this.state.activeTimerId && (
+                !timerContext || (
+                    timerContext.model === model &&
+                    timerContext.host === this.state.currentHost &&
+                    timerContext.database === this.state.currentDatabase
+                )
+            ) ? this.state.activeTimerId : null;
+            const domain = activeId
+                ? ['|', ['id', '=', activeId], ...openDomain]
+                : openDomain;
 
             const baseFields = [
                 'id',
@@ -1074,15 +1242,30 @@ class PopupApp extends Component {
                 'priority',
                 'create_date',
                 'analytic_account_id',
+                'account_id',
             ];
 
             const extraFieldsByModel = {
                 [DATA_SOURCE_ISSUE]: ['working_hours_open', 'message_summary', 'message_unread', 'description'],
                 [DATA_SOURCE_TASK]: ['effective_hours', 'remaining_hours', 'code', 'description', 'display_name'],
+                [DATA_SOURCE_HELPDESK]: [
+                    'display_name',
+                    'description',
+                    'partner_id',
+                    capabilities.assignmentField,
+                    capabilities.projectField,
+                    capabilities.teamField,
+                    capabilities.analyticAccountField,
+                    capabilities.stageField,
+                    capabilities.timeEnabledField,
+                    capabilities.hoursField,
+                    capabilities.ticketReferenceField,
+                    capabilities.closedField,
+                    capabilities.activeField,
+                ].filter(Boolean),
             };
 
-            const desiredFields = [...baseFields, ...(extraFieldsByModel[model] || [])];
-            const availableFields = await this.getSupportedFieldsForModel(model);
+            const desiredFields = [...new Set([...baseFields, ...(extraFieldsByModel[model] || [])])];
 
             let fields = availableFields
                 ? desiredFields.filter((field) =>
@@ -1103,11 +1286,17 @@ class PopupApp extends Component {
             const records = result.records || [];
 
             let stageSequenceById = new Map();
-            if (model === DATA_SOURCE_TASK) {
+            const stageModel = model === DATA_SOURCE_TASK
+                ? 'project.task.type'
+                : capabilities.stageModel;
+            if (stageModel) {
                 const stageIds = [...new Set(records.map((issue) => issue.stage_id?.[0]).filter(Boolean))];
                 if (stageIds.length) {
-                    const stages = await this.rpc.searchRead('project.task.type', [['id', 'in', stageIds]], ['id', 'sequence']);
-                    stageSequenceById = new Map((stages.records || []).map((stage) => [stage.id, Number(stage.sequence || 0)]));
+                    const stageFields = await this.getSupportedFieldsForModel(stageModel);
+                    if (stageFields?.sequence) {
+                        const stages = await this.rpc.searchRead(stageModel, [['id', 'in', stageIds]], ['id', 'sequence']);
+                        stageSequenceById = new Map((stages.records || []).map((stage) => [stage.id, Number(stage.sequence || 0)]));
+                    }
                 }
             }
 
@@ -1119,6 +1308,13 @@ class PopupApp extends Component {
                 priority_level: priorityStars(issue.priority),
                 stage_sequence: stageSequenceById.get(issue.stage_id?.[0]) ?? 9999,
             }));
+        } catch (err) {
+            if (model === DATA_SOURCE_HELPDESK) {
+                this.state.issues = [];
+                this.state.sourceError = `Helpdesk tickets could not be loaded: ${err.message || err}`;
+                return;
+            }
+            throw err;
         } finally {
             this.state.loadingTable = false;
         }
@@ -1140,11 +1336,32 @@ class PopupApp extends Component {
      * Start timing the selected issue/task.
      */
     async startTimer(issue) {
+        if (this.state.activeTimerId) {
+            await notify(`Stop the active ${this.itemLabelSingular} timer before starting another one.`);
+            return;
+        }
+        if (this.isHelpdeskSource && !this.state.sourceCapabilities.canRecordTime) {
+            await notify(helpdeskTimesheetUnavailableMessage());
+            return;
+        }
+        if (this.isHelpdeskSource && !isHelpdeskTimesheetEnabled(issue, this.state.sourceCapabilities)) {
+            await notify('Timesheets are disabled for this ticket team/project. Enable Helpdesk Timesheets in Odoo before starting the timer.');
+            return;
+        }
+
         const now = new Date().toISOString();
         this.state.activeTimerId = issue.id;
         this.state.timerStartIso = now;
+        this.state.activeTimerContext = {
+            host: this.state.currentHost,
+            database: this.state.currentDatabase,
+            model: this.state.dataSource,
+            resId: issue.id,
+            startedAt: now,
+        };
         await storage.set(STORAGE_KEYS.timerStartIso, now);
         await storage.set(STORAGE_KEYS.activeTimerId, issue.id);
+        await storage.set(STORAGE_KEYS.activeTimerContext, this.state.activeTimerContext);
         await sendTimerStateToBackground(true);
     }
 
@@ -1152,13 +1369,12 @@ class PopupApp extends Component {
      * Resolve the analytic account for the given issue/task.
      */
     resolveAnalyticAccount(issue) {
-        if (issue.analytic_account_id) {
-            return issue.analytic_account_id;
-        }
+        if (issue.analytic_account_id) return issue.analytic_account_id;
+        if (issue.account_id) return issue.account_id;
         const project = this.state.projects.find(
             (currentProject) => currentProject.id === issue.project_id?.[0]
         );
-        return project?.analytic_account_id;
+        return project?.account_id || project?.analytic_account_id;
     }
 
     /**
@@ -1203,10 +1419,47 @@ class PopupApp extends Component {
     }
 
     /**
+     * Create a native Enterprise or OCA Helpdesk timesheet entry.
+     */
+    async createHelpdeskTimesheet(params) {
+        const capabilities = this.state.sourceCapabilities;
+        const binding = timesheetBinding(DATA_SOURCE_HELPDESK, capabilities);
+        if (!binding) throw new Error(helpdeskTimesheetUnavailableMessage());
+
+        const values = {
+            date: params.date,
+            user_id: this.state.user.id,
+            name: params.issueName,
+            unit_amount: params.durationInHours,
+            [binding.linkField]: params.issue.id,
+        };
+        const lineFields = capabilities.timesheetFields || {};
+        const projectId = params.issue.project_id?.[0];
+        const analyticAccountId = params.analyticAccount?.[0];
+        if (projectId && Object.prototype.hasOwnProperty.call(lineFields, 'project_id')) {
+            values.project_id = projectId;
+        }
+        if (analyticAccountId && Object.prototype.hasOwnProperty.call(lineFields, 'account_id')) {
+            values.account_id = analyticAccountId;
+        }
+
+        await this.rpc.call(binding.model, 'create', [values], {});
+    }
+
+    /**
      * Stop the active timer and create the Odoo timesheet row.
      */
     async stopTimer(issue) {
         try {
+            if (!this.isActiveTimerItem(issue)) {
+                throw new Error('This row does not match the active timer context. Return to the original remote and item before stopping it.');
+            }
+            if (this.isHelpdeskSource && !this.state.sourceCapabilities.canRecordTime) {
+                throw new Error(helpdeskTimesheetUnavailableMessage());
+            }
+            if (this.isHelpdeskSource && !isHelpdeskTimesheetEnabled(issue, this.state.sourceCapabilities)) {
+                throw new Error('Timesheets are disabled for this ticket team/project in Odoo.');
+            }
             const issueDescription = (await promptDialog(`${this.itemLabelSingular.charAt(0).toUpperCase() + this.itemLabelSingular.slice(1)} #${issue.id} Description`, issue.name)) || '';
 
             const startIso =
@@ -1224,12 +1477,19 @@ class PopupApp extends Component {
             const durationInHours = Math.floor(durationMinutes / 60) + roundedMinutes / 60;
             const analyticAccount = this.resolveAnalyticAccount(issue);
 
-            if (!analyticAccount) {
+            if (!analyticAccount && this.state.dataSource !== DATA_SOURCE_HELPDESK) {
                 throw new Error('No analytic account is defined on the project.');
+            }
+            if (
+                this.state.dataSource === DATA_SOURCE_HELPDESK &&
+                !analyticAccount &&
+                !issue.project_id
+            ) {
+                throw new Error('This ticket has no timesheet project or analytic account. Configure one on its Helpdesk team/project first.');
             }
 
             const issueName = issueDescription.trim() || `${issue.name} (#${issue.id})`;
-            const formattedDate = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+            const formattedDate = now.toISOString().slice(0, 10);
             const commonPayload = {
                 issue,
                 issueName,
@@ -1240,11 +1500,12 @@ class PopupApp extends Component {
 
             if (this.state.dataSource === DATA_SOURCE_ISSUE) {
                 await this.createIssueTimesheet(commonPayload);
-                await notify(`Time for ${this.itemLabelSingular} #${issue.id} was successfully recorded in Odoo timesheets.`);
+            } else if (this.state.dataSource === DATA_SOURCE_HELPDESK) {
+                await this.createHelpdeskTimesheet(commonPayload);
             } else {
                 await this.createTaskTimesheet(commonPayload);
-                await notify(`Time for ${this.itemLabelSingular} #${issue.id} was successfully recorded in Odoo timesheets.`);
             }
+            await notify(`Time for ${this.itemLabelSingular} #${issue.id} was successfully recorded in Odoo timesheets.`);
 
             if (this.state.autoDownloadIssueTimesheet) {
                 await this.downloadCurrentIssueTimesheet(issue);
@@ -1252,8 +1513,10 @@ class PopupApp extends Component {
 
             this.state.activeTimerId = null;
             this.state.timerStartIso = null;
+            this.state.activeTimerContext = null;
             await storage.remove(STORAGE_KEYS.timerStartIso);
             await storage.remove(STORAGE_KEYS.activeTimerId);
+            await storage.remove(STORAGE_KEYS.activeTimerContext);
             await sendTimerStateToBackground(false);
             await this.loadIssues();
         } catch (err) {
@@ -1277,8 +1540,10 @@ class PopupApp extends Component {
 
         this.state.activeTimerId = null;
         this.state.timerStartIso = null;
+        this.state.activeTimerContext = null;
         await storage.remove(STORAGE_KEYS.timerStartIso);
         await storage.remove(STORAGE_KEYS.activeTimerId);
+        await storage.remove(STORAGE_KEYS.activeTimerContext);
         await sendTimerStateToBackground(false);
         await this.loadIssues();
     }
@@ -1315,15 +1580,17 @@ class PopupApp extends Component {
                 .toISOString()
                 .slice(0, 10);
             const currentDay = new Date().toISOString().slice(0, 10);
-            const model =
-                this.state.dataSource === DATA_SOURCE_TASK
-                    ? 'account.analytic.line'
-                    : 'hr.analytic.timesheet';
+            const binding = timesheetBinding(this.state.dataSource, this.state.sourceCapabilities);
+            if (!binding) throw new Error(helpdeskTimesheetUnavailableMessage());
+            const model = binding.model;
             const domain = [
                 ['user_id', '=', this.state.user.id],
-                ['create_date', '>=', firstDay],
-                ['create_date', '<=', currentDay],
+                ['date', '>=', firstDay],
+                ['date', '<=', currentDay],
             ];
+            if (this.state.dataSource === DATA_SOURCE_HELPDESK) {
+                domain.push([binding.linkField, '!=', false]);
+            }
 
             const result = await this.rpc.searchRead(model, domain, []);
             const csv = toCSV(result.records || []);
@@ -1351,18 +1618,14 @@ class PopupApp extends Component {
             .toISOString()
             .slice(0, 10);
         const currentDay = new Date().toISOString().slice(0, 10);
-        const model =
-            this.state.dataSource === DATA_SOURCE_TASK
-                ? 'account.analytic.line'
-                : 'hr.analytic.timesheet';
-        const keyDomain =
-            this.state.dataSource === DATA_SOURCE_TASK
-                ? ['task_id', '=', issue.id]
-                : ['issue_id', '=', issue.id];
+        const binding = timesheetBinding(this.state.dataSource, this.state.sourceCapabilities);
+        if (!binding) throw new Error(helpdeskTimesheetUnavailableMessage());
+        const model = binding.model;
+        const keyDomain = [binding.linkField, '=', issue.id];
         const domain = [
             ['user_id', '=', this.state.user.id],
-            ['create_date', '>=', firstDay],
-            ['create_date', '<=', currentDay],
+            ['date', '>=', firstDay],
+            ['date', '<=', currentDay],
             keyDomain,
         ];
 

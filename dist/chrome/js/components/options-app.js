@@ -368,6 +368,7 @@ class OptionsApp extends Component {
               <select id="${datasourceId}" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #cbd5e1;border-radius:4px;font:14px Arial,Helvetica,sans-serif;color:#111827;background:#fff;">
                 <option value="project.issue" ${currentDatasource === DEFAULT_DATA_SOURCE ? 'selected' : ''}>From Issues</option>
                 <option value="project.task" ${currentDatasource === 'project.task' ? 'selected' : ''}>From Tasks</option>
+                <option value="helpdesk.ticket" ${currentDatasource === 'helpdesk.ticket' ? 'selected' : ''}>From Helpdesk Tickets</option>
               </select>
             </label>
           </div>

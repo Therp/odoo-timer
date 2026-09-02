@@ -144,6 +144,9 @@
         id="wrapper"
         t-att-class="state.view === 'main' ? '' : 'hide'"
       >
+        <t t-if="state.sourceError">
+          <div class="odooError source-warning" t-out="state.sourceError"/>
+        </t>
         <div class="toolbar-row">
           <input
             id="searchIssue"
@@ -241,7 +244,11 @@
                   <th class="text-center">Hours Left</th>
                 </t>
 
-                <th class="project-col">Project</th>
+                <t t-if="showHelpdeskHours">
+                  <th class="text-center">Time Spent</th>
+                </t>
+
+                <th class="project-col" t-out="relationHeaderLabel"/>
               </tr>
             </thead>
 
@@ -253,7 +260,7 @@
                   t-key="issue.id"
                 >
                   <tr
-                    t-att-class="state.activeTimerId === issue.id ? 'active-row' : ''"
+                    t-att-class="isActiveTimerItem(issue) ? 'active-row' : ''"
                   >
                     <td class="text-center px-2 td-btn action-col">
                       <t t-if="!state.activeTimerId">
@@ -264,7 +271,7 @@
                         />
                       </t>
 
-                      <t t-if="state.activeTimerId === issue.id">
+                      <t t-if="isActiveTimerItem(issue)">
                         <i
                           class="text-danger fa fa-stop-circle action-btn pointer"
                           title="Stop timer and record the time to Odoo timesheets"
@@ -318,9 +325,18 @@
                       </td>
                     </t>
 
+                    <t t-if="showHelpdeskHours">
+                      <td class="text-center">
+                        <ReadMore
+                          text="normalizeText(formatHours(helpdeskHoursValue(issue)))"
+                          limit="9"
+                        />
+                      </td>
+                    </t>
+
                     <td class="project-cell">
                       <ReadMore
-                        text="relationLabel(issue.project_id)"
+                        text="relationLabel(resourceRelationValue(issue))"
                         limit="15"
                       />
                     </td>
@@ -332,7 +348,7 @@
                 <tr>
                   <td
                     class="text-center text-danger"
-                    t-att-colspan="state.dataSource === 'project.task' ? 7 : 5"
+                    t-att-colspan="tableColumnCount"
                   >
                     No matching items are currently available
                   </td>
