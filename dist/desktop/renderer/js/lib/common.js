@@ -159,8 +159,9 @@ export function matchesIssue(issue, query) {
   const q = query.trim().toLowerCase();
   if (!q) return true;
   const hay = [
-    issue.id, issue.code, issue.name, issue.message_summary,
-    issue.stage_id?.[1], issue.project_id?.[1], issue.user_id?.[1],
+    issue.id, issue.code, issue.name, issue.display_name,
+    issue.ticket_ref, issue.number, issue.message_summary,
+    issue.stage_id?.[1], issue.project_id?.[1], issue.team_id?.[1], issue.user_id?.[1],
     issue.priority, issue.create_date,
   ].filter(Boolean).join(' ').toLowerCase();
   return hay.includes(q);

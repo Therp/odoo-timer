@@ -155,6 +155,11 @@ class MessagesApp extends Component {
   _call(model, method, args, kwargs = {}) {
     return this._send('/web/dataset/call_kw', { model, method, args, kwargs });
   }
+  _fieldsGet(model) {
+    return this._call(model, 'fields_get', [], {
+      attributes: ['type', 'string', 'relation'],
+    });
+  }
 
   // ── Computed getters (referenced in messages_app.xml) ──────────────────────
   get visibleTasks() {
@@ -264,7 +269,12 @@ class MessagesApp extends Component {
   async _loadTasks() {
     this.state.loading = true;
     try {
-      const baseFields = ['id','name','project_id','user_id','stage_id','message_ids'];
+      // Helpdesk without its timesheet add-on does not necessarily expose
+      // project_id. Query the model first so chatter still opens cleanly and
+      // the timer window can explain which add-on is required for recording.
+      const modelFields = await this._fieldsGet(this.state.datasrc);
+      const baseFields = ['id','name','project_id','user_id','stage_id','message_ids']
+        .filter((field) => modelFields[field]);
       const domain = [['stage_id.name','not ilike','%Done%'], ['stage_id.name','not ilike','%Cancel%']];
 
       // Assigned / all tasks
@@ -302,7 +312,11 @@ class MessagesApp extends Component {
 
       this.state.allTasks = [...assignedTasks, ...followerTasks];
       await this._recomputeAllUnread();
-    } catch (e) { this._showError('Failed to load tasks: ' + e.message); }
+    } catch (e) {
+      const itemLabel = this.state.datasrc === 'helpdesk.ticket' ? 'Helpdesk tickets' : 'tasks';
+      this.state.allTasks = [];
+      this._showError(`Failed to load ${itemLabel}. Check that the selected Odoo module is installed and that your user can read it: ${e.message}`);
+    }
     this.state.loading = false;
     await storage.set('msg_total_unread', this.totalUnread);
   }

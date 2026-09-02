@@ -97,6 +97,9 @@
 
       <!-- Main -->
       <div id="wrapper" t-att-class="state.view === 'main' ? '' : 'hide'">
+        <t t-if="state.sourceError">
+          <div class="odooError source-warning"><t t-esc="state.sourceError"/></div>
+        </t>
         <div class="toolbar-row">
           <input id="searchIssue" type="text"
             placeholder="Search by ID, name, user, priority, stage..."
@@ -177,15 +180,16 @@
                   <th>Hours Spent</th>
                   <th>Remaining Hours</th>
                 </t>
-                <th class="project-col">Project</th>
+                <t t-if="showHelpdeskHours"><th>Time Spent</th></t>
+                <th class="project-col"><t t-esc="relationHeaderLabel"/></th>
               </tr>
             </thead>
             <tbody>
               <t t-if="filteredIssues.length">
                 <t t-foreach="filteredIssues" t-as="ir" t-key="ir.id">
-                  <tr t-att-class="state.activeTimerId === ir.id ? 'active-row' : ''">
+                  <tr t-att-class="isActiveTimerItem(ir) ? 'active-row' : ''">
                     <td class="text-center px-2 td-btn action-col">
-                      <t t-if="state.activeTimerId === ir.id">
+                      <t t-if="isActiveTimerItem(ir)">
                         <i class="text-danger fa fa-stop-circle action-btn pointer"
                           title="Stop timer and record the time to Odoo timesheets"
                           t-on-click="() => stopTimer(ir)"/>
@@ -223,15 +227,20 @@
                         <ReadMore text="formatHours(ir.remaining_hours)" limit="10"/>
                       </td>
                     </t>
+                    <t t-if="showHelpdeskHours">
+                      <td>
+                        <ReadMore text="formatHours(helpdeskHoursValue(ir))" limit="10"/>
+                      </td>
+                    </t>
                     <td class="project-cell">
-                      <ReadMore text="(ir.project_id &amp;&amp; ir.project_id[1]) || ''" limit="22"/>
+                      <ReadMore text="relationLabel(resourceRelationValue(ir))" limit="22"/>
                     </td>
                   </tr>
                 </t>
               </t>
               <t t-else="">
                 <tr>
-                  <td t-att-colspan="state.dataSource === 'project.task' ? '7' : '6'"
+                  <td t-att-colspan="'' + tableColumnCount"
                     class="text-center text-danger">
                     No matching items are currently available
                   </td>

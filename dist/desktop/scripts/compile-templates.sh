@@ -12,11 +12,9 @@
 # The OWL repo is cloned into dist/desktop/owl/ and reused on subsequent runs.
 # Delete that directory to force a fresh clone.
 #
-# NOTE: We only install OWL's npm deps and run compile_owl_templates.mjs directly.
-# We do NOT run build:runtime or build:compiler because:
-#   - The runtime (owl.iife.js) is already pre-built in renderer/js/lib/
-#   - build:runtime / build:compiler use rollup which breaks on Node.js >= 24
-#   - compile_owl_templates.mjs is a standalone Node script with no rollup dependency
+# NOTE: The renderer runtime (owl.iife.js) is already bundled in renderer/js/lib/.
+# A fresh OWL clone does not, however, contain dist/compile_templates.mjs, which
+# tools/compile_owl_templates.mjs imports. Build that compiler dependency once.
 
 set -euo pipefail
 
@@ -150,8 +148,21 @@ echo "Using OWL: $(git -C "${OWL_DIR}" describe --tags --always 2>/dev/null)"
 echo
 
 # ── Install npm deps ──────────────────────────────────────────────────────────
-echo "Installing OWL npm deps (deps only, no build)…"
+echo "Installing OWL npm deps…"
 npm --prefix "${OWL_DIR}" install --silent
+
+# A clean checkout has the compiler's TypeScript sources but not its generated
+# dist module. Without this bootstrap, first-time compilation fails with
+# ERR_MODULE_NOT_FOUND for dist/compile_templates.mjs.
+if [[ ! -f "${OWL_DIR}/dist/compile_templates.mjs" ]]; then
+    echo "Building OWL template compiler…"
+    npm --prefix "${OWL_DIR}" run build:runtime
+fi
+
+[[ -f "${OWL_DIR}/dist/compile_templates.mjs" ]] || {
+    echo "Error: OWL template compiler build did not create dist/compile_templates.mjs."
+    exit 1
+}
 
 # ── Locate the compiler tool ──────────────────────────────────────────────────
 COMPILER_TOOL=""

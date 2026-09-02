@@ -134,8 +134,9 @@ class OptionsApp extends Component {
     <label style="display:block;font-size:13px;margin-bottom:4px;color:#555;">Data Source</label>
     <select id="${pfx}-datasrc"
       style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:4px;box-sizing:border-box;font-size:14px;">
-      <option value="project.issue"${(remote.datasrc || 'project.issue') !== 'project.task' ? ' selected' : ''}>From Issues (project.issue)</option>
+      <option value="project.issue"${(remote.datasrc || 'project.issue') === 'project.issue' ? ' selected' : ''}>From Issues (project.issue)</option>
       <option value="project.task"${remote.datasrc === 'project.task' ? ' selected' : ''}>From Tasks (project.task)</option>
+      <option value="helpdesk.ticket"${remote.datasrc === 'helpdesk.ticket' ? ' selected' : ''}>From Helpdesk Tickets (helpdesk.ticket)</option>
     </select>
   </div>
 </div>`;
