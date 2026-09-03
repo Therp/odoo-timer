@@ -1343,6 +1343,7 @@ class PopupApp extends Component {
             remoteInfo?.url || sessionInfo['web.base.url'] || this.state.currentHost;
         this.state.dataSource =
             remoteInfo?.datasrc || this.state.dataSource || DEFAULTS.dataSource;
+        this.resetSupportedFieldCache();
         this.captureSessionCompanies(sessionInfo);
         this.state.busyMessage = this.loadingMessage(true);
 
@@ -1417,6 +1418,16 @@ class PopupApp extends Component {
     }
 
     /**
+     * Drop model capability metadata when the remote/session changes. Odoo
+     * versions and installed modules expose different model fields.
+     */
+    resetSupportedFieldCache() {
+        this.state.supportedFields = {};
+        this.state.sourceCapabilities = {};
+        this.state.sourceError = '';
+    }
+
+    /**
      * Load project records required to resolve analytic accounts.
      */
     async loadProjects() {
@@ -1428,7 +1439,7 @@ class PopupApp extends Component {
         const fields = ['name', 'analytic_account_id', 'account_id', 'company_id'].filter((field) =>
             Object.prototype.hasOwnProperty.call(projectFields, field)
         );
-        const result = await this.rpc.searchRead('project.project', [], fields);
+        const result = await this.searchReadWithInvalidFieldRetry('project.project', [], fields);
         this.state.projects = result.records || [];
     }
 
@@ -1507,8 +1518,16 @@ class PopupApp extends Component {
         try {
             return await this.rpc.searchRead(model, domain, requestedFields);
         } catch (err) {
-            const message = String(err?.message || '');
-            const invalidFieldMatch = message.match(/Invalid field ['"]([^'"]+)['"]/i);
+            // Field sets vary by Odoo version and by installed/custom modules.
+            // Inspect both the normalized error and the original RPC payload so
+            // an unsupported optional field never breaks loading the whole table.
+            const details = [
+                err?.message,
+                err?.fullTrace?.data?.message,
+                err?.fullTrace?.data?.debug,
+                err?.fullTrace?.message,
+            ].filter(Boolean).join('\n');
+            const invalidFieldMatch = String(details).match(/Invalid field ['"]([^'"]+)['"]/i);
             if (!invalidFieldMatch) {
                 throw err;
             }
@@ -1517,6 +1536,10 @@ class PopupApp extends Component {
             const narrowedFields = requestedFields.filter((field) => field !== invalidField);
             if (!narrowedFields.length || narrowedFields.length === requestedFields.length) {
                 throw err;
+            }
+            const cachedFields = this.state.supportedFields[model];
+            if (cachedFields && Object.prototype.hasOwnProperty.call(cachedFields, invalidField)) {
+                delete cachedFields[invalidField];
             }
 
             console.warn(`Retrying ${model} search_read without unsupported field: ${invalidField}`);
@@ -1578,12 +1601,9 @@ class PopupApp extends Component {
                 'name',
                 'user_id',
                 'project_id',
-                'company_id',
                 'stage_id',
                 'priority',
                 'create_date',
-                'analytic_account_id',
-                'account_id',
             ];
 
             const extraFieldsByModel = {
@@ -1672,6 +1692,7 @@ class PopupApp extends Component {
      * Reload projects and issues.
      */
     async refreshAll() {
+        this.resetSupportedFieldCache();
         try {
             await this.loadProjects();
             await this.loadIssues();
@@ -2016,6 +2037,7 @@ class PopupApp extends Component {
             return;
         }
 
+        this.resetSupportedFieldCache();
         this.state.view = VIEW_LOGIN;
         this.state.useExistingSession = true;
         await storage.set(STORAGE_KEYS.useExistingSession, true);

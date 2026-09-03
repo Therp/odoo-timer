@@ -427,39 +427,17 @@
           </table>
         </div>
 
-        <div class="container footer info-footer" style="padding:12px 8px 10px;">
-          <div class="text-center" style="margin-bottom:8px;">
-            <img t-att-src="currentRemoteLogoSrc" alt="Remote"
-              style="width:72px;height:48px;object-fit:contain;background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:4px;"/>
-            <div style="margin-top:4px;font-size:12px;font-weight:600;">
-              <t t-out="(currentRemote &amp;&amp; (currentRemote.name || currentRemote.database)) || 'Odoo'"/>
-              <span class="current-source-chip" style="margin-left:5px;">
-                <t t-out="currentDataSourceLabel"/>
-              </span>
+        <div class="container footer info-footer">
+          <div class="row">
+            <div class="remote-info-block col-md-12">
+              <span><b>Odoo:</b> <span class="remote-value" t-out="state.serverVersion || 'Unknown'"/></span><br/>
+              <span><b>OWL:</b> <span class="remote-value" t-out="state.odooOWLVersion || 'Unknown'"/></span><br/>
+              <span><b>Host:</b> <span class="remote-value" t-out="state.currentHost || '-'"/></span><br/>
+              <span><b>Database:</b> <span class="remote-value" t-out="state.currentDatabase || '-'"/></span><br/>
+              <span><b>Current User:</b> <span class="remote-value" t-out="state.user ? state.user.display_name : '-'"/></span><br/>
+              <span><b>Current Company:</b> <span class="remote-value" t-out="currentCompanyLabel"/></span><br/>
+              <span t-att-title="allowedCompanyLabels"><b>Allowed Companies:</b> <span class="remote-value" t-out="allowedCompanyLabels || '-'"/></span>
             </div>
-          </div>
-          <div class="row remote-info-block" style="display:flex;flex-wrap:wrap;font-size:12px;line-height:1.35;">
-            <div class="col-4 text-center" style="flex:0 0 33.333%;max-width:33.333%;padding:5px;word-break:break-word;">
-              <b>Odoo</b><br/><span class="remote-value" t-out="state.serverVersion || 'Unknown'"/>
-            </div>
-            <div class="col-4 text-center" style="flex:0 0 33.333%;max-width:33.333%;padding:5px;word-break:break-word;">
-              <b>Database</b><br/><span class="remote-value" t-out="state.currentDatabase || '-'"/>
-            </div>
-            <div class="col-4 text-center" style="flex:0 0 33.333%;max-width:33.333%;padding:5px;word-break:break-word;">
-              <b>Host</b><br/><span class="remote-value" t-out="state.currentHost || '-'"/>
-            </div>
-            <div class="col-4 text-center" style="flex:0 0 33.333%;max-width:33.333%;padding:5px;word-break:break-word;">
-              <b>User</b><br/><span class="remote-value" t-out="state.user ? state.user.display_name : '-'"/>
-            </div>
-            <div class="col-4 text-center" style="flex:0 0 33.333%;max-width:33.333%;padding:5px;word-break:break-word;">
-              <b>Current Company</b><br/><span class="remote-value" t-out="currentCompanyLabel"/>
-            </div>
-            <div class="col-4 text-center" style="flex:0 0 33.333%;max-width:33.333%;padding:5px;word-break:break-word;" t-att-title="allowedCompanyLabels">
-              <b>Allowed Companies</b><br/><span class="remote-value" t-out="allowedCompanySummary"/>
-            </div>
-          </div>
-          <div class="text-center text-muted" style="font-size:10px;margin-top:3px;">
-            OWL <span t-out="state.odooOWLVersion || 'Unknown'"/>
           </div>
         </div>
       </div>
