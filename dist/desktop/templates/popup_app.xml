@@ -332,40 +332,15 @@
           </table>
         </div>
 
-        <div class="info-footer mx-3" style="padding:12px 8px 10px;">
-          <div class="text-center" style="margin-bottom:8px;">
-            <img t-att-src="currentRemoteLogoSrc" alt="Remote"
-              style="width:72px;height:48px;object-fit:contain;background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:4px;"/>
-            <div style="margin-top:4px;font-size:12px;font-weight:600;">
-              <t t-esc="(currentRemote &amp;&amp; (currentRemote.name || currentRemote.database)) || 'Odoo'"/>
-              <span class="current-source-chip" style="margin-left:5px;">
-                <t t-esc="currentDataSourceLabel"/>
-              </span>
-            </div>
-          </div>
-          <div class="row remote-info-block" style="display:flex;flex-wrap:wrap;font-size:12px;line-height:1.35;">
-            <div class="col-4 text-center" style="flex:0 0 33.333%;max-width:33.333%;padding:5px;word-break:break-word;">
-              <b>Odoo</b><br/><t t-esc="state.serverVersion || 'N/A'"/>
-            </div>
-            <div class="col-4 text-center" style="flex:0 0 33.333%;max-width:33.333%;padding:5px;word-break:break-word;">
-              <b>Database</b><br/><t t-esc="state.currentDatabase || '—'"/>
-            </div>
-            <div class="col-4 text-center" style="flex:0 0 33.333%;max-width:33.333%;padding:5px;word-break:break-word;">
-              <b>Host</b><br/><t t-esc="state.currentHost || '—'"/>
-            </div>
-            <div class="col-4 text-center" style="flex:0 0 33.333%;max-width:33.333%;padding:5px;word-break:break-word;">
-              <b>User</b><br/><t t-esc="(state.user &amp;&amp; state.user.display_name) || '—'"/>
-            </div>
-            <div class="col-4 text-center" style="flex:0 0 33.333%;max-width:33.333%;padding:5px;word-break:break-word;">
-              <b>Current Company</b><br/><t t-esc="currentCompanyLabel"/>
-            </div>
-            <div class="col-4 text-center" style="flex:0 0 33.333%;max-width:33.333%;padding:5px;word-break:break-word;"
-              t-att-title="allowedCompanyLabels">
-              <b>Allowed Companies</b><br/><t t-esc="allowedCompanySummary"/>
-            </div>
-          </div>
-          <div class="text-center text-muted-soft" style="font-size:10px;margin-top:3px;">
-            OWL <t t-esc="owlVersion"/>
+        <div class="info-footer mx-3" style="padding:12px 16px 10px;">
+          <div class="remote-info-list" style="font-size:12px;line-height:1.55;text-align:left;overflow-wrap:anywhere;word-break:break-word;">
+            <div><b>Odoo:</b> <t t-esc="state.serverVersion || 'N/A'"/></div>
+            <div><b>OWL:</b> <t t-esc="owlVersion"/></div>
+            <div><b>Host:</b> <t t-esc="state.currentHost || '—'"/></div>
+            <div><b>Database:</b> <t t-esc="state.currentDatabase || '—'"/></div>
+            <div><b>Current User:</b> <t t-esc="(state.user &amp;&amp; state.user.display_name) || '—'"/></div>
+            <div><b>Current Company:</b> <t t-esc="currentCompanyLabel"/></div>
+            <div t-att-title="allowedCompanyLabels"><b>Allowed Companies:</b> <t t-esc="allowedCompanyLabels || '—'"/></div>
           </div>
         </div>
       </div>

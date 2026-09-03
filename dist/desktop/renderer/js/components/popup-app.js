@@ -850,6 +850,7 @@ class PopupApp extends Component {
         this.state.currentDatabase = sessionInfo.db || remoteInfo?.database || this.state.currentDatabase;
         this.state.currentHost     = remoteInfo?.url || this.state.currentHost;
         this.state.dataSource      = remoteInfo?.datasrc || this.state.dataSource || DEFAULTS.dataSource;
+        this.resetSupportedFieldCache();
         this.captureSessionCompanies(sessionInfo);
         this.state.busyMessage = this.loadingMessage(true);
 
@@ -898,13 +899,22 @@ class PopupApp extends Component {
         }
     }
 
+    resetSupportedFieldCache() {
+        // Field metadata differs between Odoo versions and can also change with
+        // installed modules. Never reuse one remote/session's fields_get result
+        // for another remote.
+        this.state.supportedFields = {};
+        this.state.sourceCapabilities = {};
+        this.state.sourceError = '';
+    }
+
     async loadProjects() {
         const projectFields = await this.getSupportedFieldsForModel('project.project');
         if (!projectFields) { this.state.projects = []; return; }
         const fields = ['name', 'analytic_account_id', 'account_id', 'company_id'].filter((field) =>
             Object.prototype.hasOwnProperty.call(projectFields, field)
         );
-        const result = await this.rpc.searchRead('project.project', [], fields);
+        const result = await this.searchReadWithInvalidFieldRetry('project.project', [], fields);
         this.state.projects = result.records || [];
     }
 
@@ -974,6 +984,10 @@ class PopupApp extends Component {
             const invalid = match[1];
             const narrowed = requestedFields.filter((f) => f !== invalid);
             if (!narrowed.length || narrowed.length === requestedFields.length) throw err;
+            const cachedFields = this.state.supportedFields[model];
+            if (cachedFields && Object.prototype.hasOwnProperty.call(cachedFields, invalid)) {
+                delete cachedFields[invalid];
+            }
             console.warn(`Retrying ${model} without unsupported field: ${invalid}`);
             return this.searchReadWithInvalidFieldRetry(model, domain, narrowed);
         }
@@ -1078,6 +1092,7 @@ class PopupApp extends Component {
     }
 
     async refreshAll() {
+        this.resetSupportedFieldCache();
         // Show spinner on the refresh icon while loading
         const refreshIcon = document.querySelector('.fa-refresh');
         if (refreshIcon) {
@@ -1319,6 +1334,7 @@ class PopupApp extends Component {
             await notify(`Please stop timer for ${this.itemLabelSingular} #${this.state.activeTimerId} before switching.`);
             return;
         }
+        this.resetSupportedFieldCache();
         this.state.view = VIEW_LOGIN;
         this.state.useExistingSession = true;
         await storage.set(STORAGE_KEYS.useExistingSession, true);
