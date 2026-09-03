@@ -37,6 +37,7 @@ export function inspectHelpdeskCapabilities(ticketFields, timesheetFields) {
     'user_ids',
   ]);
   const projectField = firstField(ticketFields, ['project_id']);
+  const companyField = firstField(ticketFields, ['company_id']);
   const teamField = firstField(ticketFields, ['team_id']);
   const descriptionField = firstField(ticketFields, ['description']);
   const therpLinkField = firstFieldByLabel(ticketFields, ['Therp link']) ||
@@ -55,6 +56,7 @@ export function inspectHelpdeskCapabilities(ticketFields, timesheetFields) {
     assignmentField,
     assignmentType: assignmentField ? ticketFields?.[assignmentField]?.type || null : null,
     projectField,
+    companyField,
     teamField,
     descriptionField,
     therpLinkField,

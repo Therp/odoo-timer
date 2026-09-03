@@ -13,6 +13,7 @@ import {
 const enterpriseTicketFields = {
   user_id: { type: 'many2one', relation: 'res.users' },
   project_id: { type: 'many2one', relation: 'project.project' },
+  company_id: { type: 'many2one', relation: 'res.company' },
   team_id: { type: 'many2one', relation: 'helpdesk.team' },
   description: { type: 'html', string: 'Description' },
   x_therp_url: { type: 'char', string: 'Therp link' },

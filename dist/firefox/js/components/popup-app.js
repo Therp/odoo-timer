@@ -61,7 +61,7 @@ const TIMEOUTS = {
 const DEFAULTS = {
     selectedRemoteIndex: '0',
     searchLimit: '10',
-    busyMessage: 'Loading current session and projects…',
+    busyMessage: 'Loading current session…',
     dataSource: DATA_SOURCE_ISSUE,
 };
 
@@ -474,6 +474,8 @@ class PopupApp extends Component {
             currentHost: '',
             currentDatabase: '',
             dataSource: DEFAULTS.dataSource,
+            currentCompanyId: null,
+            allowedCompanyIds: [],
             serverVersion: '',
             odooOWLVersion: owl.__info__.version,
             supportedFields: {},
@@ -539,7 +541,10 @@ class PopupApp extends Component {
     get itemLabelSingular() { return resourceLabels(this.state.dataSource).singular; }
     get itemLabelPlural()   { return resourceLabels(this.state.dataSource).plural; }
     get isHelpdeskSource()  { return this.state.dataSource === DATA_SOURCE_HELPDESK; }
-    get showHelpdeskAssignee() { return this.isHelpdeskSource && Boolean(this.state.sourceCapabilities.assignmentField); }
+    get showHelpdeskAssignee() {
+        return this.isHelpdeskSource && this.state.allIssues &&
+            Boolean(this.state.sourceCapabilities.assignmentField);
+    }
     get showHelpdeskTeam() { return this.isHelpdeskSource && Boolean(this.state.sourceCapabilities.teamField); }
     get showHelpdeskDescription() { return this.isHelpdeskSource && Boolean(this.state.sourceCapabilities.descriptionField); }
     get showHelpdeskTherpLink() { return this.isHelpdeskSource && Boolean(this.state.sourceCapabilities.therpLinkField); }
@@ -573,13 +578,58 @@ class PopupApp extends Component {
     get tableColumnCount() {
         if (this.state.dataSource === DATA_SOURCE_TASK) return 7;
         if (!this.isHelpdeskSource) return 5;
+        // Compact Helpdesk layout: action, optional Therp link, priority, ticket,
+        // stage, optional assignee (only in Show for everyone), optional hours.
         return 4 +
-            Number(this.showHelpdeskAssignee) +
-            Number(this.showHelpdeskTeam) +
-            Number(this.showHelpdeskDescription) +
             Number(this.showHelpdeskTherpLink) +
-            Number(this.showHelpdeskProject) +
+            Number(this.showHelpdeskAssignee) +
             Number(this.showHelpdeskHours);
+    }
+
+    loadingMessage(includeSession = false) {
+        const noun = this.state.dataSource === DATA_SOURCE_HELPDESK
+            ? 'Helpdesk tickets'
+            : this.state.dataSource === DATA_SOURCE_TASK ? 'tasks' : 'issues';
+        return includeSession ? `Loading current session and ${noun}…` : `Loading ${noun}…`;
+    }
+
+    relationId(value) {
+        if (!value) return null;
+        if (Array.isArray(value)) return Number(value[0]) || null;
+        if (typeof value === 'object') return Number(value.id) || null;
+        return Number(value) || null;
+    }
+
+    captureSessionCompanies(sessionInfo) {
+        const contextIds = Array.isArray(sessionInfo?.user_context?.allowed_company_ids)
+            ? sessionInfo.user_context.allowed_company_ids.map(Number).filter(Boolean)
+            : [];
+        const current = Number(
+            sessionInfo?.user_companies?.current_company || contextIds[0] || 0
+        ) || null;
+        this.state.currentCompanyId = current;
+        this.state.allowedCompanyIds = contextIds.length ? contextIds : (current ? [current] : []);
+    }
+
+    helpdeskTimesheetCompanyId(issue) {
+        // hr_timesheet derives the timesheet company from project_id first, so
+        // mirror that choice when building the RPC company context.
+        const projectId = this.relationId(issue?.project_id);
+        const project = this.state.projects.find((item) => Number(item.id) === Number(projectId));
+        const projectCompany = this.relationId(project?.company_id);
+        if (projectCompany) return projectCompany;
+        const field = this.state.sourceCapabilities.companyField;
+        const ticketCompany = this.relationId(field ? issue?.[field] : issue?.company_id);
+        return ticketCompany || this.state.currentCompanyId || null;
+    }
+
+    helpdeskTimesheetContext(companyId) {
+        if (!companyId) return {};
+        const allowed = [
+            companyId,
+            ...(this.state.allowedCompanyIds || []).filter((id) => Number(id) !== Number(companyId)),
+        ];
+        return {allowed_company_ids: allowed};
     }
 
     async updateLimitPreference(value) {
@@ -693,6 +743,8 @@ class PopupApp extends Component {
         this.state.user = null;
         this.state.projects = [];
         this.state.issues = [];
+        this.state.currentCompanyId = null;
+        this.state.allowedCompanyIds = [];
         this.state.serverVersion = '';
         this.state.odooOWLVersion = owl.__info__.version;
         this.state.supportedFields = {};
@@ -796,6 +848,7 @@ class PopupApp extends Component {
         );
         this.state.limitTo = searchLimit ?? DEFAULTS.searchLimit;
         this.state.allIssues = !!showAllItems;
+        this.state.busyMessage = this.loadingMessage(true);
     }
 
     /**
@@ -1074,7 +1127,6 @@ class PopupApp extends Component {
      * to the login screen.
      */
     async completeSession(sessionInfo, remote) {
-        this.state.busyMessage = 'Loading tasks…';
         this.state.loadingTable = true;
 
         const remoteInfo = remote || this.currentRemote || null;
@@ -1085,6 +1137,8 @@ class PopupApp extends Component {
             remoteInfo?.url || sessionInfo['web.base.url'] || this.state.currentHost;
         this.state.dataSource =
             remoteInfo?.datasrc || this.state.dataSource || DEFAULTS.dataSource;
+        this.captureSessionCompanies(sessionInfo);
+        this.state.busyMessage = this.loadingMessage(true);
 
         try {
             await storage.set(this.state.currentDatabase, JSON.stringify(sessionInfo));
@@ -1163,7 +1217,7 @@ class PopupApp extends Component {
             this.state.projects = [];
             return;
         }
-        const fields = ['name', 'analytic_account_id', 'account_id'].filter((field) =>
+        const fields = ['name', 'analytic_account_id', 'account_id', 'company_id'].filter((field) =>
             Object.prototype.hasOwnProperty.call(projectFields, field)
         );
         const result = await this.rpc.searchRead('project.project', [], fields);
@@ -1268,7 +1322,7 @@ class PopupApp extends Component {
     async loadIssues() {
         const model = this.state.dataSource;
         this.state.loadingTable = true;
-        this.state.busyMessage = 'Loading tasks…';
+        this.state.busyMessage = this.loadingMessage(false);
 
         try {
             if (!(await this.inspectSelectedSource())) return;
@@ -1316,6 +1370,7 @@ class PopupApp extends Component {
                 'name',
                 'user_id',
                 'project_id',
+                'company_id',
                 'stage_id',
                 'priority',
                 'create_date',
@@ -1332,6 +1387,7 @@ class PopupApp extends Component {
                     'partner_id',
                     capabilities.assignmentField,
                     capabilities.projectField,
+                    capabilities.companyField,
                     capabilities.teamField,
                     capabilities.descriptionField,
                     capabilities.therpLinkField,
@@ -1516,14 +1572,30 @@ class PopupApp extends Component {
         const lineFields = capabilities.timesheetFields || {};
         const projectId = params.issue.project_id?.[0];
         const analyticAccountId = params.analyticAccount?.[0];
+        const companyId = this.helpdeskTimesheetCompanyId(params.issue);
         if (projectId && Object.prototype.hasOwnProperty.call(lineFields, 'project_id')) {
             values.project_id = projectId;
         }
         if (analyticAccountId && Object.prototype.hasOwnProperty.call(lineFields, 'account_id')) {
             values.account_id = analyticAccountId;
         }
+        if (companyId && Object.prototype.hasOwnProperty.call(lineFields, 'company_id')) {
+            values.company_id = companyId;
+        }
 
-        await this.rpc.call(binding.model, 'create', [values], {});
+        try {
+            await this.rpc.call(binding.model, 'create', [values], {
+                context: this.helpdeskTimesheetContext(companyId),
+            });
+        } catch (err) {
+            if (String(err?.message || '').includes('active employee in the selected companies')) {
+                throw new Error(
+                    'Odoo could not match your user to an active employee in the ticket/project company. ' +
+                    'Check the employee company and allowed companies, then reconnect.'
+                );
+            }
+            throw err;
+        }
     }
 
     /**
@@ -1540,7 +1612,10 @@ class PopupApp extends Component {
             if (this.isHelpdeskSource && !isHelpdeskTimesheetEnabled(issue, this.state.sourceCapabilities)) {
                 throw new Error('Timesheets are disabled for this ticket team/project in Odoo.');
             }
-            const issueDescription = (await promptDialog(`${this.itemLabelSingular.charAt(0).toUpperCase() + this.itemLabelSingular.slice(1)} #${issue.id} Description`, issue.name)) || '';
+            const promptTitle = this.isHelpdeskSource
+                ? `Timesheet Description for Ticket #${issue.id}`
+                : `${this.itemLabelSingular.charAt(0).toUpperCase() + this.itemLabelSingular.slice(1)} #${issue.id} Description`;
+            const issueDescription = (await promptDialog(promptTitle, issue.name)) || '';
 
             const startIso =
                 this.state.timerStartIso || (await storage.get(STORAGE_KEYS.timerStartIso, null));
@@ -1766,6 +1841,8 @@ class PopupApp extends Component {
         this.state.user = null;
         this.state.issues = [];
         this.state.projects = [];
+        this.state.currentCompanyId = null;
+        this.state.allowedCompanyIds = [];
         this.state.view = VIEW_LOGIN;
         this.state.useExistingSession = true;
     }
