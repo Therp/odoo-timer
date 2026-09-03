@@ -30,6 +30,7 @@ yarn-error.log*
 dist/desktop/.nodeenv/
 dist/desktop/.tools-venv/
 dist/desktop/node_modules/
+dist/desktop/owl/
 
 # ─── Build artefacts ───────────────────────────────────────────────────────────
 # Browser extensions — generated JS is committed so the ext can be used without
@@ -49,3 +50,7 @@ dist/desktop/release/
 # ─── macOS / Linux editor noise ────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+
+#----------- Files -----------
+dist/desktop/electron
+dist/desktop/therp-timer@1.1.0
