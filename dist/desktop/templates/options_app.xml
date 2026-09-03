@@ -52,13 +52,15 @@
         <div class="about-app">
           <h4 class="title-app text-center">Description</h4><hr/>
           Therp Timer Desktop is a native Electron application for logging work hours
-          directly into Odoo timesheets. Supports tasks, issues, screen recording,
-          chatter messaging, and runs in the system tray.
+          directly into Odoo timesheets. It supports Project Tasks, legacy Issues and
+          Helpdesk Tickets, plus screen recording, chatter messaging and system-tray timing.
           <hr/>
           <h4 class="title-app text-center">Features</h4><hr/>
           <ul class="list-group">
             <li class="list-group-item"><i class="fa fa-clock-o"/> Start/stop timer — posts timesheet lines to Odoo</li>
-            <li class="list-group-item"><i class="fa fa-tasks"/> project.task and project.issue support</li>
+            <li class="list-group-item"><i class="fa fa-tasks"/> Project Tasks, legacy Issues and Helpdesk Tickets</li>
+            <li class="list-group-item"><i class="fa fa-life-ring"/> Helpdesk stage filtering and native Helpdesk timesheet recording when Odoo supports it</li>
+            <li class="list-group-item"><i class="fa fa-info-circle"/> Helpdesk readiness check before timing; blocked tickets explain the Odoo company/employee requirement</li>
             <li class="list-group-item"><i class="fa fa-video-camera"/> Screen recorder — WebM, MP4, MKV</li>
             <li class="list-group-item"><i class="fa fa-microphone"/> Audio recording — microphone or system audio</li>
             <li class="list-group-item"><i class="fa fa-camera"/> Screenshot tool with configurable folder</li>
@@ -67,7 +69,8 @@
             <li class="list-group-item"><i class="fa fa-bell"/> Desktop notifications for new messages</li>
             <li class="list-group-item"><i class="fa fa-table"/> Task timesheets — planned vs. spent summary</li>
             <li class="list-group-item"><i class="fa fa-download"/> Download monthly timesheet as CSV</li>
-            <li class="list-group-item"><i class="fa fa-exchange"/> Multi-remote — switch between Odoo instances</li>
+            <li class="list-group-item"><i class="fa fa-exchange"/> Multi-remote — the same Odoo database may be saved separately for Tasks, Issues and Helpdesk Tickets</li>
+            <li class="list-group-item"><i class="fa fa-picture-o"/> Optional per-remote company logo with the Therp logo as fallback</li>
             <li class="list-group-item"><i class="fa fa-database"/> Config backup and restore (JSON)</li>
             <li class="list-group-item"><i class="fa fa-desktop"/> Runs in system tray — keeps timing in background</li>
           </ul>
@@ -164,7 +167,9 @@
                   <input id="remote-logo" type="file" class="form-control"
                     accept="image/png,image/jpeg,image/webp,image/gif"
                     t-on-change="onRemoteLogoChange"/>
-                  <div style="margin-top:5px;font-size:11px;color:#7b8794;">PNG, JPEG, WebP or GIF; maximum 512 KB.</div>
+                  <div style="margin-top:5px;font-size:11px;color:#7b8794;line-height:1.35;">
+                    PNG, JPEG, WebP or GIF; maximum 512 KB. The saved logo is shown on login and in the connected-remote summary.
+                  </div>
                   <button type="button" class="btn btn-sm btn-default"
                     style="margin-top:7px;" t-on-click="clearRemoteLogo">
                     Use Therp default logo
@@ -300,10 +305,11 @@
         <div class="about-app">
           <h5>Getting Started</h5>
           <ol class="list-group">
-            <li class="list-group-item">Go to Options → Options and click + to add an Odoo remote.</li>
-            <li class="list-group-item">Return to Timer, choose your remote, log in.</li>
-            <li class="list-group-item">Click the play icon next to any task to start timing.</li>
-            <li class="list-group-item">Click the stop icon to post time to Odoo timesheets.</li>
+            <li class="list-group-item">Go to Options → Options, configure the Odoo host/database and choose a data source, then click +. The same database can have separate saved remotes for Tasks and Helpdesk Tickets.</li>
+            <li class="list-group-item">Optionally add a company logo. Return to Timer, choose the saved remote and log in.</li>
+            <li class="list-group-item">Click the play icon next to an item to start timing. For Helpdesk, a blue info icon replaces Play when the ticket is known to be unable to create a timesheet.</li>
+            <li class="list-group-item">Click the info icon to see the exact readiness problem. Odoo Helpdesk timesheets normally require an active employee for the user in the ticket/project company.</li>
+            <li class="list-group-item">Click the stop icon to post time to Odoo timesheets. Helpdesk time appears in the ticket's normal Timesheets tab when the server supports it.</li>
           </ol>
           <h5 style="margin-top:16px;">Links</h5>
           <ul class="list-group">

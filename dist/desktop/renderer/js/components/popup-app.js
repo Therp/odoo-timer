@@ -131,6 +131,7 @@ class PopupApp extends Component {
         this.togglePassword              = this.togglePassword.bind(this);
         this.updateLimitPreference       = this.updateLimitPreference.bind(this);
         this.updateShowAllPreference     = this.updateShowAllPreference.bind(this);
+        this.showHelpdeskTimesheetInfo = this.showHelpdeskTimesheetInfo.bind(this);
 
         onMounted(() => {
             const bootLoader = document.getElementById('boot-loader');
@@ -181,6 +182,26 @@ class PopupApp extends Component {
         return `${remote?.name || remote?.database || 'Remote'} — ${sourceLabel}`;
     }
     get currentRemoteLogoSrc() { return this.currentRemote?.logoDataUrl || 'img/logo.png'; }
+    get currentDataSourceLabel() {
+        return this.state.dataSource === DATA_SOURCE_HELPDESK
+            ? 'Helpdesk Tickets'
+            : this.state.dataSource === DATA_SOURCE_TASK ? 'Tasks' : 'Issues';
+    }
+    get currentCompanyLabel() {
+        const id = Number(this.state.currentCompanyId || 0);
+        return id ? (this.state.companyNames?.[id] || `Company #${id}`) : '—';
+    }
+    get allowedCompanyLabels() {
+        const ids = (this.state.allowedCompanyIds?.length
+            ? this.state.allowedCompanyIds
+            : this.state.availableCompanyIds) || [];
+        const labels = ids.map((id) => this.state.companyNames?.[Number(id)] || `Company #${id}`);
+        return labels.length ? labels.join(', ') : '—';
+    }
+    get allowedCompanySummary() {
+        const text = this.allowedCompanyLabels;
+        return text.length > 46 ? `${text.slice(0, 43)}…` : text;
+    }
 
     get formattedTimer() {
         if (!this.state.timerStartIso) return '00:00:00';
@@ -269,9 +290,14 @@ class PopupApp extends Component {
                 if (item?.name) companyNames[Number(id)] = String(item.name);
             }
         }
+        const rawCurrent = sessionInfo?.user_companies?.current_company;
         const current = Number(
-            sessionInfo?.user_companies?.current_company || contextIds[0] || availableIds[0] || 0
+            (typeof rawCurrent === 'object' ? rawCurrent?.id : rawCurrent) ||
+            contextIds[0] || availableIds[0] || 0
         ) || null;
+        if (current && typeof rawCurrent === 'object' && rawCurrent?.name) {
+            companyNames[current] = String(rawCurrent.name);
+        }
         this.state.currentUserId = Number(sessionInfo?.uid || 0) || null;
         this.state.currentCompanyId = current;
         this.state.availableCompanyIds = availableIds.length
@@ -319,7 +345,14 @@ class PopupApp extends Component {
     }
 
     async showHelpdeskTimesheetInfo(issue) {
-        await notify(this.helpdeskTimesheetBlockMessage(issue));
+        const message = issue?.__timesheetBlockMessage ||
+            'Odoo is not currently able to create a timesheet for this ticket.';
+        const companyDetails = [
+            this?.currentCompanyLabel && `Current company: ${this.currentCompanyLabel}`,
+            this?.allowedCompanyLabels && this.allowedCompanyLabels !== '—' &&
+                `Allowed companies: ${this.allowedCompanyLabels}`,
+        ].filter(Boolean);
+        await notify([message, ...companyDetails].join('\n\n'));
     }
 
     staticHelpdeskTimesheetReadiness(issue) {
