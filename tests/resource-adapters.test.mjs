@@ -14,6 +14,8 @@ const enterpriseTicketFields = {
   user_id: { type: 'many2one', relation: 'res.users' },
   project_id: { type: 'many2one', relation: 'project.project' },
   team_id: { type: 'many2one', relation: 'helpdesk.team' },
+  description: { type: 'html', string: 'Description' },
+  x_therp_url: { type: 'char', string: 'Therp link' },
   stage_id: { type: 'many2one', relation: 'helpdesk.stage' },
   analytic_account_id: { type: 'many2one', relation: 'account.analytic.account' },
   use_helpdesk_timesheet: { type: 'boolean' },
@@ -30,6 +32,8 @@ const enterpriseLineFields = {
 const enterprise = inspectHelpdeskCapabilities(enterpriseTicketFields, enterpriseLineFields);
 assert.equal(enterprise.ticketLinkField, 'helpdesk_ticket_id');
 assert.equal(enterprise.stageModel, 'helpdesk.stage');
+assert.equal(enterprise.descriptionField, 'description');
+assert.equal(enterprise.therpLinkField, 'x_therp_url');
 assert.equal(enterprise.canRecordTime, true);
 assert.equal(timesheetBinding(DATA_SOURCE_HELPDESK, enterprise).model, 'account.analytic.line');
 assert.equal(timesheetBinding(DATA_SOURCE_HELPDESK, enterprise).linkField, 'helpdesk_ticket_id');

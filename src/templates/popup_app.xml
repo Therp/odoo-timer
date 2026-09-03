@@ -155,6 +155,21 @@
             t-att-value="state.searchQuery"
             t-on-input="(ev) => state.searchQuery = ev.target.value"
           />
+          <t t-if="isHelpdeskSource">
+            <select
+              id="helpdeskStageFilter"
+              t-att-value="state.helpdeskStageFilter"
+              t-on-change="(ev) => updateHelpdeskStageFilter(ev.target.value)"
+            >
+              <option value="">All stages</option>
+              <t t-foreach="helpdeskStageOptions" t-as="stage" t-key="stage.id">
+                <option
+                  t-att-value="'' + stage.id"
+                  t-att-selected="state.helpdeskStageFilter === '' + stage.id"
+                ><t t-out="stage.name"/></option>
+              </t>
+            </select>
+          </t>
           <select
             id="limitTo"
             t-model="state.limitTo"
@@ -244,11 +259,17 @@
                   <th class="text-center">Hours Left</th>
                 </t>
 
-                <t t-if="showHelpdeskHours">
-                  <th class="text-center">Time Spent</th>
+                <t t-if="isHelpdeskSource">
+                  <t t-if="showHelpdeskAssignee"><th>Assigned To</th></t>
+                  <t t-if="showHelpdeskTeam"><th>Helpdesk Team</th></t>
+                  <t t-if="showHelpdeskDescription"><th>Description</th></t>
+                  <t t-if="showHelpdeskTherpLink"><th>Therp link</th></t>
+                  <t t-if="showHelpdeskProject"><th class="project-col">Project</th></t>
+                  <t t-if="showHelpdeskHours"><th class="text-center">Time Spent</th></t>
                 </t>
-
-                <th class="project-col" t-out="relationHeaderLabel"/>
+                <t t-else="">
+                  <th class="project-col" t-out="relationHeaderLabel"/>
+                </t>
               </tr>
             </thead>
 
@@ -325,21 +346,42 @@
                       </td>
                     </t>
 
-                    <t t-if="showHelpdeskHours">
-                      <td class="text-center">
+                    <t t-if="isHelpdeskSource">
+                      <t t-if="showHelpdeskAssignee">
+                        <td><ReadMore text="relationLabel(helpdeskAssigneeValue(issue))" limit="22"/></td>
+                      </t>
+                      <t t-if="showHelpdeskTeam">
+                        <td><ReadMore text="relationLabel(helpdeskTeamValue(issue))" limit="22"/></td>
+                      </t>
+                      <t t-if="showHelpdeskDescription">
+                        <td><ReadMore text="helpdeskDescriptionText(issue)" limit="80"/></td>
+                      </t>
+                      <t t-if="showHelpdeskTherpLink">
+                        <td>
+                          <ReadMore
+                            text="helpdeskTherpLinkValue(issue)"
+                            limit="45"
+                            href="helpdeskTherpLinkHref(issue)"
+                          />
+                        </td>
+                      </t>
+                      <t t-if="showHelpdeskProject">
+                        <td class="project-cell">
+                          <ReadMore text="relationLabel(helpdeskProjectValue(issue))" limit="22"/>
+                        </td>
+                      </t>
+                      <t t-if="showHelpdeskHours">
+                        <td><ReadMore text="formatHours(helpdeskHoursValue(issue))" limit="10"/></td>
+                      </t>
+                    </t>
+                    <t t-else="">
+                      <td class="project-cell">
                         <ReadMore
-                          text="normalizeText(formatHours(helpdeskHoursValue(issue)))"
-                          limit="9"
+                          text="relationLabel(resourceRelationValue(issue))"
+                          limit="22"
                         />
                       </td>
                     </t>
-
-                    <td class="project-cell">
-                      <ReadMore
-                        text="relationLabel(resourceRelationValue(issue))"
-                        limit="15"
-                      />
-                    </td>
                   </tr>
                 </t>
               </t>

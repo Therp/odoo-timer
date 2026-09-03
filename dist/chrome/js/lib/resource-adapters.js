@@ -16,6 +16,15 @@ function firstField(fields, candidates) {
   return candidates.find((name) => hasField(fields, name)) || null;
 }
 
+function firstFieldByLabel(fields, labels) {
+  const wanted = new Set(labels.map((label) => String(label).trim().toLowerCase()));
+  for (const [name, metadata] of Object.entries(fields || {})) {
+    const label = String(metadata?.string || '').trim().toLowerCase();
+    if (wanted.has(label)) return name;
+  }
+  return null;
+}
+
 export function resourceLabels(model) {
   return RESOURCE_LABELS[model] || { singular: 'item', plural: 'Items' };
 }
@@ -29,6 +38,9 @@ export function inspectHelpdeskCapabilities(ticketFields, timesheetFields) {
   ]);
   const projectField = firstField(ticketFields, ['project_id']);
   const teamField = firstField(ticketFields, ['team_id']);
+  const descriptionField = firstField(ticketFields, ['description']);
+  const therpLinkField = firstFieldByLabel(ticketFields, ['Therp link']) ||
+    firstField(ticketFields, ['therp_link']);
   const analyticAccountField = firstField(ticketFields, [
     'analytic_account_id',
     'account_id',
@@ -44,6 +56,8 @@ export function inspectHelpdeskCapabilities(ticketFields, timesheetFields) {
     assignmentType: assignmentField ? ticketFields?.[assignmentField]?.type || null : null,
     projectField,
     teamField,
+    descriptionField,
+    therpLinkField,
     analyticAccountField,
     stageField: firstField(ticketFields, ['stage_id']),
     stageModel: ticketFields?.stage_id?.relation || null,
@@ -69,11 +83,23 @@ export function inspectHelpdeskCapabilities(ticketFields, timesheetFields) {
 }
 
 export function helpdeskUnavailableMessage(error) {
-  const message = String(error?.message || error || '').toLowerCase();
-  if (message.includes('access') || message.includes('permission')) {
+  const rawMessage = String(error?.message || error || '');
+  const details = [
+    error?.fullTrace?.data?.name,
+    error?.fullTrace?.name,
+    rawMessage,
+  ].filter(Boolean).join(' ').toLowerCase();
+
+  if (details.includes('session expired') || details.includes('invalid session') || details.includes('unauthorized')) {
+    return 'The Odoo session has expired. Reconnect to Odoo and try again.';
+  }
+  if (details.includes('access') || details.includes('permission')) {
     return 'Helpdesk is installed, but this user cannot access tickets. Grant Helpdesk user access and reconnect.';
   }
-  return 'Helpdesk Tickets are not available on this server. Install the Enterprise Helpdesk app or OCA helpdesk_mgmt, then reconnect.';
+  if (!rawMessage || details.includes('keyerror') || details.includes('does not exist') || details.includes('not found')) {
+    return 'Helpdesk Tickets are not available on this server. Install the Enterprise Helpdesk app or OCA helpdesk_mgmt, then reconnect.';
+  }
+  return `Could not inspect Helpdesk support: ${rawMessage}`;
 }
 
 export function helpdeskTimesheetUnavailableMessage(error = null) {
