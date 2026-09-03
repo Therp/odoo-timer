@@ -43,22 +43,31 @@
         <div class="about-app">
           <h4 class="title-app text-center">Description</h4>
           <hr/>
-          This is a standalone Owl rewrite of the original cross-platform timer
-          extension for posting work hours to Odoo timesheets.
+          This is the Owl browser extension for posting work hours to Odoo timesheets.
+          It supports Project Tasks, legacy Issues and Helpdesk Tickets across saved Odoo remotes.
           <hr/>
           <h4 class="title-app text-center">Features</h4>
           <hr/>
           <div class="timer-features">
             <ul class="list-group">
-              <li class="list-group-item">Support for both tasks and issues</li>
-              <li class="list-group-item">Start and stop the timer for the selected item</li>
-              <li class="list-group-item">Create Odoo timesheet lines against the linked analytic account</li>
+              <li class="list-group-item">Project Tasks, legacy Issues and Helpdesk Tickets</li>
+              <li class="list-group-item">Start/stop timing and create native Odoo timesheet lines</li>
+              <li class="list-group-item">Helpdesk stage filtering plus a readiness check before starting a ticket timer</li>
+              <li class="list-group-item">A blue info icon explains when Odoo company/employee configuration prevents Helpdesk timesheets</li>
               <li class="list-group-item">Show assigned items or everyone's items</li>
-              <li class="list-group-item">Add, remove, or clear remote hosts</li>
-              <li class="list-group-item">Switch between remote sessions</li>
-              <li class="list-group-item">Download current month or current item timesheets as CSV</li>
+              <li class="list-group-item">Save the same Odoo database as separate Task, Issue or Helpdesk remotes</li>
+              <li class="list-group-item">Optional company logo per remote, with the Therp logo as fallback</li>
+              <li class="list-group-item">Switch between remote sessions and download timesheets as CSV</li>
             </ul>
           </div>
+          <h4 class="title-app text-center" style="margin-top:16px;">Helpdesk notes</h4>
+          <hr/>
+          <ul class="list-group">
+            <li class="list-group-item">Choose <b>From Helpdesk Tickets</b> on the saved remote. The same host/database can also have a separate <b>From Tasks</b> remote.</li>
+            <li class="list-group-item">If a blue <i class="fa fa-info-circle"/> appears instead of Play, click it for the exact reason that Odoo cannot currently create a Helpdesk timesheet.</li>
+            <li class="list-group-item">Odoo normally requires an active employee linked to the current user in the ticket/project company. The extension checks this when the server permits it; Odoo remains the final authority.</li>
+            <li class="list-group-item">When available, the Therp Task button opens the ticket's linked Therp task. Tickets without a link simply show an empty cell.</li>
+          </ul>
         </div>
       </div>
 
@@ -73,18 +82,20 @@
             <!-- [FIX #38] General Settings ──────────────────────────── -->
             <h4 class="remote-title text-info">General Settings</h4>
             <hr/>
-            <div class="form-group">
-              <label class="general-setting-label">
+            <div class="form-group" style="padding:0 2px;">
+              <label class="general-setting-label"
+                style="display:flex;align-items:center;gap:8px;margin:0;line-height:1.35;">
                 <input
                   type="checkbox"
                   class="defaultCheckbox"
+                  style="margin:0;position:static;flex:0 0 auto;"
                   t-att-checked="state.autoDownloadIssueTimesheet"
                   t-on-change="toggleAutoDownload"
                 />
-                Auto Download Current Item Timesheet
+                <span>Auto Download Current Item Timesheet</span>
               </label>
-              <p class="inline-help">
-                Store timesheet locally each time you stop the timer on an item.
+              <p class="inline-help" style="margin:6px 0 0 24px;line-height:1.35;">
+                Store the timesheet locally each time you stop the timer on an item.
               </p>
             </div>
             <hr/>
@@ -183,7 +194,10 @@
                   <input id="remote-logo" type="file" class="form-control"
                     accept="image/png,image/jpeg,image/webp,image/gif"
                     t-on-change="onRemoteLogoChange"/>
-                  <div style="margin-top:5px;font-size:11px;color:#7b8794;">PNG, JPEG, WebP or GIF; maximum 512 KB.</div>
+                  <div style="margin-top:5px;font-size:11px;color:#7b8794;line-height:1.35;">
+                    PNG, JPEG, WebP or GIF; maximum 512 KB.
+                    <br/><b>Browser tip:</b> if choosing a file closes the extension popup, open Inspect/DevTools for the popup first and then choose the logo.
+                  </div>
                   <button type="button" class="btn btn-sm btn-default"
                     style="margin-top:7px;" t-on-click="clearRemoteLogo">
                     Use Therp default logo
