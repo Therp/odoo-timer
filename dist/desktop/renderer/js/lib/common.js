@@ -112,6 +112,22 @@ export function normalizeHost(host) {
   return out.replace(/\/$/, '');
 }
 
+/**
+ * Return the functional identity of a saved remote.
+ *
+ * A single Odoo database can legitimately be configured more than once when
+ * each entry targets a different timer resource (for example Tasks and
+ * Helpdesk Tickets). Display name, logo and UI state are intentionally not
+ * part of this identity.
+ */
+export function remoteIdentity(remote) {
+  const host = normalizeHost(remote?.url || '');
+  const database = String(remote?.database || '').trim();
+  const dataSource = String(remote?.datasrc || 'project.issue').trim() || 'project.issue';
+  return JSON.stringify([host, database, dataSource]);
+}
+
+
 // ─── File / CSV helpers ───────────────────────────────────────────────────────
 
 export function toCSV(rows) {

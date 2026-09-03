@@ -13,7 +13,7 @@
       <div id="loader-container"
         t-att-class="state.view === 'loading' ? '' : 'hide'">
         <div class="loader-card">
-          <div class="loader-text">Loading current session and projects…</div>
+          <div class="loader-text"><t t-esc="state.busyMessage"/></div>
           <div class="loader-subtext">Please wait — or grab a cup of coffee ☕</div>
           <i class="fa fa-cog fa-spin fa-5x"/>
         </div>
@@ -24,7 +24,7 @@
         t-att-class="state.view === 'login' ? '' : 'hide'">
         <div class="popup-login-shell">
           <div class="form">
-            <div class="logo"><img src="img/logo.png"/></div>
+            <div class="logo"><img t-att-src="currentRemoteLogoSrc" alt="Remote logo"/></div>
             <t t-if="state.bootError">
               <div><p class="odooError"><t t-esc="state.bootError"/></p></div>
             </t>
@@ -59,10 +59,10 @@
                 <select id="remote-selection" class="form-control"
                   t-on-change="(ev) => { state.selectedRemoteIndex = ev.target.value; }">
                   <t t-foreach="state.remotes" t-as="remote"
-                    t-key="remote.url + remote.database">
+                    t-key="remoteKey(remote)">
                     <option t-att-value="'' + remote_index"
                       t-att-selected="state.selectedRemoteIndex === '' + remote_index">
-                      <t t-esc="remote.name"/>
+                      <t t-esc="remoteOptionLabel(remote)"/>
                     </option>
                   </t>
                 </select>
@@ -174,33 +174,50 @@
                     </t>
                   </div>
                 </th>
-                <th class="priority-col">Priority</th>
-                <th class="stage-col">Stage</th>
-                <th class="item-col">
-                  <div class="item-header-title">
-                    <t t-esc="itemLabelPlural"/>
-                    [<t t-esc="'' + filteredIssues.length"/>]
-                  </div>
-                  <label class="allIssues">
-                    <input id="showAllIssues" type="checkbox"
-                      t-att-checked="state.allIssues"
-                      t-on-input="(ev) => updateShowAllPreference(ev.target.checked)"/>
-                    Show for everyone
-                  </label>
-                </th>
-                <t t-if="state.dataSource === 'project.task'">
-                  <th>Hours Spent</th>
-                  <th>Remaining Hours</th>
-                </t>
                 <t t-if="isHelpdeskSource">
-                  <t t-if="showHelpdeskAssignee"><th>Assigned To</th></t>
-                  <t t-if="showHelpdeskTeam"><th>Helpdesk Team</th></t>
-                  <t t-if="showHelpdeskDescription"><th>Description</th></t>
-                  <t t-if="showHelpdeskTherpLink"><th>Therp link</th></t>
-                  <t t-if="showHelpdeskProject"><th class="project-col">Project</th></t>
-                  <t t-if="showHelpdeskHours"><th>Time Spent</th></t>
+                  <t t-if="showHelpdeskTherpLink">
+                    <th class="text-center" style="width:72px">Therp Task</th>
+                  </t>
+                  <th class="priority-col">Priority</th>
+                  <th class="item-col" style="width:280px">
+                    <div class="item-header-title">
+                      <t t-esc="itemLabelPlural"/>
+                      [<t t-esc="'' + filteredIssues.length"/>]
+                    </div>
+                    <label class="allIssues">
+                      <input id="showAllIssues" type="checkbox"
+                        t-att-checked="state.allIssues"
+                        t-on-input="(ev) => updateShowAllPreference(ev.target.checked)"/>
+                      Show for everyone
+                    </label>
+                  </th>
+                  <th class="stage-col">Stage</th>
+                  <t t-if="showHelpdeskAssignee">
+                    <th style="width:120px">Assigned To</th>
+                  </t>
+                  <t t-if="showHelpdeskHours">
+                    <th style="width:88px">Time Spent</th>
+                  </t>
                 </t>
                 <t t-else="">
+                  <th class="priority-col">Priority</th>
+                  <th class="stage-col">Stage</th>
+                  <th class="item-col">
+                    <div class="item-header-title">
+                      <t t-esc="itemLabelPlural"/>
+                      [<t t-esc="'' + filteredIssues.length"/>]
+                    </div>
+                    <label class="allIssues">
+                      <input id="showAllIssues" type="checkbox"
+                        t-att-checked="state.allIssues"
+                        t-on-input="(ev) => updateShowAllPreference(ev.target.checked)"/>
+                      Show for everyone
+                    </label>
+                  </th>
+                  <t t-if="state.dataSource === 'project.task'">
+                    <th>Hours Spent</th>
+                    <th>Remaining Hours</th>
+                  </t>
                   <th class="project-col"><t t-esc="relationHeaderLabel"/></th>
                 </t>
               </tr>
@@ -215,65 +232,87 @@
                           title="Stop timer and record the time to Odoo timesheets"
                           t-on-click="() => stopTimer(ir)"/>
                       </t>
+                      <t t-elif="isHelpdeskSource &amp;&amp; helpdeskTimesheetBlocked(ir)">
+                        <i class="fa fa-info-circle action-btn pointer text-warning"
+                          t-att-title="helpdeskTimesheetBlockMessage(ir)"
+                          t-on-click="() => showHelpdeskTimesheetInfo(ir)"/>
+                      </t>
                       <t t-else="">
                         <i class="fa fa-play-circle action-btn pointer"
                           title="Start the timer for the selected item"
                           t-on-click="() => startTimer(ir)"/>
                       </t>
                     </td>
-                    <td class="priority-cell">
-                      <t t-foreach="priorityStarsArr(ir.priority)" t-as="s" t-key="s">
-                        <span class="fa fa-star checked"/>
-                      </t>
-                      <t t-foreach="priorityOutlineArr(ir.priority)" t-as="o" t-key="o">
-                        <i class="fa fa-star-o"/>
-                      </t>
-                    </td>
-                    <td class="stage-cell">
-                      <ReadMore text="(ir.stage_id &amp;&amp; ir.stage_id[1]) || ''" limit="14"/>
-                    </td>
-                    <td class="issue-desc-cell">
-                      <ReadMore text="issueLabel(ir)" limit="60" href="issueHref(ir)"/>
-                    </td>
-                    <t t-if="state.dataSource === 'project.task'">
-                      <td class="hours-spent-cell">
-                        <div class="hours-cell-inner">
-                          <ReadMore text="formatHours(ir.effective_hours)" limit="10"/>
-                          <i class="fa fa-list-alt pointer"
-                            title="View Timesheets for this task"
-                            t-on-click="() => openTimesheets(ir)"/>
-                        </div>
-                      </td>
-                      <td>
-                        <ReadMore text="formatHours(ir.remaining_hours)" limit="10"/>
-                      </td>
-                    </t>
                     <t t-if="isHelpdeskSource">
-                      <t t-if="showHelpdeskAssignee">
-                        <td><ReadMore text="relationLabel(helpdeskAssigneeValue(ir))" limit="22"/></td>
-                      </t>
-                      <t t-if="showHelpdeskTeam">
-                        <td><ReadMore text="relationLabel(helpdeskTeamValue(ir))" limit="22"/></td>
-                      </t>
-                      <t t-if="showHelpdeskDescription">
-                        <td><ReadMore text="helpdeskDescriptionText(ir)" limit="80"/></td>
-                      </t>
                       <t t-if="showHelpdeskTherpLink">
-                        <td>
-                          <ReadMore text="helpdeskTherpLinkValue(ir)" limit="45"
-                            href="helpdeskTherpLinkHref(ir)"/>
+                        <td class="text-center" style="width:72px">
+                          <t t-if="helpdeskTherpLinkHref(ir)">
+                            <a t-att-href="helpdeskTherpLinkHref(ir)" target="_blank"
+                              rel="noreferrer" class="btn btn-sm btn-outline-secondary"
+                              title="Open linked Therp task">
+                              <i class="fa fa-external-link"/>
+                            </a>
+                          </t>
                         </td>
                       </t>
-                      <t t-if="showHelpdeskProject">
-                        <td class="project-cell">
-                          <ReadMore text="relationLabel(helpdeskProjectValue(ir))" limit="22"/>
+                      <td class="priority-cell">
+                        <t t-foreach="priorityStarsArr(ir.priority)" t-as="s" t-key="s">
+                          <span class="fa fa-star checked"/>
+                        </t>
+                        <t t-foreach="priorityOutlineArr(ir.priority)" t-as="o" t-key="o">
+                          <i class="fa fa-star-o"/>
+                        </t>
+                      </td>
+                      <td class="issue-desc-cell" style="width:280px">
+                        <ReadMore text="issueLabel(ir)" limit="55" href="issueHref(ir)"/>
+                        <t t-if="showHelpdeskDescription &amp;&amp; helpdeskDescriptionText(ir)">
+                          <div class="text-muted-soft small" style="margin-top:3px;line-height:1.3">
+                            <ReadMore text="helpdeskDescriptionText(ir)" limit="70"/>
+                          </div>
+                        </t>
+                      </td>
+                      <td class="stage-cell">
+                        <ReadMore text="(ir.stage_id &amp;&amp; ir.stage_id[1]) || ''" limit="14"/>
+                      </td>
+                      <t t-if="showHelpdeskAssignee">
+                        <td style="width:120px">
+                          <ReadMore text="relationLabel(helpdeskAssigneeValue(ir))" limit="22"/>
                         </td>
                       </t>
                       <t t-if="showHelpdeskHours">
-                        <td><ReadMore text="formatHours(helpdeskHoursValue(ir))" limit="10"/></td>
+                        <td style="width:88px">
+                          <ReadMore text="formatHours(helpdeskHoursValue(ir))" limit="10"/>
+                        </td>
                       </t>
                     </t>
                     <t t-else="">
+                      <td class="priority-cell">
+                        <t t-foreach="priorityStarsArr(ir.priority)" t-as="s" t-key="s">
+                          <span class="fa fa-star checked"/>
+                        </t>
+                        <t t-foreach="priorityOutlineArr(ir.priority)" t-as="o" t-key="o">
+                          <i class="fa fa-star-o"/>
+                        </t>
+                      </td>
+                      <td class="stage-cell">
+                        <ReadMore text="(ir.stage_id &amp;&amp; ir.stage_id[1]) || ''" limit="14"/>
+                      </td>
+                      <td class="issue-desc-cell">
+                        <ReadMore text="issueLabel(ir)" limit="60" href="issueHref(ir)"/>
+                      </td>
+                      <t t-if="state.dataSource === 'project.task'">
+                        <td class="hours-spent-cell">
+                          <div class="hours-cell-inner">
+                            <ReadMore text="formatHours(ir.effective_hours)" limit="10"/>
+                            <i class="fa fa-list-alt pointer"
+                              title="View Timesheets for this task"
+                              t-on-click="() => openTimesheets(ir)"/>
+                          </div>
+                        </td>
+                        <td>
+                          <ReadMore text="formatHours(ir.remaining_hours)" limit="10"/>
+                        </td>
+                      </t>
                       <td class="project-cell">
                         <ReadMore text="relationLabel(resourceRelationValue(ir))" limit="22"/>
                       </td>

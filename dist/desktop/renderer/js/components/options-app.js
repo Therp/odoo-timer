@@ -3,6 +3,7 @@ import {
     writeRemotes,
     validURL,
     normalizeHost,
+    remoteIdentity,
     storage,
     clearOdooSessionCookies,
     escapeHtml,
@@ -19,6 +20,9 @@ const PAGE_STORAGE  = 'storage';
 const PAGE_SECURITY = 'security';
 const PAGE_HELP     = 'help';
 const DEFAULT_DATA_SOURCE = 'project.issue';
+const DEFAULT_LOGO_SRC = 'img/logo.png';
+const MAX_REMOTE_LOGO_BYTES = 512 * 1024;
+const ALLOWED_REMOTE_LOGO_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif']);
 
 const STORAGE_KEYS = { remoteHostInfo: 'remote_host_info' };
 
@@ -43,6 +47,7 @@ class OptionsApp extends Component {
                 remote_odoo_version:  '',
                 remote_poll_interval: '60',
                 remote_datasrc:       DEFAULT_DATA_SOURCE,
+                remote_logo:          '',
             },
         });
         onWillStart(async () => {
@@ -53,11 +58,55 @@ class OptionsApp extends Component {
 
     async loadRemotes() { this.state.remotes = await readRemotes(); }
 
+
+    remoteKey(remote) { return remoteIdentity(remote); }
+    remoteLogoSrc(remote) { return remote?.logoDataUrl || DEFAULT_LOGO_SRC; }
+    get formLogoSrc() { return this.state.form.remote_logo || DEFAULT_LOGO_SRC; }
+
+    async readLogoFile(file) {
+        if (!file) return '';
+        if (!ALLOWED_REMOTE_LOGO_TYPES.has(file.type)) {
+            throw new Error('Company logo must be PNG, JPEG, WebP, or GIF.');
+        }
+        if (file.size > MAX_REMOTE_LOGO_BYTES) {
+            throw new Error('Company logo is too large. Maximum size is 512 KB.');
+        }
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ''));
+            reader.onerror = () => reject(new Error('Could not read the selected company logo.'));
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async onRemoteLogoChange(ev) {
+        const input = ev?.target;
+        const file = input?.files?.[0];
+        if (!file) return;
+        try {
+            this.state.form.remote_logo = await this.readLogoFile(file);
+        } catch (err) {
+            if (input) input.value = '';
+            await notify(err.message || 'Could not use the selected company logo.');
+        }
+    }
+
+    clearRemoteLogo() {
+        this.state.form.remote_logo = '';
+        const input = document.getElementById('remote-logo');
+        if (input) input.value = '';
+    }
+
+    duplicateRemoteMessage(remote) {
+        return `A remote for ${remote.url} / ${remote.database} / ${remote.datasrc || DEFAULT_DATA_SOURCE} already exists. ` +
+            'Change the host, database, or data source.';
+    }
+
     resetRemoteForm() {
         Object.assign(this.state.form, {
             remote_host: '', remote_name: '', remote_database: '',
             remote_odoo_version: '', remote_poll_interval: '60',
-            remote_datasrc: DEFAULT_DATA_SOURCE,
+            remote_datasrc: DEFAULT_DATA_SOURCE, remote_logo: '',
         });
     }
 
@@ -85,12 +134,16 @@ class OptionsApp extends Component {
         if (!this._validate(host, name, database)) return;
 
         const remotes = await readRemotes();
-        if (remotes.some((r) => r.url === host && r.database === database)) {
-            this.state.error = `${host} / ${database} already exists.`;
+        const candidate = { url: host, database, datasrc };
+        if (remotes.some((r) => remoteIdentity(r) === remoteIdentity(candidate))) {
+            await notify(this.duplicateRemoteMessage(candidate));
             return;
         }
 
-        remotes.push({ url: host, name, database, odooVersion: version, pollInterval, datasrc, state: 'Inactive' });
+        remotes.push({
+            url: host, name, database, odooVersion: version, pollInterval, datasrc,
+            logoDataUrl: this.state.form.remote_logo || '', state: 'Inactive',
+        });
         await writeRemotes(remotes);
         await this.loadRemotes();
         this.resetRemoteForm();
@@ -130,7 +183,7 @@ class OptionsApp extends Component {
       style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:4px;box-sizing:border-box;font-size:14px;"/>
   </div>
 
-  <div style="margin-bottom:4px;">
+  <div style="margin-bottom:10px;">
     <label style="display:block;font-size:13px;margin-bottom:4px;color:#555;">Data Source</label>
     <select id="${pfx}-datasrc"
       style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:4px;box-sizing:border-box;font-size:14px;">
@@ -138,6 +191,20 @@ class OptionsApp extends Component {
       <option value="project.task"${remote.datasrc === 'project.task' ? ' selected' : ''}>From Tasks (project.task)</option>
       <option value="helpdesk.ticket"${remote.datasrc === 'helpdesk.ticket' ? ' selected' : ''}>From Helpdesk Tickets (helpdesk.ticket)</option>
     </select>
+  </div>
+
+  <div style="margin-bottom:4px;">
+    <label style="display:block;font-size:13px;margin-bottom:6px;color:#555;">Company Logo <span style="color:#94a3b8;font-weight:400;">(optional)</span></label>
+    <div style="display:flex;gap:12px;align-items:center;">
+      <img src="${escapeHtml(this.remoteLogoSrc(remote))}" alt="Remote logo" style="width:64px;height:48px;object-fit:contain;border:1px solid #e2e8f0;border-radius:5px;background:#fff;padding:3px;"/>
+      <div style="flex:1;">
+        <input id="${pfx}-logo" type="file" accept="image/png,image/jpeg,image/webp,image/gif" style="width:100%;font-size:13px;"/>
+        <label style="display:block;margin-top:7px;font-size:12px;color:#64748b;font-weight:400;">
+          <input id="${pfx}-remove-logo" type="checkbox"/> Use the default Therp logo
+        </label>
+        <div style="margin-top:4px;font-size:11px;color:#94a3b8;">PNG, JPEG, WebP or GIF; maximum 512 KB.</div>
+      </div>
+    </div>
   </div>
 </div>`;
 
@@ -150,26 +217,43 @@ class OptionsApp extends Component {
         const newDb    = get(`${pfx}-database`).trim();
         const newVer   = get(`${pfx}-version`).trim();
         const newSrc   = get(`${pfx}-datasrc`) || DEFAULT_DATA_SOURCE;
+        const logoInput = document.getElementById(`${pfx}-logo`);
+        const removeLogo = Boolean(document.getElementById(`${pfx}-remove-logo`)?.checked);
+        let newLogo = removeLogo ? '' : (remote.logoDataUrl || '');
+        if (!removeLogo && logoInput?.files?.[0]) {
+            try { newLogo = await this.readLogoFile(logoInput.files[0]); }
+            catch (err) { await notify(err.message || 'Could not use the selected company logo.'); return; }
+        }
 
         if (!this._validate(newHost, newName, newDb)) return;
 
         const remotes = await readRemotes();
+        const originalKey = remoteIdentity(remote);
+        const candidate = { url: newHost, database: newDb, datasrc: newSrc };
         const duplicate = remotes.some(
-            (r) => r.url === newHost && r.database === newDb &&
-                   !(r.url === remote.url && r.database === remote.database)
+            (r) => remoteIdentity(r) !== originalKey && remoteIdentity(r) === remoteIdentity(candidate)
         );
         if (duplicate) {
-            this.state.error = `${newHost} / ${newDb} already exists.`;
+            await notify(this.duplicateRemoteMessage(candidate));
             return;
         }
 
-        const updated = remotes.map((r) =>
-            r.url === remote.url && r.database === remote.database
-                ? { ...r, name: newName, url: newHost, database: newDb,
-                         odooVersion: newVer, datasrc: newSrc }
-                : r
-        );
-        await writeRemotes(updated);
+        const index = remotes.findIndex((r) => remoteIdentity(r) === originalKey);
+        if (index < 0) { await notify('Remote not found. Refresh the list and try again.'); return; }
+        const oldHost = normalizeHost(remotes[index].url || '');
+        const oldDb = String(remotes[index].database || '').trim();
+        remotes[index] = {
+            ...remotes[index], name: newName, url: newHost, database: newDb,
+            odooVersion: newVer, datasrc: newSrc, logoDataUrl: newLogo,
+        };
+        await writeRemotes(remotes);
+
+        if (oldHost !== newHost && !remotes.some((r) => normalizeHost(r.url || '') === oldHost)) {
+            await clearOdooSessionCookies(oldHost);
+        }
+        if (oldDb !== newDb && !remotes.some((r) => String(r.database || '').trim() === oldDb)) {
+            await storage.remove(oldDb);
+        }
         await this.loadRemotes();
         await notify('Remote updated successfully.');
     }
@@ -177,12 +261,15 @@ class OptionsApp extends Component {
     async removeRemote(remote) {
         const ok = await confirmDialog(`Remove remote [${remote.url}]?`);
         if (!ok) return;
-        await clearOdooSessionCookies(remote.url);
-        const remotes = (await readRemotes()).filter(
-            (r) => !(r.url === remote.url && r.database === remote.database)
-        );
+        const targetKey = remoteIdentity(remote);
+        const remotes = (await readRemotes()).filter((r) => remoteIdentity(r) !== targetKey);
         await writeRemotes(remotes);
-        await storage.remove(remote.database);
+        if (!remotes.some((r) => normalizeHost(r.url || '') === normalizeHost(remote.url || ''))) {
+            await clearOdooSessionCookies(remote.url);
+        }
+        if (!remotes.some((r) => String(r.database || '').trim() === String(remote.database || '').trim())) {
+            await storage.remove(remote.database);
+        }
         await this.loadRemotes();
         await notify(`[${remote.url}] removed.`);
     }
@@ -190,9 +277,12 @@ class OptionsApp extends Component {
     async removeAllRemotes() {
         const ok = await confirmDialog('Remove ALL remotes? This cannot be undone.');
         if (!ok) return;
-        for (const r of await readRemotes()) {
-            await clearOdooSessionCookies(r.url);
-            await storage.remove(r.database);
+        const remotes = await readRemotes();
+        for (const host of [...new Set(remotes.map((r) => normalizeHost(r.url || '')).filter(Boolean))]) {
+            await clearOdooSessionCookies(host);
+        }
+        for (const database of [...new Set(remotes.map((r) => String(r.database || '').trim()).filter(Boolean))]) {
+            await storage.remove(database);
         }
         await writeRemotes([]);
         await storage.remove(STORAGE_KEYS.remoteHostInfo);

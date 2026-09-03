@@ -180,10 +180,10 @@ export const templates = {
   const comp5 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
   const comp6 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
   
-  let block1 = createBlock(`<div><!-- Sidebar --><div id="navigation"><h1 class="title-app">Timer Options</h1><ul class="list-group"><li class="chooser list-group-item" block-attribute-0="class" block-handler-1="click"><i class="fa fa-info-circle"/> <span>About Timer</span></li><li class="chooser list-group-item" block-attribute-2="class" block-handler-3="click"><i class="fa fa-question-circle"/> <span>Help</span></li><li class="chooser list-group-item" block-attribute-4="class" block-handler-5="click"><i class="fa fa-hdd-o"/> <span>Storage</span></li><li class="chooser list-group-item" block-attribute-6="class" block-handler-7="click"><i class="fa fa-shield"/> <span>Security</span></li><li class="chooser list-group-item" block-attribute-8="class" block-handler-9="click"><i class="fa fa-cogs"/> <span>Options</span></li></ul><hr/><div class="footer-app"><a href="popup.html" class="back-left"><i class="fa fa-arrow-circle-left fa-2x"/></a></div></div><!-- About --><div class="options-box box" block-attribute-10="class"><h1><div class="logo"><img src="img/logo.png"/></div></h1><hr/><div class="about-app"><h4 class="title-app text-center">Description</h4><hr/> Therp Timer Desktop is a native Electron application for logging work hours directly into Odoo timesheets. Supports tasks, issues, screen recording, chatter messaging, and runs in the system tray. <hr/><h4 class="title-app text-center">Features</h4><hr/><ul class="list-group"><li class="list-group-item"><i class="fa fa-clock-o"/> Start/stop timer — posts timesheet lines to Odoo</li><li class="list-group-item"><i class="fa fa-tasks"/> project.task and project.issue support</li><li class="list-group-item"><i class="fa fa-video-camera"/> Screen recorder — WebM, MP4, MKV</li><li class="list-group-item"><i class="fa fa-microphone"/> Audio recording — microphone or system audio</li><li class="list-group-item"><i class="fa fa-camera"/> Screenshot tool with configurable folder</li><li class="list-group-item"><i class="fa fa-film"/> Animated GIF capture</li><li class="list-group-item"><i class="fa fa-comments"/> Chatter — read/post messages, @mentions, attachments</li><li class="list-group-item"><i class="fa fa-bell"/> Desktop notifications for new messages</li><li class="list-group-item"><i class="fa fa-table"/> Task timesheets — planned vs. spent summary</li><li class="list-group-item"><i class="fa fa-download"/> Download monthly timesheet as CSV</li><li class="list-group-item"><i class="fa fa-exchange"/> Multi-remote — switch between Odoo instances</li><li class="list-group-item"><i class="fa fa-database"/> Config backup and restore (JSON)</li><li class="list-group-item"><i class="fa fa-desktop"/> Runs in system tray — keeps timing in background</li></ul><h4 class="title-app text-center" style="margin-top:16px;">Packages</h4><hr/><ul class="list-group"><li class="list-group-item"><b>electron</b> ^29.4.6 — Desktop framework</li><li class="list-group-item"><b>electron-builder</b> ^24.13.3 — Packaging</li><li class="list-group-item"><b>electron-store</b> ^8.1.0 — Persistent storage</li><li class="list-group-item"><b>owl</b> 2.8.2 — Odoo Web Library UI framework</li><li class="list-group-item"><b>font-awesome</b> 4.6.3 — Icon set</li></ul></div></div><!-- Options / remotes form --><div class="options-box box" block-attribute-11="class"><div class="form remote-options-form"><form block-handler-12="submit.prevent"><h4 class="remote-title text-info">Add Remote</h4><hr/><div class="form-group"><label for="remote-host">Odoo Host</label><input type="text" class="form-control" id="remote-host" placeholder="https://your-odoo-host.example" block-property-13="value" block-handler-14="input"/></div><div class="form-group"><label for="remote-name">Display Name</label><input type="text" class="form-control" id="remote-name" placeholder="My Odoo" block-property-15="value" block-handler-16="input"/></div><div class="form-group"><label for="remote-database">Odoo Database</label><input type="text" class="form-control" id="remote-database" placeholder="myodoodatabase" block-property-17="value" block-handler-18="input"/></div><div class="form-group"><label for="remote-odoo-version">Odoo Version</label><input type="text" class="form-control" id="remote-odoo-version" placeholder="16.0" block-property-19="value" block-handler-20="input"/></div><div class="form-group"><label for="remote-poll">Message Poll Interval (seconds, 0=off)</label><input type="number" class="form-control" id="remote-poll" placeholder="60" min="0" block-property-21="value" block-handler-22="input"/></div><div class="form-group"><label>Data Source</label><ul class="data-source-list list-group"><li class="list-group-item"><div class="form-check"><input class="form-check-input" type="radio" value="project.issue" id="FromIssues" block-property-23="checked" block-handler-24="change"/><label class="form-check-label" for="FromIssues">From Issues</label></div></li><li class="list-group-item"><div class="form-check"><input class="form-check-input" type="radio" value="project.task" id="FromTasks" block-property-25="checked" block-handler-26="change"/><label class="form-check-label" for="FromTasks">From Tasks</label></div></li><li class="list-group-item"><div class="form-check"><input class="form-check-input" type="radio" value="helpdesk.ticket" id="FromHelpdeskTickets" block-property-27="checked" block-handler-28="change"/><label class="form-check-label" for="FromHelpdeskTickets">From Helpdesk Tickets</label></div></li></ul></div><span class="caption-remotes">Controls</span><div class="remotes-control-btns col-md-12 text-center text-info pointer"><i title="Add a remote host" class="fa fa-2x fa-plus-circle" block-handler-29="click"/><i title="Refresh remotes" class="fa fa-2x fa-refresh" block-handler-30="click"/><i title="Toggle remote list" class="fa fa-2x fa-eye" block-handler-31="click"/><i title="Remove all remotes" class="fa fa-2x fa-minus-circle" block-handler-32="click"/></div><block-child-0/></form><block-child-1/></div></div><!-- Storage --><div class="options-box box" block-attribute-33="class"><h4 class="title-app"><i class="fa fa-hdd-o"/> Storage Preferences</h4><hr/><div class="about-app"><p class="text-muted" style="font-size:13px;"> Set save folders for recordings and screenshots. When set, files save directly without a dialog. </p><div class="form-group"><label>Screenshot Save Folder</label><div class="folder-row"><span class="folder-path-display"><block-text-34/></span><button class="btn btn-sm btn-default" block-handler-35="click">Browse…</button><button class="btn btn-sm btn-danger" block-handler-36="click">Clear</button></div></div><div class="form-group" style="margin-top:12px;"><label>Video / GIF Save Folder</label><div class="folder-row"><span class="folder-path-display"><block-text-37/></span><button class="btn btn-sm btn-default" block-handler-38="click">Browse…</button><button class="btn btn-sm btn-danger" block-handler-39="click">Clear</button></div></div><hr/><h4 class="title-app"><i class="fa fa-database"/> Backup and Restore</h4><p class="text-muted" style="font-size:13px;"> Export all configuration to JSON, or import a previous backup. </p><div style="display:flex;gap:10px;"><button class="btn btn-default" block-handler-40="click"><i class="fa fa-download"/> Export Config </button><button class="btn btn-default" block-handler-41="click"><i class="fa fa-upload"/> Import Config </button></div></div></div><!-- Security --><div class="options-box box" block-attribute-42="class"><h4 class="title-app"><i class="fa fa-shield"/> Security and Sandbox</h4><hr/><div class="about-app"><h5>Linux AppImage — Sandbox</h5><p class="text-muted" style="font-size:13px;"> On Linux the AppImage SUID sandbox helper may not be set up correctly. The app applies --no-sandbox automatically. To restore full sandboxing: </p><ul class="list-group"><li class="list-group-item"> sudo chown root /tmp/.mount_Therp-*/chrome-sandbox and sudo chmod 4755 /tmp/.mount_Therp-*/chrome-sandbox </li></ul><h5 style="margin-top:16px;">Session Cookies</h5><p class="text-muted" style="font-size:13px;"> Odoo session cookies are stored in the Electron Chromium session and cleared on logout. No passwords are stored in plain text. </p></div></div><!-- Help --><div class="options-box box" block-attribute-43="class"><h4 class="title-app"><i class="fa fa-question-circle"/> Help and Tutorial</h4><hr/><div class="about-app"><h5>Getting Started</h5><ol class="list-group"><li class="list-group-item">Go to Options → Options and click + to add an Odoo remote.</li><li class="list-group-item">Return to Timer, choose your remote, log in.</li><li class="list-group-item">Click the play icon next to any task to start timing.</li><li class="list-group-item">Click the stop icon to post time to Odoo timesheets.</li></ol><h5 style="margin-top:16px;">Links</h5><ul class="list-group"><li class="list-group-item"><a href="https://github.com/Therp/odoo-timer/blob/master/README.md" block-handler-44="click.prevent"><i class="fa fa-book"/> README and Documentation </a></li><li class="list-group-item"><a href="https://github.com/Therp/odoo-timer/issues" block-handler-45="click.prevent"><i class="fa fa-bug"/> Report an Issue / Community Discussions </a></li></ul><h5 style="margin-top:16px;">Keyboard Shortcuts</h5><ul class="list-group"><li class="list-group-item">Ctrl+Enter — Send message in chatter compose box</li><li class="list-group-item">Escape — Close mention dropdown in chatter</li></ul></div></div></div>`);
+  let block1 = createBlock(`<div><!-- Sidebar --><div id="navigation"><h1 class="title-app">Timer Options</h1><ul class="list-group"><li class="chooser list-group-item" block-attribute-0="class" block-handler-1="click"><i class="fa fa-info-circle"/> <span>About Timer</span></li><li class="chooser list-group-item" block-attribute-2="class" block-handler-3="click"><i class="fa fa-question-circle"/> <span>Help</span></li><li class="chooser list-group-item" block-attribute-4="class" block-handler-5="click"><i class="fa fa-hdd-o"/> <span>Storage</span></li><li class="chooser list-group-item" block-attribute-6="class" block-handler-7="click"><i class="fa fa-shield"/> <span>Security</span></li><li class="chooser list-group-item" block-attribute-8="class" block-handler-9="click"><i class="fa fa-cogs"/> <span>Options</span></li></ul><hr/><div class="footer-app"><a href="popup.html" class="back-left"><i class="fa fa-arrow-circle-left fa-2x"/></a></div></div><!-- About --><div class="options-box box" block-attribute-10="class"><h1><div class="logo"><img src="img/logo.png"/></div></h1><hr/><div class="about-app"><h4 class="title-app text-center">Description</h4><hr/> Therp Timer Desktop is a native Electron application for logging work hours directly into Odoo timesheets. Supports tasks, issues, screen recording, chatter messaging, and runs in the system tray. <hr/><h4 class="title-app text-center">Features</h4><hr/><ul class="list-group"><li class="list-group-item"><i class="fa fa-clock-o"/> Start/stop timer — posts timesheet lines to Odoo</li><li class="list-group-item"><i class="fa fa-tasks"/> project.task and project.issue support</li><li class="list-group-item"><i class="fa fa-video-camera"/> Screen recorder — WebM, MP4, MKV</li><li class="list-group-item"><i class="fa fa-microphone"/> Audio recording — microphone or system audio</li><li class="list-group-item"><i class="fa fa-camera"/> Screenshot tool with configurable folder</li><li class="list-group-item"><i class="fa fa-film"/> Animated GIF capture</li><li class="list-group-item"><i class="fa fa-comments"/> Chatter — read/post messages, @mentions, attachments</li><li class="list-group-item"><i class="fa fa-bell"/> Desktop notifications for new messages</li><li class="list-group-item"><i class="fa fa-table"/> Task timesheets — planned vs. spent summary</li><li class="list-group-item"><i class="fa fa-download"/> Download monthly timesheet as CSV</li><li class="list-group-item"><i class="fa fa-exchange"/> Multi-remote — switch between Odoo instances</li><li class="list-group-item"><i class="fa fa-database"/> Config backup and restore (JSON)</li><li class="list-group-item"><i class="fa fa-desktop"/> Runs in system tray — keeps timing in background</li></ul><h4 class="title-app text-center" style="margin-top:16px;">Packages</h4><hr/><ul class="list-group"><li class="list-group-item"><b>electron</b> ^29.4.6 — Desktop framework</li><li class="list-group-item"><b>electron-builder</b> ^24.13.3 — Packaging</li><li class="list-group-item"><b>electron-store</b> ^8.1.0 — Persistent storage</li><li class="list-group-item"><b>owl</b> 2.8.2 — Odoo Web Library UI framework</li><li class="list-group-item"><b>font-awesome</b> 4.6.3 — Icon set</li></ul></div></div><!-- Options / remotes form --><div class="options-box box" block-attribute-11="class"><div class="form remote-options-form"><form block-handler-12="submit.prevent"><h4 class="remote-title text-info">Add Remote</h4><hr/><div class="form-group"><label for="remote-host">Odoo Host</label><input type="text" class="form-control" id="remote-host" placeholder="https://your-odoo-host.example" block-property-13="value" block-handler-14="input"/></div><div class="form-group"><label for="remote-name">Display Name</label><input type="text" class="form-control" id="remote-name" placeholder="My Odoo" block-property-15="value" block-handler-16="input"/></div><div class="form-group"><label for="remote-database">Odoo Database</label><input type="text" class="form-control" id="remote-database" placeholder="myodoodatabase" block-property-17="value" block-handler-18="input"/></div><div class="form-group"><label for="remote-odoo-version">Odoo Version</label><input type="text" class="form-control" id="remote-odoo-version" placeholder="16.0" block-property-19="value" block-handler-20="input"/></div><div class="form-group"><label for="remote-poll">Message Poll Interval (seconds, 0=off)</label><input type="number" class="form-control" id="remote-poll" placeholder="60" min="0" block-property-21="value" block-handler-22="input"/></div><div class="form-group"><label>Data Source</label><ul class="data-source-list list-group"><li class="list-group-item"><div class="form-check"><input class="form-check-input" type="radio" value="project.issue" id="FromIssues" block-property-23="checked" block-handler-24="change"/><label class="form-check-label" for="FromIssues">From Issues</label></div></li><li class="list-group-item"><div class="form-check"><input class="form-check-input" type="radio" value="project.task" id="FromTasks" block-property-25="checked" block-handler-26="change"/><label class="form-check-label" for="FromTasks">From Tasks</label></div></li><li class="list-group-item"><div class="form-check"><input class="form-check-input" type="radio" value="helpdesk.ticket" id="FromHelpdeskTickets" block-property-27="checked" block-handler-28="change"/><label class="form-check-label" for="FromHelpdeskTickets">From Helpdesk Tickets</label></div></li></ul></div><div class="form-group"><label for="remote-logo">Company Logo <span class="text-muted">(optional)</span></label><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><img block-attribute-29="src" alt="Remote logo preview" style="width:76px;height:54px;object-fit:contain;border:1px solid #dbe3ea;border-radius:6px;background:#fff;padding:4px;"/><div style="min-width:220px;flex:1;"><input id="remote-logo" type="file" class="form-control" accept="image/png,image/jpeg,image/webp,image/gif" block-handler-30="change"/><div style="margin-top:5px;font-size:11px;color:#7b8794;">PNG, JPEG, WebP or GIF; maximum 512 KB.</div><button type="button" class="btn btn-sm btn-default" style="margin-top:7px;" block-handler-31="click"> Use Therp default logo </button></div></div></div><span class="caption-remotes">Controls</span><div class="remotes-control-btns col-md-12 text-center text-info pointer"><i title="Add a remote host" class="fa fa-2x fa-plus-circle" block-handler-32="click"/><i title="Refresh remotes" class="fa fa-2x fa-refresh" block-handler-33="click"/><i title="Toggle remote list" class="fa fa-2x fa-eye" block-handler-34="click"/><i title="Remove all remotes" class="fa fa-2x fa-minus-circle" block-handler-35="click"/></div><block-child-0/></form><block-child-1/></div></div><!-- Storage --><div class="options-box box" block-attribute-36="class"><h4 class="title-app"><i class="fa fa-hdd-o"/> Storage Preferences</h4><hr/><div class="about-app"><p class="text-muted" style="font-size:13px;"> Set save folders for recordings and screenshots. When set, files save directly without a dialog. </p><div class="form-group"><label>Screenshot Save Folder</label><div class="folder-row"><span class="folder-path-display"><block-text-37/></span><button class="btn btn-sm btn-default" block-handler-38="click">Browse…</button><button class="btn btn-sm btn-danger" block-handler-39="click">Clear</button></div></div><div class="form-group" style="margin-top:12px;"><label>Video / GIF Save Folder</label><div class="folder-row"><span class="folder-path-display"><block-text-40/></span><button class="btn btn-sm btn-default" block-handler-41="click">Browse…</button><button class="btn btn-sm btn-danger" block-handler-42="click">Clear</button></div></div><hr/><h4 class="title-app"><i class="fa fa-database"/> Backup and Restore</h4><p class="text-muted" style="font-size:13px;"> Export all configuration to JSON, or import a previous backup. </p><div style="display:flex;gap:10px;"><button class="btn btn-default" block-handler-43="click"><i class="fa fa-download"/> Export Config </button><button class="btn btn-default" block-handler-44="click"><i class="fa fa-upload"/> Import Config </button></div></div></div><!-- Security --><div class="options-box box" block-attribute-45="class"><h4 class="title-app"><i class="fa fa-shield"/> Security and Sandbox</h4><hr/><div class="about-app"><h5>Linux AppImage — Sandbox</h5><p class="text-muted" style="font-size:13px;"> On Linux the AppImage SUID sandbox helper may not be set up correctly. The app applies --no-sandbox automatically. To restore full sandboxing: </p><ul class="list-group"><li class="list-group-item"> sudo chown root /tmp/.mount_Therp-*/chrome-sandbox and sudo chmod 4755 /tmp/.mount_Therp-*/chrome-sandbox </li></ul><h5 style="margin-top:16px;">Session Cookies</h5><p class="text-muted" style="font-size:13px;"> Odoo session cookies are stored in the Electron Chromium session and cleared on logout. No passwords are stored in plain text. </p></div></div><!-- Help --><div class="options-box box" block-attribute-46="class"><h4 class="title-app"><i class="fa fa-question-circle"/> Help and Tutorial</h4><hr/><div class="about-app"><h5>Getting Started</h5><ol class="list-group"><li class="list-group-item">Go to Options → Options and click + to add an Odoo remote.</li><li class="list-group-item">Return to Timer, choose your remote, log in.</li><li class="list-group-item">Click the play icon next to any task to start timing.</li><li class="list-group-item">Click the stop icon to post time to Odoo timesheets.</li></ol><h5 style="margin-top:16px;">Links</h5><ul class="list-group"><li class="list-group-item"><a href="https://github.com/Therp/odoo-timer/blob/master/README.md" block-handler-47="click.prevent"><i class="fa fa-book"/> README and Documentation </a></li><li class="list-group-item"><a href="https://github.com/Therp/odoo-timer/issues" block-handler-48="click.prevent"><i class="fa fa-bug"/> Report an Issue / Community Discussions </a></li></ul><h5 style="margin-top:16px;">Keyboard Shortcuts</h5><ul class="list-group"><li class="list-group-item">Ctrl+Enter — Send message in chatter compose box</li><li class="list-group-item">Escape — Close mention dropdown in chatter</li></ul></div></div></div>`);
   let block2 = createBlock(`<div class="remote-error"><block-text-0/></div>`);
-  let block3 = createBlock(`<div class="remotes-table-info"><table class="table table-bordered"><caption class="text-info caption-remotes">Available Remotes</caption><thead><tr><th>Name</th><th>Host</th><th>Database</th><th>Version</th><th>Source</th><th>State</th><th/></tr></thead><tbody><block-child-0/></tbody></table></div>`);
-  let block5 = createBlock(`<tr><td class="text-info"><block-child-0/></td><td><block-child-1/></td><td><block-child-2/></td><td><block-child-3/></td><td><block-child-4/></td><td><block-child-5/></td><td class="remote-row-actions"><i class="fa fa-pencil text-info" block-handler-0="click"/><i class="fa fa-trash text-danger" block-handler-1="click"/></td></tr>`);
+  let block3 = createBlock(`<div class="remotes-table-info"><table class="table table-bordered"><caption class="text-info caption-remotes">Available Remotes</caption><thead><tr><th style="width:64px">Logo</th><th>Name</th><th>Host</th><th>Database</th><th>Version</th><th>Source</th><th>State</th><th/></tr></thead><tbody><block-child-0/></tbody></table></div>`);
+  let block5 = createBlock(`<tr><td class="text-center" style="width:64px"><img block-attribute-0="src" alt="Remote logo" style="width:48px;height:34px;object-fit:contain;background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:2px;"/></td><td class="text-info"><block-child-0/></td><td><block-child-1/></td><td><block-child-2/></td><td><block-child-3/></td><td><block-child-4/></td><td><block-child-5/></td><td class="remote-row-actions"><i class="fa fa-pencil text-info" block-handler-1="click"/><i class="fa fa-trash text-danger" block-handler-2="click"/></td></tr>`);
   
   return function template(ctx, node, key = "") {
     let b2, b3;
@@ -231,11 +231,14 @@ export const templates = {
     let prop8 = new Boolean(ctx['state'].form.remote_datasrc==='helpdesk.ticket');
     const v15 = ctx['state'];
     let hdlr14 = [()=>{v15.form.remote_datasrc='helpdesk.ticket';}, ctx];
-    let hdlr15 = [ctx['addRemote'], ctx];
-    let hdlr16 = [ctx['loadRemotes'], ctx];
+    let attr8 = ctx['formLogoSrc'];
+    let hdlr15 = [ctx['onRemoteLogoChange'], ctx];
+    let hdlr16 = [ctx['clearRemoteLogo'], ctx];
+    let hdlr17 = [ctx['addRemote'], ctx];
+    let hdlr18 = [ctx['loadRemotes'], ctx];
     const v16 = ctx['state'];
-    let hdlr17 = [()=>{v16.showList=!v16.showList;}, ctx];
-    let hdlr18 = [ctx['removeAllRemotes'], ctx];
+    let hdlr19 = [()=>{v16.showList=!v16.showList;}, ctx];
+    let hdlr20 = [ctx['removeAllRemotes'], ctx];
     if (ctx['state'].error) {
       let txt1 = ctx['state'].error;
       b2 = block2([txt1]);
@@ -245,7 +248,8 @@ export const templates = {
       const [k_block4, v_block4, l_block4, c_block4] = prepareList(ctx['state'].remotes);;
       for (let i1 = 0; i1 < l_block4; i1++) {
         ctx[`remote`] = k_block4[i1];
-        const key1 = ctx['remote'].url+ctx['remote'].database;
+        const key1 = ctx['remoteKey'](ctx['remote']);
+        let attr9 = ctx['remoteLogoSrc'](ctx['remote']);
         const b6 = comp1({text: ctx['remote'].name||'',limit: 18}, key + `__1__${key1}`, node, this, null);
         const b7 = comp2({text: ctx['remote'].url||'',limit: 28}, key + `__2__${key1}`, node, this, null);
         const b8 = comp3({text: ctx['remote'].database||'',limit: 18}, key + `__3__${key1}`, node, this, null);
@@ -254,30 +258,30 @@ export const templates = {
         const b11 = comp6({text: ctx['remote'].state||'Inactive',limit: 12}, key + `__6__${key1}`, node, this, null);
         const v17 = ctx['editRemote'];
         const v18 = ctx['remote'];
-        let hdlr19 = [()=>v17(v18), ctx];
+        let hdlr21 = [()=>v17(v18), ctx];
         const v19 = ctx['removeRemote'];
         const v20 = ctx['remote'];
-        let hdlr20 = [()=>v19(v20), ctx];
-        c_block4[i1] = withKey(block5([hdlr19, hdlr20], [b6, b7, b8, b9, b10, b11]), key1);
+        let hdlr22 = [()=>v19(v20), ctx];
+        c_block4[i1] = withKey(block5([attr9, hdlr21, hdlr22], [b6, b7, b8, b9, b10, b11]), key1);
       }
       ctx = ctx.__proto__;
       const b4 = list(c_block4);
       b3 = block3([], [b4]);
     }
-    let attr8 = ctx['state'].activePage==='storage'?'active_page':'inactive_page';
+    let attr10 = ctx['state'].activePage==='storage'?'active_page':'inactive_page';
     let txt2 = ctx['state'].screenshotFolder||'Not set (will prompt)';
-    let hdlr21 = [ctx['pickScreenshotFolder'], ctx];
-    let hdlr22 = [ctx['clearScreenshotFolder'], ctx];
+    let hdlr23 = [ctx['pickScreenshotFolder'], ctx];
+    let hdlr24 = [ctx['clearScreenshotFolder'], ctx];
     let txt3 = ctx['state'].videoFolder||'Not set (will prompt)';
-    let hdlr23 = [ctx['pickVideoFolder'], ctx];
-    let hdlr24 = [ctx['clearVideoFolder'], ctx];
-    let hdlr25 = [ctx['exportConfig'], ctx];
-    let hdlr26 = [ctx['importConfig'], ctx];
-    let attr9 = ctx['state'].activePage==='security'?'active_page':'inactive_page';
-    let attr10 = ctx['state'].activePage==='help'?'active_page':'inactive_page';
-    let hdlr27 = ["prevent", ctx['openReadme'], ctx];
-    let hdlr28 = ["prevent", ctx['openIssues'], ctx];
-    return block1([attr1, hdlr1, attr2, hdlr2, attr3, hdlr3, attr4, hdlr4, attr5, hdlr5, attr6, attr7, hdlr6, prop1, hdlr7, prop2, hdlr8, prop3, hdlr9, prop4, hdlr10, prop5, hdlr11, prop6, hdlr12, prop7, hdlr13, prop8, hdlr14, hdlr15, hdlr16, hdlr17, hdlr18, attr8, txt2, hdlr21, hdlr22, txt3, hdlr23, hdlr24, hdlr25, hdlr26, attr9, attr10, hdlr27, hdlr28], [b2, b3]);
+    let hdlr25 = [ctx['pickVideoFolder'], ctx];
+    let hdlr26 = [ctx['clearVideoFolder'], ctx];
+    let hdlr27 = [ctx['exportConfig'], ctx];
+    let hdlr28 = [ctx['importConfig'], ctx];
+    let attr11 = ctx['state'].activePage==='security'?'active_page':'inactive_page';
+    let attr12 = ctx['state'].activePage==='help'?'active_page':'inactive_page';
+    let hdlr29 = ["prevent", ctx['openReadme'], ctx];
+    let hdlr30 = ["prevent", ctx['openIssues'], ctx];
+    return block1([attr1, hdlr1, attr2, hdlr2, attr3, hdlr3, attr4, hdlr4, attr5, hdlr5, attr6, attr7, hdlr6, prop1, hdlr7, prop2, hdlr8, prop3, hdlr9, prop4, hdlr10, prop5, hdlr11, prop6, hdlr12, prop7, hdlr13, prop8, hdlr14, attr8, hdlr15, hdlr16, hdlr17, hdlr18, hdlr19, hdlr20, attr10, txt2, hdlr23, hdlr24, txt3, hdlr25, hdlr26, hdlr27, hdlr28, attr11, attr12, hdlr29, hdlr30], [b2, b3]);
   }
 },
 
@@ -285,19 +289,18 @@ export const templates = {
 ) {
   let { text, createBlock, list, multi, html, toggler, comment } = bdom;
   let { prepareList, withKey } = helpers;
-  const comp1 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
-  const comp2 = app.createComponent(`ReadMore`, true, false, false, ["text","limit","href"]);
+  const comp1 = app.createComponent(`ReadMore`, true, false, false, ["text","limit","href"]);
+  const comp2 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
   const comp3 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
   const comp4 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
   const comp5 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
   const comp6 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
-  const comp7 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
-  const comp8 = app.createComponent(`ReadMore`, true, false, false, ["text","limit","href"]);
+  const comp7 = app.createComponent(`ReadMore`, true, false, false, ["text","limit","href"]);
+  const comp8 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
   const comp9 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
   const comp10 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
-  const comp11 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
   
-  let block1 = createBlock(`<div class="app-root"><!-- Loading --><div id="loader-container" block-attribute-0="class"><div class="loader-card"><div class="loader-text">Loading current session and projects…</div><div class="loader-subtext">Please wait — or grab a cup of coffee ☕</div><i class="fa fa-cog fa-spin fa-5x"/></div></div><!-- Login --><div id="login" class="login-view" block-attribute-1="class"><div class="popup-login-shell"><div class="form"><div class="logo"><img src="img/logo.png"/></div><block-child-0/><block-child-1/><block-child-2/></div></div><div class="cta forgotpwd footer-app-opts login-footer-bar"><a href="options_main_page.html"><i class="fa fa-cogs"/> Options</a></div></div><!-- Main --><div id="wrapper" block-attribute-2="class"><block-child-3/><div class="toolbar-row"><input id="searchIssue" type="text" placeholder="Search by ID, name, user, priority, stage..." block-property-3="value" block-handler-4="input"/><block-child-4/><select id="limitTo" block-property-5="value" block-handler-6="change"><option value="10">10</option><option value="15">15</option><option value="25">25</option><option value="">All</option></select></div><div class="container footer top-actions"><div class="auto_download_timesheet" title="Store timesheet locally when you stop timer on the current item"><input id="auto_download_timesheet_input" type="checkbox" block-property-7="checked" block-handler-8="change"/> Auto Download Current Item Timesheet </div><div class="row"><div class="mx-3 col-md-12 footer-btns pointer"><i class="fa fa-download fa-2x" title="Download current month timesheet" block-handler-9="click"/><i class="fa fa-hand-o-left fa-2x" title="Switch between remotes" block-handler-10="click"/><i class="fa fa-refresh fa-2x" title="Refresh current items" block-handler-11="click"/><i class="fa fa-clock-o fa-2x" title="Discard the active timer" block-handler-12="click"/><i class="fa fa-sign-out fa-2x" title="Log out" block-handler-13="click"/><i class="fa fa-video-camera fa-2x" title="Record screen" block-handler-14="click"/><span class="msg-icon-wrap" title="Open Messages" block-handler-15="click"><i class="fa fa-comments fa-2x"/><span class="msg-unread-badge" block-attribute-16="style"><block-text-17/></span></span><i class="fa fa-bug fa-2x logs-btn" title="View Logs" block-handler-18="click"/><a href="options_main_page.html" class="options-btn" title="Options"><i class="fa fa-cogs fa-2x"/></a></div></div></div><div class="table-scroll"><table class="table table-responsive-sm table-bordered table-fixed" id="table-task-issues"><thead><tr><th class="action-col"><div><block-child-5/></div></th><th class="priority-col">Priority</th><th class="stage-col">Stage</th><th class="item-col"><div class="item-header-title"><block-text-19/> [<block-text-20/>] </div><label class="allIssues"><input id="showAllIssues" type="checkbox" block-property-21="checked" block-handler-22="input"/> Show for everyone </label></th><block-child-6/><block-child-7/><block-child-8/></tr></thead><tbody><block-child-9/><block-child-9/><block-child-10/></tbody></table></div><div class="info-footer mx-3"><div class="row"><div class="remote-info-block col-md-12"><span><b>Odoo:</b> <block-text-23/></span><br/><span><b>Host:</b> <block-text-24/></span><br/><span><b>OWL:</b> <block-text-25/></span><br/><span><b>Database:</b> <block-text-26/></span><br/><span><b>Current User:</b><block-text-27/></span><br/></div></div></div></div></div>`);
+  let block1 = createBlock(`<div class="app-root"><!-- Loading --><div id="loader-container" block-attribute-0="class"><div class="loader-card"><div class="loader-text"><block-text-1/></div><div class="loader-subtext">Please wait — or grab a cup of coffee ☕</div><i class="fa fa-cog fa-spin fa-5x"/></div></div><!-- Login --><div id="login" class="login-view" block-attribute-2="class"><div class="popup-login-shell"><div class="form"><div class="logo"><img block-attribute-3="src" alt="Remote logo"/></div><block-child-0/><block-child-1/><block-child-2/></div></div><div class="cta forgotpwd footer-app-opts login-footer-bar"><a href="options_main_page.html"><i class="fa fa-cogs"/> Options</a></div></div><!-- Main --><div id="wrapper" block-attribute-4="class"><block-child-3/><div class="toolbar-row"><input id="searchIssue" type="text" placeholder="Search by ID, name, user, priority, stage..." block-property-5="value" block-handler-6="input"/><block-child-4/><select id="limitTo" block-property-7="value" block-handler-8="change"><option value="10">10</option><option value="15">15</option><option value="25">25</option><option value="">All</option></select></div><div class="container footer top-actions"><div class="auto_download_timesheet" title="Store timesheet locally when you stop timer on the current item"><input id="auto_download_timesheet_input" type="checkbox" block-property-9="checked" block-handler-10="change"/> Auto Download Current Item Timesheet </div><div class="row"><div class="mx-3 col-md-12 footer-btns pointer"><i class="fa fa-download fa-2x" title="Download current month timesheet" block-handler-11="click"/><i class="fa fa-hand-o-left fa-2x" title="Switch between remotes" block-handler-12="click"/><i class="fa fa-refresh fa-2x" title="Refresh current items" block-handler-13="click"/><i class="fa fa-clock-o fa-2x" title="Discard the active timer" block-handler-14="click"/><i class="fa fa-sign-out fa-2x" title="Log out" block-handler-15="click"/><i class="fa fa-video-camera fa-2x" title="Record screen" block-handler-16="click"/><span class="msg-icon-wrap" title="Open Messages" block-handler-17="click"><i class="fa fa-comments fa-2x"/><span class="msg-unread-badge" block-attribute-18="style"><block-text-19/></span></span><i class="fa fa-bug fa-2x logs-btn" title="View Logs" block-handler-20="click"/><a href="options_main_page.html" class="options-btn" title="Options"><i class="fa fa-cogs fa-2x"/></a></div></div></div><div class="table-scroll"><table class="table table-responsive-sm table-bordered table-fixed" id="table-task-issues"><thead><tr><th class="action-col"><div><block-child-5/></div></th><block-child-6/><block-child-7/></tr></thead><tbody><block-child-8/><block-child-8/><block-child-9/></tbody></table></div><div class="info-footer mx-3"><div class="row"><div class="remote-info-block col-md-12"><span><b>Odoo:</b> <block-text-21/></span><br/><span><b>Host:</b> <block-text-22/></span><br/><span><b>OWL:</b> <block-text-23/></span><br/><span><b>Database:</b> <block-text-24/></span><br/><span><b>Current User:</b><block-text-25/></span><br/></div></div></div></div></div>`);
   let block2 = createBlock(`<div><p class="odooError"><block-text-0/></p></div>`);
   let block3 = createBlock(`<div class="container no-remotes-set"><div class="alert alert-warning"> Hello <span class="fun-man">😉</span>, you have not configured any remotes. Open <b><i class="fa fa-cogs"/> Options</b> below and add one. </div></div>`);
   let block4 = createBlock(`<form block-handler-0="submit.prevent"><block-child-0/><block-child-1/><select id="remote-selection" class="form-control" block-handler-1="change"><block-child-2/></select><div class="checkbox"><label><input type="checkbox" block-property-2="checked" block-handler-3="change"/> Use Existing Session </label></div><button class="login" type="submit"> Login <block-child-3/></button><block-child-4/></form>`);
@@ -311,38 +314,51 @@ export const templates = {
   let block14 = createBlock(`<select id="helpdeskStageFilter" block-property-0="value" block-handler-1="change"><option value="">All stages</option><block-child-0/></select>`);
   let block16 = createBlock(`<option block-attribute-0="value" block-property-1="selected"><block-text-2/></option>`);
   let block17 = createBlock(`<span class="startTimeCount"><block-text-0/></span>`);
-  let block19 = createBlock(`<th>Hours Spent</th>`);
-  let block20 = createBlock(`<th>Remaining Hours</th>`);
-  let block22 = createBlock(`<th>Assigned To</th>`);
-  let block23 = createBlock(`<th>Helpdesk Team</th>`);
-  let block24 = createBlock(`<th>Description</th>`);
-  let block25 = createBlock(`<th>Therp link</th>`);
-  let block26 = createBlock(`<th class="project-col">Project</th>`);
-  let block27 = createBlock(`<th>Time Spent</th>`);
-  let block28 = createBlock(`<th class="project-col"><block-text-0/></th>`);
-  let block30 = createBlock(`<tr block-attribute-0="class"><td class="text-center px-2 td-btn action-col"><block-child-0/><block-child-1/></td><td class="priority-cell"><block-child-2/><block-child-3/></td><td class="stage-cell"><block-child-4/></td><td class="issue-desc-cell"><block-child-5/></td><block-child-6/><block-child-7/><block-child-8/></tr>`);
-  let block31 = createBlock(`<i class="text-danger fa fa-stop-circle action-btn pointer" title="Stop timer and record the time to Odoo timesheets" block-handler-0="click"/>`);
-  let block32 = createBlock(`<i class="fa fa-play-circle action-btn pointer" title="Start the timer for the selected item" block-handler-0="click"/>`);
-  let block34 = createBlock(`<span class="fa fa-star checked"/>`);
-  let block36 = createBlock(`<i class="fa fa-star-o"/>`);
-  let block40 = createBlock(`<td class="hours-spent-cell"><div class="hours-cell-inner"><block-child-0/><i class="fa fa-list-alt pointer" title="View Timesheets for this task" block-handler-0="click"/></div></td>`);
-  let block42 = createBlock(`<td><block-child-0/></td>`);
-  let block45 = createBlock(`<td><block-child-0/></td>`);
-  let block47 = createBlock(`<td><block-child-0/></td>`);
-  let block49 = createBlock(`<td><block-child-0/></td>`);
-  let block51 = createBlock(`<td><block-child-0/></td>`);
-  let block53 = createBlock(`<td class="project-cell"><block-child-0/></td>`);
-  let block55 = createBlock(`<td><block-child-0/></td>`);
-  let block57 = createBlock(`<td class="project-cell"><block-child-0/></td>`);
-  let block59 = createBlock(`<tr><td block-attribute-0="colspan" class="text-center text-danger"> No matching items are currently available </td></tr>`);
+  let block19 = createBlock(`<th class="text-center" style="width:72px">Therp Task</th>`);
+  let block20 = createBlock(`<th class="priority-col">Priority</th>`);
+  let block21 = createBlock(`<th class="item-col" style="width:280px"><div class="item-header-title"><block-text-0/> [<block-text-1/>] </div><label class="allIssues"><input id="showAllIssues" type="checkbox" block-property-2="checked" block-handler-3="input"/> Show for everyone </label></th>`);
+  let block22 = createBlock(`<th class="stage-col">Stage</th>`);
+  let block23 = createBlock(`<th style="width:120px">Assigned To</th>`);
+  let block24 = createBlock(`<th style="width:88px">Time Spent</th>`);
+  let block26 = createBlock(`<th class="priority-col">Priority</th>`);
+  let block27 = createBlock(`<th class="stage-col">Stage</th>`);
+  let block28 = createBlock(`<th class="item-col"><div class="item-header-title"><block-text-0/> [<block-text-1/>] </div><label class="allIssues"><input id="showAllIssues" type="checkbox" block-property-2="checked" block-handler-3="input"/> Show for everyone </label></th>`);
+  let block30 = createBlock(`<th>Hours Spent</th>`);
+  let block31 = createBlock(`<th>Remaining Hours</th>`);
+  let block32 = createBlock(`<th class="project-col"><block-text-0/></th>`);
+  let block34 = createBlock(`<tr block-attribute-0="class"><td class="text-center px-2 td-btn action-col"><block-child-0/><block-child-1/><block-child-2/></td><block-child-3/><block-child-4/></tr>`);
+  let block35 = createBlock(`<i class="text-danger fa fa-stop-circle action-btn pointer" title="Stop timer and record the time to Odoo timesheets" block-handler-0="click"/>`);
+  let block36 = createBlock(`<i class="fa fa-info-circle action-btn pointer text-warning" block-attribute-0="title" block-handler-1="click"/>`);
+  let block37 = createBlock(`<i class="fa fa-play-circle action-btn pointer" title="Start the timer for the selected item" block-handler-0="click"/>`);
+  let block39 = createBlock(`<td class="text-center" style="width:72px"><block-child-0/></td>`);
+  let block40 = createBlock(`<a block-attribute-0="href" target="_blank" rel="noreferrer" class="btn btn-sm btn-outline-secondary" title="Open linked Therp task"><i class="fa fa-external-link"/></a>`);
+  let block41 = createBlock(`<td class="priority-cell"><block-child-0/><block-child-1/></td>`);
+  let block43 = createBlock(`<span class="fa fa-star checked"/>`);
+  let block45 = createBlock(`<i class="fa fa-star-o"/>`);
+  let block46 = createBlock(`<td class="issue-desc-cell" style="width:280px"><block-child-0/><block-child-1/></td>`);
+  let block48 = createBlock(`<div class="text-muted-soft small" style="margin-top:3px;line-height:1.3"><block-child-0/></div>`);
+  let block50 = createBlock(`<td class="stage-cell"><block-child-0/></td>`);
+  let block52 = createBlock(`<td style="width:120px"><block-child-0/></td>`);
+  let block54 = createBlock(`<td style="width:88px"><block-child-0/></td>`);
+  let block57 = createBlock(`<td class="priority-cell"><block-child-0/><block-child-1/></td>`);
+  let block59 = createBlock(`<span class="fa fa-star checked"/>`);
+  let block61 = createBlock(`<i class="fa fa-star-o"/>`);
+  let block62 = createBlock(`<td class="stage-cell"><block-child-0/></td>`);
+  let block64 = createBlock(`<td class="issue-desc-cell"><block-child-0/></td>`);
+  let block67 = createBlock(`<td class="hours-spent-cell"><div class="hours-cell-inner"><block-child-0/><i class="fa fa-list-alt pointer" title="View Timesheets for this task" block-handler-0="click"/></div></td>`);
+  let block69 = createBlock(`<td><block-child-0/></td>`);
+  let block71 = createBlock(`<td class="project-cell"><block-child-0/></td>`);
+  let block73 = createBlock(`<tr><td block-attribute-0="colspan" class="text-center text-danger"> No matching items are currently available </td></tr>`);
   
   return function template(ctx, node, key = "") {
-    let b2, b3, b4, b13, b14, b17, b18, b21, b28, b29, b59;
+    let b2, b3, b4, b13, b14, b17, b18, b25, b33, b73;
     let attr1 = ctx['state'].view==='loading'?'':'hide';
+    let txt1 = ctx['state'].busyMessage;
     let attr2 = ctx['state'].view==='login'?'':'hide';
+    let attr3 = ctx['currentRemoteLogoSrc'];
     if (ctx['state'].bootError) {
-      let txt1 = ctx['state'].bootError;
-      b2 = block2([txt1]);
+      let txt2 = ctx['state'].bootError;
+      b2 = block2([txt2]);
     }
     if (!ctx['state'].remotes.length) {
       b3 = block3();
@@ -351,21 +367,21 @@ export const templates = {
       let b5, b6, b9, b11, b12;
       let hdlr1 = ["prevent", ctx['login'], ctx];
       if (ctx['state'].loginError) {
-        let txt2 = ctx['state'].loginError;
-        b5 = block5([txt2]);
+        let txt3 = ctx['state'].loginError;
+        b5 = block5([txt3]);
       }
       if (!ctx['state'].useExistingSession) {
         let prop1 = new String((ctx['state'].username) === 0 ? 0 : ((ctx['state'].username) || ""));
         const v1 = ctx['state'];
         let hdlr2 = [(_ev)=>{v1.username=_ev.target.value;}, ctx];
         const b7 = block7([prop1, hdlr2]);
-        let attr3 = ctx['state'].showPassword?'text':'password';
+        let attr4 = ctx['state'].showPassword?'text':'password';
         let prop2 = new String((ctx['state'].password) === 0 ? 0 : ((ctx['state'].password) || ""));
         const v2 = ctx['state'];
         let hdlr3 = [(_ev)=>{v2.password=_ev.target.value;}, ctx];
         let hdlr4 = ["prevent", ctx['togglePassword'], ctx];
-        let attr4 = ctx['state'].showPassword?'fa-eye-slash':'fa-eye';
-        const b8 = block8([attr3, prop2, hdlr3, hdlr4, attr4]);
+        let attr5 = ctx['state'].showPassword?'fa-eye-slash':'fa-eye';
+        const b8 = block8([attr4, prop2, hdlr3, hdlr4, attr5]);
         b6 = multi([b7, b8]);
       }
       const v3 = ctx['state'];
@@ -375,11 +391,11 @@ export const templates = {
       for (let i1 = 0; i1 < l_block9; i1++) {
         ctx[`remote`] = k_block9[i1];
         ctx[`remote_index`] = i1;
-        const key1 = ctx['remote'].url+ctx['remote'].database;
-        let attr5 = ''+ctx['remote_index'];
+        const key1 = ctx['remoteKey'](ctx['remote']);
+        let attr6 = ''+ctx['remote_index'];
         let prop3 = new Boolean(ctx['state'].selectedRemoteIndex===''+ctx['remote_index']);
-        let txt3 = ctx['remote'].name;
-        c_block9[i1] = withKey(block10([attr5, prop3, txt3]), key1);
+        let txt4 = ctx['remoteOptionLabel'](ctx['remote']);
+        c_block9[i1] = withKey(block10([attr6, prop3, txt4]), key1);
       }
       ctx = ctx.__proto__;
       b9 = list(c_block9);
@@ -389,16 +405,16 @@ export const templates = {
         b11 = block11();
       }
       if (ctx['currentRemote']) {
-        let txt4 = ctx['currentRemote'].url;
-        let txt5 = ctx['currentRemote'].datasrc||'project.issue';
-        b12 = block12([txt4, txt5]);
+        let txt5 = ctx['currentRemote'].url;
+        let txt6 = ctx['currentRemote'].datasrc||'project.issue';
+        b12 = block12([txt5, txt6]);
       }
       b4 = block4([hdlr1, hdlr5, prop4, hdlr6], [b5, b6, b9, b11, b12]);
     }
-    let attr6 = ctx['state'].view==='main'?'':'hide';
+    let attr7 = ctx['state'].view==='main'?'':'hide';
     if (ctx['state'].sourceError) {
-      let txt6 = ctx['state'].sourceError;
-      b13 = block13([txt6]);
+      let txt7 = ctx['state'].sourceError;
+      b13 = block13([txt7]);
     }
     let prop5 = new String((ctx['state'].searchQuery) === 0 ? 0 : ((ctx['state'].searchQuery) || ""));
     const v4 = ctx['state'];
@@ -412,10 +428,10 @@ export const templates = {
       for (let i1 = 0; i1 < l_block15; i1++) {
         ctx[`stage`] = k_block15[i1];
         const key1 = ctx['stage'].id;
-        let attr7 = ''+ctx['stage'].id;
+        let attr8 = ''+ctx['stage'].id;
         let prop7 = new Boolean(ctx['state'].helpdeskStageFilter===''+ctx['stage'].id);
-        let txt7 = ctx['stage'].name;
-        c_block15[i1] = withKey(block16([attr7, prop7, txt7]), key1);
+        let txt8 = ctx['stage'].name;
+        c_block15[i1] = withKey(block16([attr8, prop7, txt8]), key1);
       }
       ctx = ctx.__proto__;
       const b15 = list(c_block15);
@@ -433,142 +449,177 @@ export const templates = {
     let hdlr15 = [ctx['logout'], ctx];
     let hdlr16 = [ctx['toggleRecording'], ctx];
     let hdlr17 = [ctx['openMessages'], ctx];
-    let attr8 = (ctx['state'].msgUnreadTotal||0)>0?'':'display:none';
-    let txt8 = (ctx['state'].msgUnreadTotal||0)>99?'99+':''+(ctx['state'].msgUnreadTotal||'');
+    let attr9 = (ctx['state'].msgUnreadTotal||0)>0?'':'display:none';
+    let txt9 = (ctx['state'].msgUnreadTotal||0)>99?'99+':''+(ctx['state'].msgUnreadTotal||'');
     let hdlr18 = [ctx['openLogs'], ctx];
     if (ctx['state'].timerStartIso) {
-      let txt9 = ctx['formattedTimer'];
-      b17 = block17([txt9]);
-    }
-    let txt10 = ctx['itemLabelPlural'];
-    let txt11 = ''+ctx['filteredIssues'].length;
-    let prop10 = new Boolean(ctx['state'].allIssues);
-    const v7 = ctx['updateShowAllPreference'];
-    let hdlr19 = [(_ev)=>v7(_ev.target.checked), ctx];
-    if (ctx['state'].dataSource==='project.task') {
-      const b19 = block19();
-      const b20 = block20();
-      b18 = multi([b19, b20]);
+      let txt10 = ctx['formattedTimer'];
+      b17 = block17([txt10]);
     }
     if (ctx['isHelpdeskSource']) {
-      let b22, b23, b24, b25, b26, b27;
-      if (ctx['showHelpdeskAssignee']) {
-        b22 = block22();
+      let b19, b20, b21, b22, b23, b24;
+      if (ctx['showHelpdeskTherpLink']) {
+        b19 = block19();
       }
-      if (ctx['showHelpdeskTeam']) {
+      b20 = block20();
+      let txt11 = ctx['itemLabelPlural'];
+      let txt12 = ''+ctx['filteredIssues'].length;
+      let prop10 = new Boolean(ctx['state'].allIssues);
+      const v7 = ctx['updateShowAllPreference'];
+      let hdlr19 = [(_ev)=>v7(_ev.target.checked), ctx];
+      b21 = block21([txt11, txt12, prop10, hdlr19]);
+      b22 = block22();
+      if (ctx['showHelpdeskAssignee']) {
         b23 = block23();
       }
-      if (ctx['showHelpdeskDescription']) {
+      if (ctx['showHelpdeskHours']) {
         b24 = block24();
       }
-      if (ctx['showHelpdeskTherpLink']) {
-        b25 = block25();
-      }
-      if (ctx['showHelpdeskProject']) {
-        b26 = block26();
-      }
-      if (ctx['showHelpdeskHours']) {
-        b27 = block27();
-      }
-      b21 = multi([b22, b23, b24, b25, b26, b27]);
+      b18 = multi([b19, b20, b21, b22, b23, b24]);
     } else {
-      let txt12 = ctx['relationHeaderLabel'];
-      b28 = block28([txt12]);
+      let b26, b27, b28, b29, b32;
+      b26 = block26();
+      b27 = block27();
+      let txt13 = ctx['itemLabelPlural'];
+      let txt14 = ''+ctx['filteredIssues'].length;
+      let prop11 = new Boolean(ctx['state'].allIssues);
+      const v8 = ctx['updateShowAllPreference'];
+      let hdlr20 = [(_ev)=>v8(_ev.target.checked), ctx];
+      b28 = block28([txt13, txt14, prop11, hdlr20]);
+      if (ctx['state'].dataSource==='project.task') {
+        const b30 = block30();
+        const b31 = block31();
+        b29 = multi([b30, b31]);
+      }
+      let txt15 = ctx['relationHeaderLabel'];
+      b32 = block32([txt15]);
+      b25 = multi([b26, b27, b28, b29, b32]);
     }
     if (ctx['filteredIssues'].length) {
       ctx = Object.create(ctx);
-      const [k_block29, v_block29, l_block29, c_block29] = prepareList(ctx['filteredIssues']);;
-      for (let i1 = 0; i1 < l_block29; i1++) {
-        ctx[`ir`] = k_block29[i1];
+      const [k_block33, v_block33, l_block33, c_block33] = prepareList(ctx['filteredIssues']);;
+      for (let i1 = 0; i1 < l_block33; i1++) {
+        ctx[`ir`] = k_block33[i1];
         const key1 = ctx['ir'].id;
-        let b31, b32, b33, b35, b37, b38, b39, b44, b57;
-        let attr9 = ctx['isActiveTimerItem'](ctx['ir'])?'active-row':'';
+        let b35, b36, b37, b38, b56;
+        let attr10 = ctx['isActiveTimerItem'](ctx['ir'])?'active-row':'';
         if (ctx['isActiveTimerItem'](ctx['ir'])) {
-          const v8 = ctx['stopTimer'];
-          const v9 = ctx['ir'];
-          let hdlr20 = [()=>v8(v9), ctx];
-          b31 = block31([hdlr20]);
+          const v9 = ctx['stopTimer'];
+          const v10 = ctx['ir'];
+          let hdlr21 = [()=>v9(v10), ctx];
+          b35 = block35([hdlr21]);
+        } else if (ctx['isHelpdeskSource']&&ctx['helpdeskTimesheetBlocked'](ctx['ir'])) {
+          let attr11 = ctx['helpdeskTimesheetBlockMessage'](ctx['ir']);
+          const v11 = ctx['showHelpdeskTimesheetInfo'];
+          const v12 = ctx['ir'];
+          let hdlr22 = [()=>v11(v12), ctx];
+          b36 = block36([attr11, hdlr22]);
         } else {
-          const v10 = ctx['startTimer'];
-          const v11 = ctx['ir'];
-          let hdlr21 = [()=>v10(v11), ctx];
-          b32 = block32([hdlr21]);
-        }
-        ctx = Object.create(ctx);
-        const [k_block33, v_block33, l_block33, c_block33] = prepareList(ctx['priorityStarsArr'](ctx['ir'].priority));;
-        for (let i2 = 0; i2 < l_block33; i2++) {
-          ctx[`s`] = k_block33[i2];
-          const key2 = ctx['s'];
-          c_block33[i2] = withKey(block34(), key2);
-        }
-        ctx = ctx.__proto__;
-        b33 = list(c_block33);
-        ctx = Object.create(ctx);
-        const [k_block35, v_block35, l_block35, c_block35] = prepareList(ctx['priorityOutlineArr'](ctx['ir'].priority));;
-        for (let i2 = 0; i2 < l_block35; i2++) {
-          ctx[`o`] = k_block35[i2];
-          const key2 = ctx['o'];
-          c_block35[i2] = withKey(block36(), key2);
-        }
-        ctx = ctx.__proto__;
-        b35 = list(c_block35);
-        b37 = comp1({text: (ctx['ir'].stage_id&&ctx['ir'].stage_id[1])||'',limit: 14}, key + `__1__${key1}`, node, this, null);
-        b38 = comp2({text: ctx['issueLabel'](ctx['ir']),limit: 60,href: ctx['issueHref'](ctx['ir'])}, key + `__2__${key1}`, node, this, null);
-        if (ctx['state'].dataSource==='project.task') {
-          const b41 = comp3({text: ctx['formatHours'](ctx['ir'].effective_hours),limit: 10}, key + `__3__${key1}`, node, this, null);
-          const v12 = ctx['openTimesheets'];
-          const v13 = ctx['ir'];
-          let hdlr22 = [()=>v12(v13), ctx];
-          const b40 = block40([hdlr22], [b41]);
-          const b43 = comp4({text: ctx['formatHours'](ctx['ir'].remaining_hours),limit: 10}, key + `__4__${key1}`, node, this, null);
-          const b42 = block42([], [b43]);
-          b39 = multi([b40, b42]);
+          const v13 = ctx['startTimer'];
+          const v14 = ctx['ir'];
+          let hdlr23 = [()=>v13(v14), ctx];
+          b37 = block37([hdlr23]);
         }
         if (ctx['isHelpdeskSource']) {
-          let b45, b47, b49, b51, b53, b55;
-          if (ctx['showHelpdeskAssignee']) {
-            const b46 = comp5({text: ctx['relationLabel'](ctx['helpdeskAssigneeValue'](ctx['ir'])),limit: 22}, key + `__5__${key1}`, node, this, null);
-            b45 = block45([], [b46]);
-          }
-          if (ctx['showHelpdeskTeam']) {
-            const b48 = comp6({text: ctx['relationLabel'](ctx['helpdeskTeamValue'](ctx['ir'])),limit: 22}, key + `__6__${key1}`, node, this, null);
-            b47 = block47([], [b48]);
-          }
-          if (ctx['showHelpdeskDescription']) {
-            const b50 = comp7({text: ctx['helpdeskDescriptionText'](ctx['ir']),limit: 80}, key + `__7__${key1}`, node, this, null);
-            b49 = block49([], [b50]);
-          }
+          let b39, b41, b46, b50, b52, b54;
           if (ctx['showHelpdeskTherpLink']) {
-            const b52 = comp8({text: ctx['helpdeskTherpLinkValue'](ctx['ir']),limit: 45,href: ctx['helpdeskTherpLinkHref'](ctx['ir'])}, key + `__8__${key1}`, node, this, null);
-            b51 = block51([], [b52]);
+            let b40;
+            if (ctx['helpdeskTherpLinkHref'](ctx['ir'])) {
+              let attr12 = ctx['helpdeskTherpLinkHref'](ctx['ir']);
+              b40 = block40([attr12]);
+            }
+            b39 = block39([], [b40]);
           }
-          if (ctx['showHelpdeskProject']) {
-            const b54 = comp9({text: ctx['relationLabel'](ctx['helpdeskProjectValue'](ctx['ir'])),limit: 22}, key + `__9__${key1}`, node, this, null);
-            b53 = block53([], [b54]);
+          ctx = Object.create(ctx);
+          const [k_block42, v_block42, l_block42, c_block42] = prepareList(ctx['priorityStarsArr'](ctx['ir'].priority));;
+          for (let i2 = 0; i2 < l_block42; i2++) {
+            ctx[`s`] = k_block42[i2];
+            const key2 = ctx['s'];
+            c_block42[i2] = withKey(block43(), key2);
+          }
+          ctx = ctx.__proto__;
+          const b42 = list(c_block42);
+          ctx = Object.create(ctx);
+          const [k_block44, v_block44, l_block44, c_block44] = prepareList(ctx['priorityOutlineArr'](ctx['ir'].priority));;
+          for (let i2 = 0; i2 < l_block44; i2++) {
+            ctx[`o`] = k_block44[i2];
+            const key2 = ctx['o'];
+            c_block44[i2] = withKey(block45(), key2);
+          }
+          ctx = ctx.__proto__;
+          const b44 = list(c_block44);
+          b41 = block41([], [b42, b44]);
+          let b47, b48;
+          b47 = comp1({text: ctx['issueLabel'](ctx['ir']),limit: 55,href: ctx['issueHref'](ctx['ir'])}, key + `__1__${key1}`, node, this, null);
+          if (ctx['showHelpdeskDescription']&&ctx['helpdeskDescriptionText'](ctx['ir'])) {
+            const b49 = comp2({text: ctx['helpdeskDescriptionText'](ctx['ir']),limit: 70}, key + `__2__${key1}`, node, this, null);
+            b48 = block48([], [b49]);
+          }
+          b46 = block46([], [b47, b48]);
+          const b51 = comp3({text: (ctx['ir'].stage_id&&ctx['ir'].stage_id[1])||'',limit: 14}, key + `__3__${key1}`, node, this, null);
+          b50 = block50([], [b51]);
+          if (ctx['showHelpdeskAssignee']) {
+            const b53 = comp4({text: ctx['relationLabel'](ctx['helpdeskAssigneeValue'](ctx['ir'])),limit: 22}, key + `__4__${key1}`, node, this, null);
+            b52 = block52([], [b53]);
           }
           if (ctx['showHelpdeskHours']) {
-            const b56 = comp10({text: ctx['formatHours'](ctx['helpdeskHoursValue'](ctx['ir'])),limit: 10}, key + `__10__${key1}`, node, this, null);
-            b55 = block55([], [b56]);
+            const b55 = comp5({text: ctx['formatHours'](ctx['helpdeskHoursValue'](ctx['ir'])),limit: 10}, key + `__5__${key1}`, node, this, null);
+            b54 = block54([], [b55]);
           }
-          b44 = multi([b45, b47, b49, b51, b53, b55]);
+          b38 = multi([b39, b41, b46, b50, b52, b54]);
         } else {
-          const b58 = comp11({text: ctx['relationLabel'](ctx['resourceRelationValue'](ctx['ir'])),limit: 22}, key + `__11__${key1}`, node, this, null);
-          b57 = block57([], [b58]);
+          let b57, b62, b64, b66, b71;
+          ctx = Object.create(ctx);
+          const [k_block58, v_block58, l_block58, c_block58] = prepareList(ctx['priorityStarsArr'](ctx['ir'].priority));;
+          for (let i2 = 0; i2 < l_block58; i2++) {
+            ctx[`s`] = k_block58[i2];
+            const key2 = ctx['s'];
+            c_block58[i2] = withKey(block59(), key2);
+          }
+          ctx = ctx.__proto__;
+          const b58 = list(c_block58);
+          ctx = Object.create(ctx);
+          const [k_block60, v_block60, l_block60, c_block60] = prepareList(ctx['priorityOutlineArr'](ctx['ir'].priority));;
+          for (let i2 = 0; i2 < l_block60; i2++) {
+            ctx[`o`] = k_block60[i2];
+            const key2 = ctx['o'];
+            c_block60[i2] = withKey(block61(), key2);
+          }
+          ctx = ctx.__proto__;
+          const b60 = list(c_block60);
+          b57 = block57([], [b58, b60]);
+          const b63 = comp6({text: (ctx['ir'].stage_id&&ctx['ir'].stage_id[1])||'',limit: 14}, key + `__6__${key1}`, node, this, null);
+          b62 = block62([], [b63]);
+          const b65 = comp7({text: ctx['issueLabel'](ctx['ir']),limit: 60,href: ctx['issueHref'](ctx['ir'])}, key + `__7__${key1}`, node, this, null);
+          b64 = block64([], [b65]);
+          if (ctx['state'].dataSource==='project.task') {
+            const b68 = comp8({text: ctx['formatHours'](ctx['ir'].effective_hours),limit: 10}, key + `__8__${key1}`, node, this, null);
+            const v15 = ctx['openTimesheets'];
+            const v16 = ctx['ir'];
+            let hdlr24 = [()=>v15(v16), ctx];
+            const b67 = block67([hdlr24], [b68]);
+            const b70 = comp9({text: ctx['formatHours'](ctx['ir'].remaining_hours),limit: 10}, key + `__9__${key1}`, node, this, null);
+            const b69 = block69([], [b70]);
+            b66 = multi([b67, b69]);
+          }
+          const b72 = comp10({text: ctx['relationLabel'](ctx['resourceRelationValue'](ctx['ir'])),limit: 22}, key + `__10__${key1}`, node, this, null);
+          b71 = block71([], [b72]);
+          b56 = multi([b57, b62, b64, b66, b71]);
         }
-        c_block29[i1] = withKey(block30([attr9], [b31, b32, b33, b35, b37, b38, b39, b44, b57]), key1);
+        c_block33[i1] = withKey(block34([attr10], [b35, b36, b37, b38, b56]), key1);
       }
       ctx = ctx.__proto__;
-      b29 = list(c_block29);
+      b33 = list(c_block33);
     } else {
-      let attr10 = ''+ctx['tableColumnCount'];
-      b59 = block59([attr10]);
+      let attr13 = ''+ctx['tableColumnCount'];
+      b73 = block73([attr13]);
     }
-    let txt13 = ctx['state'].serverVersion||'N/A';
-    let txt14 = ctx['state'].currentHost;
-    let txt15 = ctx['owlVersion'];
-    let txt16 = ctx['state'].currentDatabase;
-    let txt17 = (ctx['state'].user&&ctx['state'].user.display_name)||'—';
-    return block1([attr1, attr2, attr6, prop5, hdlr7, prop8, hdlr9, prop9, hdlr10, hdlr11, hdlr12, hdlr13, hdlr14, hdlr15, hdlr16, hdlr17, attr8, txt8, hdlr18, txt10, txt11, prop10, hdlr19, txt13, txt14, txt15, txt16, txt17], [b2, b3, b4, b13, b14, b17, b18, b21, b28, b29, b59]);
+    let txt16 = ctx['state'].serverVersion||'N/A';
+    let txt17 = ctx['state'].currentHost;
+    let txt18 = ctx['owlVersion'];
+    let txt19 = ctx['state'].currentDatabase;
+    let txt20 = (ctx['state'].user&&ctx['state'].user.display_name)||'—';
+    return block1([attr1, txt1, attr2, attr3, attr7, prop5, hdlr7, prop8, hdlr9, prop9, hdlr10, hdlr11, hdlr12, hdlr13, hdlr14, hdlr15, hdlr16, hdlr17, attr9, txt9, hdlr18, txt16, txt17, txt18, txt19, txt20], [b2, b3, b4, b13, b14, b17, b18, b25, b33, b73]);
   }
 },
 

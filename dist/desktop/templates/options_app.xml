@@ -155,6 +155,23 @@
                 </li>
               </ul>
             </div>
+            <div class="form-group">
+              <label for="remote-logo">Company Logo <span class="text-muted">(optional)</span></label>
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                <img t-att-src="formLogoSrc" alt="Remote logo preview"
+                  style="width:76px;height:54px;object-fit:contain;border:1px solid #dbe3ea;border-radius:6px;background:#fff;padding:4px;"/>
+                <div style="min-width:220px;flex:1;">
+                  <input id="remote-logo" type="file" class="form-control"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    t-on-change="onRemoteLogoChange"/>
+                  <div style="margin-top:5px;font-size:11px;color:#7b8794;">PNG, JPEG, WebP or GIF; maximum 512 KB.</div>
+                  <button type="button" class="btn btn-sm btn-default"
+                    style="margin-top:7px;" t-on-click="clearRemoteLogo">
+                    Use Therp default logo
+                  </button>
+                </div>
+              </div>
+            </div>
             <span class="caption-remotes">Controls</span>
             <div class="remotes-control-btns col-md-12 text-center text-info pointer">
               <i title="Add a remote host" class="fa fa-2x fa-plus-circle" t-on-click="addRemote"/>
@@ -174,14 +191,18 @@
                 <caption class="text-info caption-remotes">Available Remotes</caption>
                 <thead>
                   <tr>
-                    <th>Name</th><th>Host</th><th>Database</th>
+                    <th style="width:64px">Logo</th><th>Name</th><th>Host</th><th>Database</th>
                     <th>Version</th><th>Source</th><th>State</th><th></th>
                   </tr>
                 </thead>
                 <tbody>
                   <t t-foreach="state.remotes" t-as="remote"
-                    t-key="remote.url + remote.database">
+                    t-key="remoteKey(remote)">
                     <tr>
+                      <td class="text-center" style="width:64px">
+                        <img t-att-src="remoteLogoSrc(remote)" alt="Remote logo"
+                          style="width:48px;height:34px;object-fit:contain;background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:2px;"/>
+                      </td>
                       <td class="text-info">
                         <ReadMore text="remote.name || ''" limit="18"/>
                       </td>
