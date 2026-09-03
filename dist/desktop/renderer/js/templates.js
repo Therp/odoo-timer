@@ -291,8 +291,13 @@ export const templates = {
   const comp4 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
   const comp5 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
   const comp6 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
+  const comp7 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
+  const comp8 = app.createComponent(`ReadMore`, true, false, false, ["text","limit","href"]);
+  const comp9 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
+  const comp10 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
+  const comp11 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
   
-  let block1 = createBlock(`<div class="app-root"><!-- Loading --><div id="loader-container" block-attribute-0="class"><div class="loader-card"><div class="loader-text">Loading current session and projects…</div><div class="loader-subtext">Please wait — or grab a cup of coffee ☕</div><i class="fa fa-cog fa-spin fa-5x"/></div></div><!-- Login --><div id="login" class="login-view" block-attribute-1="class"><div class="popup-login-shell"><div class="form"><div class="logo"><img src="img/logo.png"/></div><block-child-0/><block-child-1/><block-child-2/></div></div><div class="cta forgotpwd footer-app-opts login-footer-bar"><a href="options_main_page.html"><i class="fa fa-cogs"/> Options</a></div></div><!-- Main --><div id="wrapper" block-attribute-2="class"><block-child-3/><div class="toolbar-row"><input id="searchIssue" type="text" placeholder="Search by ID, name, user, priority, stage..." block-property-3="value" block-handler-4="input"/><select id="limitTo" block-property-5="value" block-handler-6="change"><option value="10">10</option><option value="15">15</option><option value="25">25</option><option value="">All</option></select></div><div class="container footer top-actions"><div class="auto_download_timesheet" title="Store timesheet locally when you stop timer on the current item"><input id="auto_download_timesheet_input" type="checkbox" block-property-7="checked" block-handler-8="change"/> Auto Download Current Item Timesheet </div><div class="row"><div class="mx-3 col-md-12 footer-btns pointer"><i class="fa fa-download fa-2x" title="Download current month timesheet" block-handler-9="click"/><i class="fa fa-hand-o-left fa-2x" title="Switch between remotes" block-handler-10="click"/><i class="fa fa-refresh fa-2x" title="Refresh current items" block-handler-11="click"/><i class="fa fa-clock-o fa-2x" title="Discard the active timer" block-handler-12="click"/><i class="fa fa-sign-out fa-2x" title="Log out" block-handler-13="click"/><i class="fa fa-video-camera fa-2x" title="Record screen" block-handler-14="click"/><span class="msg-icon-wrap" title="Open Messages" block-handler-15="click"><i class="fa fa-comments fa-2x"/><span class="msg-unread-badge" block-attribute-16="style"><block-text-17/></span></span><i class="fa fa-bug fa-2x logs-btn" title="View Logs" block-handler-18="click"/><a href="options_main_page.html" class="options-btn" title="Options"><i class="fa fa-cogs fa-2x"/></a></div></div></div><div class="table-scroll"><table class="table table-responsive-sm table-bordered table-fixed" id="table-task-issues"><thead><tr><th class="action-col"><div><block-child-4/></div></th><th class="priority-col">Priority</th><th class="stage-col">Stage</th><th class="item-col"><div class="item-header-title"><block-text-19/> [<block-text-20/>] </div><label class="allIssues"><input id="showAllIssues" type="checkbox" block-property-21="checked" block-handler-22="input"/> Show for everyone </label></th><block-child-5/><block-child-6/><th class="project-col"><block-text-23/></th></tr></thead><tbody><block-child-7/><block-child-7/><block-child-8/></tbody></table></div><div class="info-footer mx-3"><div class="row"><div class="remote-info-block col-md-12"><span><b>Odoo:</b> <block-text-24/></span><br/><span><b>Host:</b> <block-text-25/></span><br/><span><b>OWL:</b> <block-text-26/></span><br/><span><b>Database:</b> <block-text-27/></span><br/><span><b>Current User:</b><block-text-28/></span><br/></div></div></div></div></div>`);
+  let block1 = createBlock(`<div class="app-root"><!-- Loading --><div id="loader-container" block-attribute-0="class"><div class="loader-card"><div class="loader-text">Loading current session and projects…</div><div class="loader-subtext">Please wait — or grab a cup of coffee ☕</div><i class="fa fa-cog fa-spin fa-5x"/></div></div><!-- Login --><div id="login" class="login-view" block-attribute-1="class"><div class="popup-login-shell"><div class="form"><div class="logo"><img src="img/logo.png"/></div><block-child-0/><block-child-1/><block-child-2/></div></div><div class="cta forgotpwd footer-app-opts login-footer-bar"><a href="options_main_page.html"><i class="fa fa-cogs"/> Options</a></div></div><!-- Main --><div id="wrapper" block-attribute-2="class"><block-child-3/><div class="toolbar-row"><input id="searchIssue" type="text" placeholder="Search by ID, name, user, priority, stage..." block-property-3="value" block-handler-4="input"/><block-child-4/><select id="limitTo" block-property-5="value" block-handler-6="change"><option value="10">10</option><option value="15">15</option><option value="25">25</option><option value="">All</option></select></div><div class="container footer top-actions"><div class="auto_download_timesheet" title="Store timesheet locally when you stop timer on the current item"><input id="auto_download_timesheet_input" type="checkbox" block-property-7="checked" block-handler-8="change"/> Auto Download Current Item Timesheet </div><div class="row"><div class="mx-3 col-md-12 footer-btns pointer"><i class="fa fa-download fa-2x" title="Download current month timesheet" block-handler-9="click"/><i class="fa fa-hand-o-left fa-2x" title="Switch between remotes" block-handler-10="click"/><i class="fa fa-refresh fa-2x" title="Refresh current items" block-handler-11="click"/><i class="fa fa-clock-o fa-2x" title="Discard the active timer" block-handler-12="click"/><i class="fa fa-sign-out fa-2x" title="Log out" block-handler-13="click"/><i class="fa fa-video-camera fa-2x" title="Record screen" block-handler-14="click"/><span class="msg-icon-wrap" title="Open Messages" block-handler-15="click"><i class="fa fa-comments fa-2x"/><span class="msg-unread-badge" block-attribute-16="style"><block-text-17/></span></span><i class="fa fa-bug fa-2x logs-btn" title="View Logs" block-handler-18="click"/><a href="options_main_page.html" class="options-btn" title="Options"><i class="fa fa-cogs fa-2x"/></a></div></div></div><div class="table-scroll"><table class="table table-responsive-sm table-bordered table-fixed" id="table-task-issues"><thead><tr><th class="action-col"><div><block-child-5/></div></th><th class="priority-col">Priority</th><th class="stage-col">Stage</th><th class="item-col"><div class="item-header-title"><block-text-19/> [<block-text-20/>] </div><label class="allIssues"><input id="showAllIssues" type="checkbox" block-property-21="checked" block-handler-22="input"/> Show for everyone </label></th><block-child-6/><block-child-7/><block-child-8/></tr></thead><tbody><block-child-9/><block-child-9/><block-child-10/></tbody></table></div><div class="info-footer mx-3"><div class="row"><div class="remote-info-block col-md-12"><span><b>Odoo:</b> <block-text-23/></span><br/><span><b>Host:</b> <block-text-24/></span><br/><span><b>OWL:</b> <block-text-25/></span><br/><span><b>Database:</b> <block-text-26/></span><br/><span><b>Current User:</b><block-text-27/></span><br/></div></div></div></div></div>`);
   let block2 = createBlock(`<div><p class="odooError"><block-text-0/></p></div>`);
   let block3 = createBlock(`<div class="container no-remotes-set"><div class="alert alert-warning"> Hello <span class="fun-man">😉</span>, you have not configured any remotes. Open <b><i class="fa fa-cogs"/> Options</b> below and add one. </div></div>`);
   let block4 = createBlock(`<form block-handler-0="submit.prevent"><block-child-0/><block-child-1/><select id="remote-selection" class="form-control" block-handler-1="change"><block-child-2/></select><div class="checkbox"><label><input type="checkbox" block-property-2="checked" block-handler-3="change"/> Use Existing Session </label></div><button class="login" type="submit"> Login <block-child-3/></button><block-child-4/></form>`);
@@ -303,22 +308,36 @@ export const templates = {
   let block11 = createBlock(`<i class="fa fa-cog fa-spin"/>`);
   let block12 = createBlock(`<div class="remote-info small-note"> Host: <block-text-0/><span class="current-source-chip"><block-text-1/></span></div>`);
   let block13 = createBlock(`<div class="odooError source-warning"><block-text-0/></div>`);
-  let block14 = createBlock(`<span class="startTimeCount"><block-text-0/></span>`);
-  let block16 = createBlock(`<th>Hours Spent</th>`);
-  let block17 = createBlock(`<th>Remaining Hours</th>`);
-  let block18 = createBlock(`<th>Time Spent</th>`);
-  let block20 = createBlock(`<tr block-attribute-0="class"><td class="text-center px-2 td-btn action-col"><block-child-0/><block-child-1/></td><td class="priority-cell"><block-child-2/><block-child-3/></td><td class="stage-cell"><block-child-4/></td><td class="issue-desc-cell"><block-child-5/></td><block-child-6/><block-child-7/><td class="project-cell"><block-child-8/></td></tr>`);
-  let block21 = createBlock(`<i class="text-danger fa fa-stop-circle action-btn pointer" title="Stop timer and record the time to Odoo timesheets" block-handler-0="click"/>`);
-  let block22 = createBlock(`<i class="fa fa-play-circle action-btn pointer" title="Start the timer for the selected item" block-handler-0="click"/>`);
-  let block24 = createBlock(`<span class="fa fa-star checked"/>`);
-  let block26 = createBlock(`<i class="fa fa-star-o"/>`);
-  let block30 = createBlock(`<td class="hours-spent-cell"><div class="hours-cell-inner"><block-child-0/><i class="fa fa-list-alt pointer" title="View Timesheets for this task" block-handler-0="click"/></div></td>`);
-  let block32 = createBlock(`<td><block-child-0/></td>`);
-  let block34 = createBlock(`<td><block-child-0/></td>`);
-  let block37 = createBlock(`<tr><td block-attribute-0="colspan" class="text-center text-danger"> No matching items are currently available </td></tr>`);
+  let block14 = createBlock(`<select id="helpdeskStageFilter" block-property-0="value" block-handler-1="change"><option value="">All stages</option><block-child-0/></select>`);
+  let block16 = createBlock(`<option block-attribute-0="value" block-property-1="selected"><block-text-2/></option>`);
+  let block17 = createBlock(`<span class="startTimeCount"><block-text-0/></span>`);
+  let block19 = createBlock(`<th>Hours Spent</th>`);
+  let block20 = createBlock(`<th>Remaining Hours</th>`);
+  let block22 = createBlock(`<th>Assigned To</th>`);
+  let block23 = createBlock(`<th>Helpdesk Team</th>`);
+  let block24 = createBlock(`<th>Description</th>`);
+  let block25 = createBlock(`<th>Therp link</th>`);
+  let block26 = createBlock(`<th class="project-col">Project</th>`);
+  let block27 = createBlock(`<th>Time Spent</th>`);
+  let block28 = createBlock(`<th class="project-col"><block-text-0/></th>`);
+  let block30 = createBlock(`<tr block-attribute-0="class"><td class="text-center px-2 td-btn action-col"><block-child-0/><block-child-1/></td><td class="priority-cell"><block-child-2/><block-child-3/></td><td class="stage-cell"><block-child-4/></td><td class="issue-desc-cell"><block-child-5/></td><block-child-6/><block-child-7/><block-child-8/></tr>`);
+  let block31 = createBlock(`<i class="text-danger fa fa-stop-circle action-btn pointer" title="Stop timer and record the time to Odoo timesheets" block-handler-0="click"/>`);
+  let block32 = createBlock(`<i class="fa fa-play-circle action-btn pointer" title="Start the timer for the selected item" block-handler-0="click"/>`);
+  let block34 = createBlock(`<span class="fa fa-star checked"/>`);
+  let block36 = createBlock(`<i class="fa fa-star-o"/>`);
+  let block40 = createBlock(`<td class="hours-spent-cell"><div class="hours-cell-inner"><block-child-0/><i class="fa fa-list-alt pointer" title="View Timesheets for this task" block-handler-0="click"/></div></td>`);
+  let block42 = createBlock(`<td><block-child-0/></td>`);
+  let block45 = createBlock(`<td><block-child-0/></td>`);
+  let block47 = createBlock(`<td><block-child-0/></td>`);
+  let block49 = createBlock(`<td><block-child-0/></td>`);
+  let block51 = createBlock(`<td><block-child-0/></td>`);
+  let block53 = createBlock(`<td class="project-cell"><block-child-0/></td>`);
+  let block55 = createBlock(`<td><block-child-0/></td>`);
+  let block57 = createBlock(`<td class="project-cell"><block-child-0/></td>`);
+  let block59 = createBlock(`<tr><td block-attribute-0="colspan" class="text-center text-danger"> No matching items are currently available </td></tr>`);
   
   return function template(ctx, node, key = "") {
-    let b2, b3, b4, b13, b14, b15, b18, b19, b37;
+    let b2, b3, b4, b13, b14, b17, b18, b21, b28, b29, b59;
     let attr1 = ctx['state'].view==='loading'?'':'hide';
     let attr2 = ctx['state'].view==='login'?'':'hide';
     if (ctx['state'].bootError) {
@@ -384,107 +403,172 @@ export const templates = {
     let prop5 = new String((ctx['state'].searchQuery) === 0 ? 0 : ((ctx['state'].searchQuery) || ""));
     const v4 = ctx['state'];
     let hdlr7 = [(_ev)=>{v4.searchQuery=_ev.target.value;}, ctx];
-    let prop6 = new String((ctx['state'].limitTo) === 0 ? 0 : ((ctx['state'].limitTo) || ""));
-    const v5 = ctx['updateLimitPreference'];
-    let hdlr8 = [(_ev)=>v5(_ev.target.value), ctx];
-    let prop7 = new Boolean(ctx['state'].autoDownloadIssueTimesheet);
-    let hdlr9 = [ctx['toggleAutoDownload'], ctx];
-    let hdlr10 = [ctx['downloadCurrentMonthTimesheets'], ctx];
-    let hdlr11 = [ctx['switchBetweenRemotes'], ctx];
-    let hdlr12 = [ctx['refreshAll'], ctx];
-    let hdlr13 = [ctx['resetTimer'], ctx];
-    let hdlr14 = [ctx['logout'], ctx];
-    let hdlr15 = [ctx['toggleRecording'], ctx];
-    let hdlr16 = [ctx['openMessages'], ctx];
-    let attr7 = (ctx['state'].msgUnreadTotal||0)>0?'':'display:none';
-    let txt7 = (ctx['state'].msgUnreadTotal||0)>99?'99+':''+(ctx['state'].msgUnreadTotal||'');
-    let hdlr17 = [ctx['openLogs'], ctx];
-    if (ctx['state'].timerStartIso) {
-      let txt8 = ctx['formattedTimer'];
-      b14 = block14([txt8]);
-    }
-    let txt9 = ctx['itemLabelPlural'];
-    let txt10 = ''+ctx['filteredIssues'].length;
-    let prop8 = new Boolean(ctx['state'].allIssues);
-    const v6 = ctx['updateShowAllPreference'];
-    let hdlr18 = [(_ev)=>v6(_ev.target.checked), ctx];
-    if (ctx['state'].dataSource==='project.task') {
-      const b16 = block16();
-      const b17 = block17();
-      b15 = multi([b16, b17]);
-    }
-    if (ctx['showHelpdeskHours']) {
-      b18 = block18();
-    }
-    let txt11 = ctx['relationHeaderLabel'];
-    if (ctx['filteredIssues'].length) {
+    if (ctx['isHelpdeskSource']) {
+      let prop6 = new String((ctx['state'].helpdeskStageFilter) === 0 ? 0 : ((ctx['state'].helpdeskStageFilter) || ""));
+      const v5 = ctx['updateHelpdeskStageFilter'];
+      let hdlr8 = [(_ev)=>v5(_ev.target.value), ctx];
       ctx = Object.create(ctx);
-      const [k_block19, v_block19, l_block19, c_block19] = prepareList(ctx['filteredIssues']);;
-      for (let i1 = 0; i1 < l_block19; i1++) {
-        ctx[`ir`] = k_block19[i1];
-        const key1 = ctx['ir'].id;
-        let b21, b22, b23, b25, b27, b28, b29, b34, b36;
-        let attr8 = ctx['isActiveTimerItem'](ctx['ir'])?'active-row':'';
-        if (ctx['isActiveTimerItem'](ctx['ir'])) {
-          const v7 = ctx['stopTimer'];
-          const v8 = ctx['ir'];
-          let hdlr19 = [()=>v7(v8), ctx];
-          b21 = block21([hdlr19]);
-        } else {
-          const v9 = ctx['startTimer'];
-          const v10 = ctx['ir'];
-          let hdlr20 = [()=>v9(v10), ctx];
-          b22 = block22([hdlr20]);
-        }
-        ctx = Object.create(ctx);
-        const [k_block23, v_block23, l_block23, c_block23] = prepareList(ctx['priorityStarsArr'](ctx['ir'].priority));;
-        for (let i2 = 0; i2 < l_block23; i2++) {
-          ctx[`s`] = k_block23[i2];
-          const key2 = ctx['s'];
-          c_block23[i2] = withKey(block24(), key2);
-        }
-        ctx = ctx.__proto__;
-        b23 = list(c_block23);
-        ctx = Object.create(ctx);
-        const [k_block25, v_block25, l_block25, c_block25] = prepareList(ctx['priorityOutlineArr'](ctx['ir'].priority));;
-        for (let i2 = 0; i2 < l_block25; i2++) {
-          ctx[`o`] = k_block25[i2];
-          const key2 = ctx['o'];
-          c_block25[i2] = withKey(block26(), key2);
-        }
-        ctx = ctx.__proto__;
-        b25 = list(c_block25);
-        b27 = comp1({text: (ctx['ir'].stage_id&&ctx['ir'].stage_id[1])||'',limit: 14}, key + `__1__${key1}`, node, this, null);
-        b28 = comp2({text: ctx['issueLabel'](ctx['ir']),limit: 60,href: ctx['issueHref'](ctx['ir'])}, key + `__2__${key1}`, node, this, null);
-        if (ctx['state'].dataSource==='project.task') {
-          const b31 = comp3({text: ctx['formatHours'](ctx['ir'].effective_hours),limit: 10}, key + `__3__${key1}`, node, this, null);
-          const v11 = ctx['openTimesheets'];
-          const v12 = ctx['ir'];
-          let hdlr21 = [()=>v11(v12), ctx];
-          const b30 = block30([hdlr21], [b31]);
-          const b33 = comp4({text: ctx['formatHours'](ctx['ir'].remaining_hours),limit: 10}, key + `__4__${key1}`, node, this, null);
-          const b32 = block32([], [b33]);
-          b29 = multi([b30, b32]);
-        }
-        if (ctx['showHelpdeskHours']) {
-          const b35 = comp5({text: ctx['formatHours'](ctx['helpdeskHoursValue'](ctx['ir'])),limit: 10}, key + `__5__${key1}`, node, this, null);
-          b34 = block34([], [b35]);
-        }
-        b36 = comp6({text: ctx['relationLabel'](ctx['resourceRelationValue'](ctx['ir'])),limit: 22}, key + `__6__${key1}`, node, this, null);
-        c_block19[i1] = withKey(block20([attr8], [b21, b22, b23, b25, b27, b28, b29, b34, b36]), key1);
+      const [k_block15, v_block15, l_block15, c_block15] = prepareList(ctx['helpdeskStageOptions']);;
+      for (let i1 = 0; i1 < l_block15; i1++) {
+        ctx[`stage`] = k_block15[i1];
+        const key1 = ctx['stage'].id;
+        let attr7 = ''+ctx['stage'].id;
+        let prop7 = new Boolean(ctx['state'].helpdeskStageFilter===''+ctx['stage'].id);
+        let txt7 = ctx['stage'].name;
+        c_block15[i1] = withKey(block16([attr7, prop7, txt7]), key1);
       }
       ctx = ctx.__proto__;
-      b19 = list(c_block19);
-    } else {
-      let attr9 = ''+ctx['tableColumnCount'];
-      b37 = block37([attr9]);
+      const b15 = list(c_block15);
+      b14 = block14([prop6, hdlr8], [b15]);
     }
-    let txt12 = ctx['state'].serverVersion||'N/A';
-    let txt13 = ctx['state'].currentHost;
-    let txt14 = ctx['owlVersion'];
-    let txt15 = ctx['state'].currentDatabase;
-    let txt16 = (ctx['state'].user&&ctx['state'].user.display_name)||'—';
-    return block1([attr1, attr2, attr6, prop5, hdlr7, prop6, hdlr8, prop7, hdlr9, hdlr10, hdlr11, hdlr12, hdlr13, hdlr14, hdlr15, hdlr16, attr7, txt7, hdlr17, txt9, txt10, prop8, hdlr18, txt11, txt12, txt13, txt14, txt15, txt16], [b2, b3, b4, b13, b14, b15, b18, b19, b37]);
+    let prop8 = new String((ctx['state'].limitTo) === 0 ? 0 : ((ctx['state'].limitTo) || ""));
+    const v6 = ctx['updateLimitPreference'];
+    let hdlr9 = [(_ev)=>v6(_ev.target.value), ctx];
+    let prop9 = new Boolean(ctx['state'].autoDownloadIssueTimesheet);
+    let hdlr10 = [ctx['toggleAutoDownload'], ctx];
+    let hdlr11 = [ctx['downloadCurrentMonthTimesheets'], ctx];
+    let hdlr12 = [ctx['switchBetweenRemotes'], ctx];
+    let hdlr13 = [ctx['refreshAll'], ctx];
+    let hdlr14 = [ctx['resetTimer'], ctx];
+    let hdlr15 = [ctx['logout'], ctx];
+    let hdlr16 = [ctx['toggleRecording'], ctx];
+    let hdlr17 = [ctx['openMessages'], ctx];
+    let attr8 = (ctx['state'].msgUnreadTotal||0)>0?'':'display:none';
+    let txt8 = (ctx['state'].msgUnreadTotal||0)>99?'99+':''+(ctx['state'].msgUnreadTotal||'');
+    let hdlr18 = [ctx['openLogs'], ctx];
+    if (ctx['state'].timerStartIso) {
+      let txt9 = ctx['formattedTimer'];
+      b17 = block17([txt9]);
+    }
+    let txt10 = ctx['itemLabelPlural'];
+    let txt11 = ''+ctx['filteredIssues'].length;
+    let prop10 = new Boolean(ctx['state'].allIssues);
+    const v7 = ctx['updateShowAllPreference'];
+    let hdlr19 = [(_ev)=>v7(_ev.target.checked), ctx];
+    if (ctx['state'].dataSource==='project.task') {
+      const b19 = block19();
+      const b20 = block20();
+      b18 = multi([b19, b20]);
+    }
+    if (ctx['isHelpdeskSource']) {
+      let b22, b23, b24, b25, b26, b27;
+      if (ctx['showHelpdeskAssignee']) {
+        b22 = block22();
+      }
+      if (ctx['showHelpdeskTeam']) {
+        b23 = block23();
+      }
+      if (ctx['showHelpdeskDescription']) {
+        b24 = block24();
+      }
+      if (ctx['showHelpdeskTherpLink']) {
+        b25 = block25();
+      }
+      if (ctx['showHelpdeskProject']) {
+        b26 = block26();
+      }
+      if (ctx['showHelpdeskHours']) {
+        b27 = block27();
+      }
+      b21 = multi([b22, b23, b24, b25, b26, b27]);
+    } else {
+      let txt12 = ctx['relationHeaderLabel'];
+      b28 = block28([txt12]);
+    }
+    if (ctx['filteredIssues'].length) {
+      ctx = Object.create(ctx);
+      const [k_block29, v_block29, l_block29, c_block29] = prepareList(ctx['filteredIssues']);;
+      for (let i1 = 0; i1 < l_block29; i1++) {
+        ctx[`ir`] = k_block29[i1];
+        const key1 = ctx['ir'].id;
+        let b31, b32, b33, b35, b37, b38, b39, b44, b57;
+        let attr9 = ctx['isActiveTimerItem'](ctx['ir'])?'active-row':'';
+        if (ctx['isActiveTimerItem'](ctx['ir'])) {
+          const v8 = ctx['stopTimer'];
+          const v9 = ctx['ir'];
+          let hdlr20 = [()=>v8(v9), ctx];
+          b31 = block31([hdlr20]);
+        } else {
+          const v10 = ctx['startTimer'];
+          const v11 = ctx['ir'];
+          let hdlr21 = [()=>v10(v11), ctx];
+          b32 = block32([hdlr21]);
+        }
+        ctx = Object.create(ctx);
+        const [k_block33, v_block33, l_block33, c_block33] = prepareList(ctx['priorityStarsArr'](ctx['ir'].priority));;
+        for (let i2 = 0; i2 < l_block33; i2++) {
+          ctx[`s`] = k_block33[i2];
+          const key2 = ctx['s'];
+          c_block33[i2] = withKey(block34(), key2);
+        }
+        ctx = ctx.__proto__;
+        b33 = list(c_block33);
+        ctx = Object.create(ctx);
+        const [k_block35, v_block35, l_block35, c_block35] = prepareList(ctx['priorityOutlineArr'](ctx['ir'].priority));;
+        for (let i2 = 0; i2 < l_block35; i2++) {
+          ctx[`o`] = k_block35[i2];
+          const key2 = ctx['o'];
+          c_block35[i2] = withKey(block36(), key2);
+        }
+        ctx = ctx.__proto__;
+        b35 = list(c_block35);
+        b37 = comp1({text: (ctx['ir'].stage_id&&ctx['ir'].stage_id[1])||'',limit: 14}, key + `__1__${key1}`, node, this, null);
+        b38 = comp2({text: ctx['issueLabel'](ctx['ir']),limit: 60,href: ctx['issueHref'](ctx['ir'])}, key + `__2__${key1}`, node, this, null);
+        if (ctx['state'].dataSource==='project.task') {
+          const b41 = comp3({text: ctx['formatHours'](ctx['ir'].effective_hours),limit: 10}, key + `__3__${key1}`, node, this, null);
+          const v12 = ctx['openTimesheets'];
+          const v13 = ctx['ir'];
+          let hdlr22 = [()=>v12(v13), ctx];
+          const b40 = block40([hdlr22], [b41]);
+          const b43 = comp4({text: ctx['formatHours'](ctx['ir'].remaining_hours),limit: 10}, key + `__4__${key1}`, node, this, null);
+          const b42 = block42([], [b43]);
+          b39 = multi([b40, b42]);
+        }
+        if (ctx['isHelpdeskSource']) {
+          let b45, b47, b49, b51, b53, b55;
+          if (ctx['showHelpdeskAssignee']) {
+            const b46 = comp5({text: ctx['relationLabel'](ctx['helpdeskAssigneeValue'](ctx['ir'])),limit: 22}, key + `__5__${key1}`, node, this, null);
+            b45 = block45([], [b46]);
+          }
+          if (ctx['showHelpdeskTeam']) {
+            const b48 = comp6({text: ctx['relationLabel'](ctx['helpdeskTeamValue'](ctx['ir'])),limit: 22}, key + `__6__${key1}`, node, this, null);
+            b47 = block47([], [b48]);
+          }
+          if (ctx['showHelpdeskDescription']) {
+            const b50 = comp7({text: ctx['helpdeskDescriptionText'](ctx['ir']),limit: 80}, key + `__7__${key1}`, node, this, null);
+            b49 = block49([], [b50]);
+          }
+          if (ctx['showHelpdeskTherpLink']) {
+            const b52 = comp8({text: ctx['helpdeskTherpLinkValue'](ctx['ir']),limit: 45,href: ctx['helpdeskTherpLinkHref'](ctx['ir'])}, key + `__8__${key1}`, node, this, null);
+            b51 = block51([], [b52]);
+          }
+          if (ctx['showHelpdeskProject']) {
+            const b54 = comp9({text: ctx['relationLabel'](ctx['helpdeskProjectValue'](ctx['ir'])),limit: 22}, key + `__9__${key1}`, node, this, null);
+            b53 = block53([], [b54]);
+          }
+          if (ctx['showHelpdeskHours']) {
+            const b56 = comp10({text: ctx['formatHours'](ctx['helpdeskHoursValue'](ctx['ir'])),limit: 10}, key + `__10__${key1}`, node, this, null);
+            b55 = block55([], [b56]);
+          }
+          b44 = multi([b45, b47, b49, b51, b53, b55]);
+        } else {
+          const b58 = comp11({text: ctx['relationLabel'](ctx['resourceRelationValue'](ctx['ir'])),limit: 22}, key + `__11__${key1}`, node, this, null);
+          b57 = block57([], [b58]);
+        }
+        c_block29[i1] = withKey(block30([attr9], [b31, b32, b33, b35, b37, b38, b39, b44, b57]), key1);
+      }
+      ctx = ctx.__proto__;
+      b29 = list(c_block29);
+    } else {
+      let attr10 = ''+ctx['tableColumnCount'];
+      b59 = block59([attr10]);
+    }
+    let txt13 = ctx['state'].serverVersion||'N/A';
+    let txt14 = ctx['state'].currentHost;
+    let txt15 = ctx['owlVersion'];
+    let txt16 = ctx['state'].currentDatabase;
+    let txt17 = (ctx['state'].user&&ctx['state'].user.display_name)||'—';
+    return block1([attr1, attr2, attr6, prop5, hdlr7, prop8, hdlr9, prop9, hdlr10, hdlr11, hdlr12, hdlr13, hdlr14, hdlr15, hdlr16, hdlr17, attr8, txt8, hdlr18, txt10, txt11, prop10, hdlr19, txt13, txt14, txt15, txt16, txt17], [b2, b3, b4, b13, b14, b17, b18, b21, b28, b29, b59]);
   }
 },
 

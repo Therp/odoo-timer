@@ -215,8 +215,13 @@ export class OdooRpc {
   getSessionInfo() { return this.send('/web/session/get_session_info', {}); }
   getServerInfo()  { return this.send('/web/webclient/version_info', {}); }
 
-  searchRead(model, domain, fields = [], kwargs = {}) {
-    return this.send('/web/dataset/search_read', { model, domain, fields, ...kwargs });
+  async searchRead(model, domain, fields = [], kwargs = {}) {
+    const { sort, ...rest } = kwargs;
+    const callKwargs = { fields, ...rest };
+    if (sort !== undefined && callKwargs.order === undefined) callKwargs.order = sort;
+    const records = await this.call(model, 'search_read', [domain], callKwargs);
+    const normalized = Array.isArray(records) ? records : [];
+    return { records: normalized, length: normalized.length };
   }
   fieldsGet(model, attributes = []) {
     return this.send('/web/dataset/call_kw', {

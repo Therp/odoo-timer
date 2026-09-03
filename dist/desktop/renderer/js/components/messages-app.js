@@ -149,8 +149,13 @@ class MessagesApp extends Component {
 
   // ── RPC convenience ────────────────────────────────────────────────────────
   _send(path, params)           { return rpcSend(this.state.host, path, params); }
-  _searchRead(model, domain, fields, extra = {}) {
-    return this._send('/web/dataset/search_read', { model, domain, fields, ...extra });
+  async _searchRead(model, domain, fields, extra = {}) {
+    const { sort, ...rest } = extra;
+    const kwargs = { fields, ...rest };
+    if (sort !== undefined && kwargs.order === undefined) kwargs.order = sort;
+    const records = await this._call(model, 'search_read', [domain], kwargs);
+    const normalized = Array.isArray(records) ? records : [];
+    return { records: normalized, length: normalized.length };
   }
   _call(model, method, args, kwargs = {}) {
     return this._send('/web/dataset/call_kw', { model, method, args, kwargs });

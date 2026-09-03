@@ -105,6 +105,18 @@
             placeholder="Search by ID, name, user, priority, stage..."
             t-att-value="state.searchQuery"
             t-on-input="(ev) => { state.searchQuery = ev.target.value; }"/>
+          <t t-if="isHelpdeskSource">
+            <select id="helpdeskStageFilter" t-att-value="state.helpdeskStageFilter"
+              t-on-change="(ev) => updateHelpdeskStageFilter(ev.target.value)">
+              <option value="">All stages</option>
+              <t t-foreach="helpdeskStageOptions" t-as="stage" t-key="stage.id">
+                <option t-att-value="'' + stage.id"
+                  t-att-selected="state.helpdeskStageFilter === '' + stage.id">
+                  <t t-esc="stage.name"/>
+                </option>
+              </t>
+            </select>
+          </t>
           <select id="limitTo" t-att-value="state.limitTo"
             t-on-change="(ev) => updateLimitPreference(ev.target.value)">
             <option value="10">10</option>
@@ -180,8 +192,17 @@
                   <th>Hours Spent</th>
                   <th>Remaining Hours</th>
                 </t>
-                <t t-if="showHelpdeskHours"><th>Time Spent</th></t>
-                <th class="project-col"><t t-esc="relationHeaderLabel"/></th>
+                <t t-if="isHelpdeskSource">
+                  <t t-if="showHelpdeskAssignee"><th>Assigned To</th></t>
+                  <t t-if="showHelpdeskTeam"><th>Helpdesk Team</th></t>
+                  <t t-if="showHelpdeskDescription"><th>Description</th></t>
+                  <t t-if="showHelpdeskTherpLink"><th>Therp link</th></t>
+                  <t t-if="showHelpdeskProject"><th class="project-col">Project</th></t>
+                  <t t-if="showHelpdeskHours"><th>Time Spent</th></t>
+                </t>
+                <t t-else="">
+                  <th class="project-col"><t t-esc="relationHeaderLabel"/></th>
+                </t>
               </tr>
             </thead>
             <tbody>
@@ -227,14 +248,36 @@
                         <ReadMore text="formatHours(ir.remaining_hours)" limit="10"/>
                       </td>
                     </t>
-                    <t t-if="showHelpdeskHours">
-                      <td>
-                        <ReadMore text="formatHours(helpdeskHoursValue(ir))" limit="10"/>
+                    <t t-if="isHelpdeskSource">
+                      <t t-if="showHelpdeskAssignee">
+                        <td><ReadMore text="relationLabel(helpdeskAssigneeValue(ir))" limit="22"/></td>
+                      </t>
+                      <t t-if="showHelpdeskTeam">
+                        <td><ReadMore text="relationLabel(helpdeskTeamValue(ir))" limit="22"/></td>
+                      </t>
+                      <t t-if="showHelpdeskDescription">
+                        <td><ReadMore text="helpdeskDescriptionText(ir)" limit="80"/></td>
+                      </t>
+                      <t t-if="showHelpdeskTherpLink">
+                        <td>
+                          <ReadMore text="helpdeskTherpLinkValue(ir)" limit="45"
+                            href="helpdeskTherpLinkHref(ir)"/>
+                        </td>
+                      </t>
+                      <t t-if="showHelpdeskProject">
+                        <td class="project-cell">
+                          <ReadMore text="relationLabel(helpdeskProjectValue(ir))" limit="22"/>
+                        </td>
+                      </t>
+                      <t t-if="showHelpdeskHours">
+                        <td><ReadMore text="formatHours(helpdeskHoursValue(ir))" limit="10"/></td>
+                      </t>
+                    </t>
+                    <t t-else="">
+                      <td class="project-cell">
+                        <ReadMore text="relationLabel(resourceRelationValue(ir))" limit="22"/>
                       </td>
                     </t>
-                    <td class="project-cell">
-                      <ReadMore text="relationLabel(resourceRelationValue(ir))" limit="22"/>
-                    </td>
                   </tr>
                 </t>
               </t>

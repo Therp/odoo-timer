@@ -87,6 +87,7 @@ class PopupApp extends Component {
             projects:          [],
             issues:            [],
             searchQuery:       '',
+            helpdeskStageFilter: '',
             limitTo:           DEFAULTS.searchLimit,
             allIssues:         false,
             autoDownloadIssueTimesheet: false,
@@ -172,14 +173,49 @@ class PopupApp extends Component {
     get itemLabelSingular() { return resourceLabels(this.state.dataSource).singular; }
     get itemLabelPlural()   { return resourceLabels(this.state.dataSource).plural; }
     get isHelpdeskSource()  { return this.state.dataSource === DATA_SOURCE_HELPDESK; }
+    get showHelpdeskAssignee() { return this.isHelpdeskSource && Boolean(this.state.sourceCapabilities.assignmentField); }
+    get showHelpdeskTeam() { return this.isHelpdeskSource && Boolean(this.state.sourceCapabilities.teamField); }
+    get showHelpdeskDescription() { return this.isHelpdeskSource && Boolean(this.state.sourceCapabilities.descriptionField); }
+    get showHelpdeskTherpLink() { return this.isHelpdeskSource && Boolean(this.state.sourceCapabilities.therpLinkField); }
+    get showHelpdeskProject() { return this.isHelpdeskSource && Boolean(this.state.sourceCapabilities.projectField); }
     get showHelpdeskHours() { return this.isHelpdeskSource && Boolean(this.state.sourceCapabilities.hoursField); }
+
+    get helpdeskStageOptions() {
+        if (!this.isHelpdeskSource) return [];
+        const stages = new Map();
+        for (const issue of this.state.issues) {
+            const value = issue?.stage_id;
+            if (!Array.isArray(value) || !value[0]) continue;
+            const id = Number(value[0]);
+            const candidate = {
+                id,
+                name: this.normalizeText(value[1]) || `#${id}`,
+                sequence: Number(issue.stage_sequence ?? 9999),
+            };
+            const current = stages.get(id);
+            if (!current || candidate.sequence < current.sequence) stages.set(id, candidate);
+        }
+        return [...stages.values()].sort((a, b) =>
+            a.sequence - b.sequence || a.name.localeCompare(b.name)
+        );
+    }
+
     get relationHeaderLabel() {
         return this.isHelpdeskSource && !this.state.sourceCapabilities.projectField ? 'Team' : 'Project';
     }
+
     get tableColumnCount() {
         if (this.state.dataSource === DATA_SOURCE_TASK) return 7;
-        return this.showHelpdeskHours ? 6 : 5;
+        if (!this.isHelpdeskSource) return 5;
+        return 4 +
+            Number(this.showHelpdeskAssignee) +
+            Number(this.showHelpdeskTeam) +
+            Number(this.showHelpdeskDescription) +
+            Number(this.showHelpdeskTherpLink) +
+            Number(this.showHelpdeskProject) +
+            Number(this.showHelpdeskHours);
     }
+
 
     /** OWL version string for display in footer (avoids inline JS in XML template). */
     get owlVersion() { return `v${String(owl.__info__?.version || '?')}`; }
@@ -201,6 +237,10 @@ class PopupApp extends Component {
         await storage.set(STORAGE_KEYS.searchLimit, value);
     }
 
+    updateHelpdeskStageFilter(value) {
+        this.state.helpdeskStageFilter = String(value || '');
+    }
+
     async updateShowAllPreference(value) {
         this.state.allIssues = !!value;
         await storage.set(STORAGE_KEYS.showAllItems, !!value);
@@ -215,32 +255,39 @@ class PopupApp extends Component {
         let issues = [...this.state.issues];
 
         issues.sort((a, b) => {
-        if (this.isActiveTimerItem(a)) return -1;
-        if (this.isActiveTimerItem(b)) return 1;
-        const priorityDelta = Number(b.priority || 0) - Number(a.priority || 0);
-        if (priorityDelta !== 0) return priorityDelta;
-        const stageDelta = Number(a.stage_sequence ?? 9999) - Number(b.stage_sequence ?? 9999);
-        if (stageDelta !== 0) return stageDelta;
-        return a.id - b.id;
+            if (this.isActiveTimerItem(a)) return -1;
+            if (this.isActiveTimerItem(b)) return 1;
+            const priorityDelta = Number(b.priority || 0) - Number(a.priority || 0);
+            if (priorityDelta !== 0) return priorityDelta;
+            const stageDelta = Number(a.stage_sequence ?? 9999) - Number(b.stage_sequence ?? 9999);
+            if (stageDelta !== 0) return stageDelta;
+            return a.id - b.id;
         });
 
-        const matchesSearch = (issue) => matchesIssue(issue, query);
+        if (this.isHelpdeskSource && this.state.helpdeskStageFilter) {
+            const stageId = Number(this.state.helpdeskStageFilter);
+            issues = issues.filter((issue) =>
+                this.isActiveTimerItem(issue) || Number(issue.stage_id?.[0]) === stageId
+            );
+        }
+
+        const matchesSearch = (issue) => this.matchesCurrentSearch(issue, query);
 
         if (this.state.allIssues) {
-        issues = issues.filter(matchesSearch);
+            issues = issues.filter((issue) => this.isActiveTimerItem(issue) || matchesSearch(issue));
         } else if (this.state.user?.id) {
-        issues = issues.filter(
-            (issue) =>
-            this.isActiveTimerItem(issue) ||
-            (isAssignedToUser(
-                issue,
-                this.state.sourceCapabilities.assignmentField || 'user_id',
-                this.state.user.id,
-                this.state.sourceCapabilities.assignmentType
-            ) && matchesSearch(issue))
-        );
+            issues = issues.filter(
+                (issue) =>
+                    this.isActiveTimerItem(issue) ||
+                    (isAssignedToUser(
+                        issue,
+                        this.state.sourceCapabilities.assignmentField || 'user_id',
+                        this.state.user.id,
+                        this.state.sourceCapabilities.assignmentType
+                    ) && matchesSearch(issue))
+            );
         } else {
-        issues = issues.filter(matchesSearch);
+            issues = issues.filter((issue) => this.isActiveTimerItem(issue) || matchesSearch(issue));
         }
 
         return limit ? issues.slice(0, limit) : issues;
@@ -409,6 +456,55 @@ class PopupApp extends Component {
         if (!value) return '';
         if (Array.isArray(value)) return this.normalizeText(value[1] ?? value[0]);
         return this.normalizeText(value);
+    }
+
+    helpdeskAssigneeValue(issue) {
+        const field = this.state.sourceCapabilities.assignmentField;
+        return field ? issue?.[field] : null;
+    }
+
+    helpdeskTeamValue(issue) {
+        const field = this.state.sourceCapabilities.teamField;
+        return field ? issue?.[field] : null;
+    }
+
+    helpdeskProjectValue(issue) {
+        const field = this.state.sourceCapabilities.projectField;
+        return field ? issue?.[field] : null;
+    }
+
+    helpdeskDescriptionText(issue) {
+        const field = this.state.sourceCapabilities.descriptionField;
+        return field ? extractMessageSummary(issue?.[field] || '') : '';
+    }
+
+    helpdeskTherpLinkValue(issue) {
+        const field = this.state.sourceCapabilities.therpLinkField;
+        return field ? this.normalizeText(issue?.[field]) : '';
+    }
+
+    helpdeskTherpLinkHref(issue) {
+        const value = this.helpdeskTherpLinkValue(issue).trim();
+        if (/^https?:\/\//i.test(value)) return value;
+        if (value.startsWith('/') && this.state.currentHost) {
+            return `${this.state.currentHost}${value}`;
+        }
+        return null;
+    }
+
+    matchesCurrentSearch(issue, query) {
+        if (matchesIssue(issue, query)) return true;
+        if (!query || !this.isHelpdeskSource) return false;
+        const q = query.trim().toLowerCase();
+        if (!q) return true;
+        return [
+            issue.stage_id?.[0],
+            this.helpdeskDescriptionText(issue),
+            this.helpdeskTherpLinkValue(issue),
+            this.relationLabel(this.helpdeskAssigneeValue(issue)),
+            this.relationLabel(this.helpdeskTeamValue(issue)),
+            this.relationLabel(this.helpdeskProjectValue(issue)),
+        ].filter(Boolean).join(' ').toLowerCase().includes(q);
     }
 
     resourceRelationValue(issue) {
@@ -668,7 +764,8 @@ class PopupApp extends Component {
                 [DATA_SOURCE_HELPDESK]: [
                     'display_name', 'description', 'partner_id',
                     capabilities.assignmentField, capabilities.projectField,
-                    capabilities.teamField, capabilities.analyticAccountField,
+                    capabilities.teamField, capabilities.descriptionField,
+                    capabilities.therpLinkField, capabilities.analyticAccountField,
                     capabilities.stageField, capabilities.timeEnabledField,
                     capabilities.hoursField, capabilities.ticketReferenceField,
                     capabilities.closedField, capabilities.activeField,
