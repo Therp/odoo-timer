@@ -1,3 +1,4 @@
+import { remoteIdentity } from '../dist/chrome/js/lib/common.js';
 import assert from 'node:assert/strict';
 
 import {
@@ -72,3 +73,20 @@ assert.equal(missingTimesheets.canRecordTime, false);
 assert.equal(timesheetBinding(DATA_SOURCE_HELPDESK, missingTimesheets), null);
 
 console.log('resource adapter tests passed');
+
+assert.equal(
+  remoteIdentity({url: 'https://example.test/', database: 'db', datasrc: 'project.task'}),
+  remoteIdentity({url: 'https://example.test', database: 'db', datasrc: 'project.task'}),
+  'remote identity normalizes host trailing slash'
+);
+assert.notEqual(
+  remoteIdentity({url: 'https://example.test', database: 'db', datasrc: 'project.task'}),
+  remoteIdentity({url: 'https://example.test', database: 'db', datasrc: 'helpdesk.ticket'}),
+  'same host/database with a different source is a distinct remote'
+);
+
+assert.equal(
+  remoteIdentity({url: 'https://example.test', database: 'db'}),
+  remoteIdentity({url: 'https://example.test', database: 'db', datasrc: 'project.issue'}),
+  'legacy remotes without datasrc keep project.issue identity'
+);

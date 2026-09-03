@@ -22,7 +22,7 @@
         <div class="popup-login-shell">
           <div class="form">
             <div class="logo">
-              <img src="/img/logo.png"/>
+              <img t-att-src="currentRemoteLogoSrc" alt="Remote logo"/>
             </div>
 
             <t t-if="state.bootError">
@@ -89,12 +89,12 @@
                   <t
                     t-foreach="state.remotes"
                     t-as="remote"
-                    t-key="remote.database + remote.url"
+                    t-key="remoteKey(remote)"
                   >
                     <option
                       t-att-value="remote.__index"
                       t-att-selected="state.selectedRemoteIndex === remote.__index"
-                      t-out="remote.name"
+                      t-out="remoteOptionLabel(remote)"
                     />
                   </t>
                 </select>
@@ -293,11 +293,20 @@
                   <tr t-att-class="isActiveTimerItem(issue) ? 'active-row' : ''">
                     <td class="text-center px-2 td-btn action-col">
                       <t t-if="!state.activeTimerId">
-                        <i
-                          class="fa fa-play-circle action-btn pointer"
-                          title="Start the timer for the selected item"
-                          t-on-click="() => startTimer(issue)"
-                        />
+                        <t t-if="isHelpdeskSource &amp;&amp; helpdeskTimesheetBlocked(issue)">
+                          <i
+                            class="fa fa-info-circle action-btn pointer text-warning"
+                            t-att-title="helpdeskTimesheetBlockMessage(issue)"
+                            t-on-click="() => showHelpdeskTimesheetInfo(issue)"
+                          />
+                        </t>
+                        <t t-else="">
+                          <i
+                            class="fa fa-play-circle action-btn pointer"
+                            title="Start the timer for the selected item"
+                            t-on-click="() => startTimer(issue)"
+                          />
+                        </t>
                       </t>
                       <t t-if="isActiveTimerItem(issue)">
                         <i
