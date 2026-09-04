@@ -10,15 +10,6 @@ function getCustomAlert() {
   return null;
 }
 
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
 export async function notify(message, options = {}) {
   const customAlert = getCustomAlert();
   if (customAlert) {
@@ -44,23 +35,45 @@ export async function promptDialog(title, defaultValue = '', options = {}) {
   }
 
   const inputId = `therp-timer-prompt-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  const escapedTitle = escapeHtml(title || 'Input');
-  const escapedValue = escapeHtml(defaultValue || '');
   const accentColor = options.accentColor || customAlert.accentColor || 'orange';
-  const html = `
-    <div style="min-width:320px;max-width:520px;text-align:left;">
-      <div style="margin-bottom:12px;font-weight:700;font-size:18px;color:#42475a;text-align:center;">${escapedTitle}</div>
-      <textarea id="${inputId}" style="width:100%;min-height:180px;box-sizing:border-box;padding:12px;border:1px solid #cbd5e1;border-radius:4px;resize:vertical;font:14px/1.4 Arial,Helvetica,sans-serif;color:#334155;background:#fff;">${escapedValue}</textarea>
-    </div>
-  `;
 
-  const result = await customAlert.show(html, ['close', 'Save'], { ...options, accentColor });
+  // Build prompt content with DOM APIs instead of HTML strings. This keeps
+  // dynamic values out of HTML-string rendering and satisfies Firefox add-on validation.
+  const content = document.createElement('div');
+  content.style.minWidth = '320px';
+  content.style.maxWidth = '520px';
+  content.style.textAlign = 'left';
+
+  const titleElement = document.createElement('div');
+  titleElement.style.marginBottom = '12px';
+  titleElement.style.fontWeight = '700';
+  titleElement.style.fontSize = '18px';
+  titleElement.style.color = '#42475a';
+  titleElement.style.textAlign = 'center';
+  titleElement.textContent = String(title || 'Input');
+
+  const textarea = document.createElement('textarea');
+  textarea.id = inputId;
+  textarea.value = String(defaultValue ?? '');
+  textarea.style.width = '100%';
+  textarea.style.minHeight = '180px';
+  textarea.style.boxSizing = 'border-box';
+  textarea.style.padding = '12px';
+  textarea.style.border = '1px solid #cbd5e1';
+  textarea.style.borderRadius = '4px';
+  textarea.style.resize = 'vertical';
+  textarea.style.font = '14px/1.4 Arial,Helvetica,sans-serif';
+  textarea.style.color = '#334155';
+  textarea.style.background = '#fff';
+
+  content.append(titleElement, textarea);
+
+  const result = await customAlert.show(content, ['close', 'Save'], { ...options, accentColor });
   if (result !== 'Save') {
     return null;
   }
 
-  const el = document.getElementById(inputId);
-  return el ? el.value : String(defaultValue ?? '');
+  return textarea.value;
 }
 
 export const storage = {
