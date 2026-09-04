@@ -131,7 +131,16 @@
         }
         visible = true;
 
-        alertBox.childNodes[0].innerHTML = text;
+        // THERP SECURITY PATCH: dynamic alert content is rendered without innerHTML.
+        const alertBody = alertBox.childNodes[0];
+        while (alertBody.firstChild) {
+            alertBody.removeChild(alertBody.firstChild);
+        }
+        if (text && typeof text === "object" && typeof text.nodeType === "number") {
+            alertBody.appendChild(text);
+        } else {
+            alertBody.textContent = String(text ?? "");
+        }
         while (alertBox.childNodes[1].firstChild) {
             alertBox.childNodes[1].removeChild(alertBox.childNodes[1].firstChild);
         }
@@ -154,7 +163,7 @@
 
             el.setAttribute("ripple-cancel-on-move", "");
 
-            el.innerHTML = actions[i];
+            el.textContent = String(actions[i] ?? "");
             el.style.minWidth = getTextWidth(actions[i]) + "px";
             alertBox.childNodes[1].appendChild(el);
         }

@@ -43,24 +43,36 @@ export async function promptDialog(title, defaultValue = '', options = {}) {
     return globalThis.prompt(String(title ?? ''), String(defaultValue ?? ''));
   }
 
-  const inputId = `therp-timer-prompt-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  const escapedTitle = escapeHtml(title || 'Input');
-  const escapedValue = escapeHtml(defaultValue || '');
   const accentColor = options.accentColor || customAlert.accentColor || 'orange';
-  const html = `
-    <div style="min-width:320px;max-width:520px;text-align:left;">
-      <div style="margin-bottom:12px;font-weight:700;font-size:18px;color:#42475a;text-align:center;">${escapedTitle}</div>
-      <textarea id="${inputId}" style="width:100%;min-height:180px;box-sizing:border-box;padding:12px;border:1px solid #cbd5e1;border-radius:4px;resize:vertical;font:14px/1.4 Arial,Helvetica,sans-serif;color:#334155;background:#fff;">${escapedValue}</textarea>
-    </div>
-  `;
 
-  const result = await customAlert.show(html, ['close', 'Save'], { ...options, accentColor });
+  // THERP SECURITY PATCH: build the prompt with DOM APIs instead of injecting
+  // a dynamic HTML string into alert.js.
+  const container = document.createElement('div');
+  container.style.cssText = 'min-width:320px;max-width:520px;text-align:left;';
+
+  const heading = document.createElement('div');
+  heading.style.cssText =
+    'margin-bottom:12px;font-weight:700;font-size:18px;color:#42475a;text-align:center;';
+  heading.textContent = String(title || 'Input');
+
+  const textarea = document.createElement('textarea');
+  textarea.style.cssText =
+    'width:100%;min-height:180px;box-sizing:border-box;padding:12px;' +
+    'border:1px solid #cbd5e1;border-radius:4px;resize:vertical;' +
+    'font:14px/1.4 Arial,Helvetica,sans-serif;color:#334155;background:#fff;';
+  textarea.value = String(defaultValue ?? '');
+
+  container.append(heading, textarea);
+
+  const result = await customAlert.show(
+    container,
+    ['close', 'Save'],
+    { ...options, accentColor }
+  );
   if (result !== 'Save') {
     return null;
   }
-
-  const el = document.getElementById(inputId);
-  return el ? el.value : String(defaultValue ?? '');
+  return textarea.value;
 }
 
 export const storage = {
