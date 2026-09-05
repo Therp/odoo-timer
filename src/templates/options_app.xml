@@ -22,6 +22,14 @@
           </li>
           <li
             class="chooser list-group-item"
+            t-att-class="state.activePage === 'preferences' ? 'selected' : 'notselected'"
+            t-on-click="() => state.activePage = 'preferences'"
+          >
+            <i class="fa fa-sliders"/> <span>Preferences</span>
+          </li>
+
+          <li
+            class="chooser list-group-item"
             t-att-class="state.activePage === 'options' ? 'selected' : 'notselected'"
             t-on-click="() => state.activePage = 'options'"
           >
@@ -30,9 +38,7 @@
         </ul>
         <hr/>
         <div class="footer-app">
-          <a href="popup.html" class="back-left" title="Back to timer">
-            <i class="fa fa-hand-o-left fa-2x"/>
-          </a>
+          <a href="popup.html" class="back-left nav-hand-button" title="Back to timer" aria-label="Back to timer"><i class="fa fa-hand-o-left"/></a>
         </div>
       </div>
 
@@ -61,10 +67,10 @@
               <li class="list-group-item">Start/stop timing and create native Odoo timesheet lines</li>
               <li class="list-group-item">Helpdesk stage filtering plus a readiness check before starting a ticket timer</li>
               <li class="list-group-item">A blue info icon explains when Odoo company/employee configuration prevents Helpdesk timesheets</li>
-              <li class="list-group-item">Show assigned items or everyone's items</li>
+              <li class="list-group-item">Filter by stage and show assigned items or everyone’s items</li>
               <li class="list-group-item">Save the same Odoo database as separate Task, Issue or Helpdesk remotes</li>
               <li class="list-group-item">Optional company logo per remote, with the Therp logo as fallback</li>
-              <li class="list-group-item">Switch between remote sessions and download timesheets as CSV</li>
+              <li class="list-group-item">Switch between remote sessions and data sources and data sources and download timesheets as CSV</li>
             </ul>
           </div>
           <!-- THERP UX PATCH: supported-version matrix. -->
@@ -131,6 +137,457 @@
         </div>
       </div>
 
+      
+      <!-- THERP ADVANCED LAYOUT PREFS V5 -->
+      <div
+        class="options-box box"
+        t-if="state.layoutCanCustomize"
+        t-att-class="state.activePage === 'preferences' ? 'active_page' : 'inactive_page'"
+      >
+        <h4 class="title-app">Preferences</h4>
+        <hr/>
+        <div class="layout-pref-card">
+          <h5><t t-out="state.layoutBrowser"/> Layout</h5>
+          <p class="inline-help">
+            Defaults shown here mirror the current browser's source CSS. Until you press Save, the source CSS remains authoritative. Saved values are local to this browser, validated before storage, and revalidated every time the timer loads.
+          </p>
+
+          <t t-if="state.layoutError">
+            <div class="layout-pref-error" t-out="state.layoutError"/>
+          </t>
+
+          <details class="layout-pref-section" open="open">
+            <summary>Main Timer Page</summary>
+            <div class="layout-pref-grid">
+              
+              <div class="layout-pref-field" t-att-class="state.layoutSuggestedFields['main.width'] ? 'layout-pref-field layout-pref-suggested' : 'layout-pref-field'">
+                <label>Internal width (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="700" max="1200"
+                  t-att-value="state.layoutPrefs.main.width"
+                  t-on-input="(ev) => { state.layoutPrefs.main.width = ev.target.value; state.layoutError = ''; markLayoutFieldEdited('main.width'); }"/>
+                <div class="layout-pref-help">Chrome may cap the visible action popup; this controls the internal layout width.</div>
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Internal height (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="500" max="1000"
+                  t-att-value="state.layoutPrefs.main.height"
+                  t-on-input="(ev) => { state.layoutPrefs.main.height = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Horizontal padding (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="0" max="60"
+                  t-att-value="state.layoutPrefs.main.wrapperPaddingX"
+                  t-on-input="(ev) => { state.layoutPrefs.main.wrapperPaddingX = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Top padding (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="0" max="60"
+                  t-att-value="state.layoutPrefs.main.wrapperPaddingTop"
+                  t-on-input="(ev) => { state.layoutPrefs.main.wrapperPaddingTop = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Bottom padding (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="0" max="60"
+                  t-att-value="state.layoutPrefs.main.wrapperPaddingBottom"
+                  t-on-input="(ev) => { state.layoutPrefs.main.wrapperPaddingBottom = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+            </div>
+          </details>
+
+          <details class="layout-pref-section">
+            <summary>Toolbar &amp; Search</summary>
+            <div class="layout-pref-grid">
+              
+              <div class="layout-pref-field">
+                <label>Search/control font (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="10" max="22"
+                  t-att-value="state.layoutPrefs.toolbar.searchFontSize"
+                  t-on-input="(ev) => { state.layoutPrefs.toolbar.searchFontSize = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Control height (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="28" max="72"
+                  t-att-value="state.layoutPrefs.toolbar.controlHeight"
+                  t-on-input="(ev) => { state.layoutPrefs.toolbar.controlHeight = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Action icon size (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="16" max="48"
+                  t-att-value="state.layoutPrefs.toolbar.iconSize"
+                  t-on-input="(ev) => { state.layoutPrefs.toolbar.iconSize = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Toolbar gap (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="0" max="30"
+                  t-att-value="state.layoutPrefs.toolbar.gap"
+                  t-on-input="(ev) => { state.layoutPrefs.toolbar.gap = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+            </div>
+          </details>
+
+          <details class="layout-pref-section" open="open">
+            <summary>Task / Ticket Table</summary>
+            <div class="layout-pref-grid">
+              
+              <div class="layout-pref-field">
+                <label>Body font size (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="10" max="22"
+                  t-att-value="state.layoutPrefs.table.fontSize"
+                  t-on-input="(ev) => { state.layoutPrefs.table.fontSize = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Header font size (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="10" max="22"
+                  t-att-value="state.layoutPrefs.table.headerFontSize"
+                  t-on-input="(ev) => { state.layoutPrefs.table.headerFontSize = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Cell vertical padding (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="0" max="24"
+                  t-att-value="state.layoutPrefs.table.cellPaddingY"
+                  t-on-input="(ev) => { state.layoutPrefs.table.cellPaddingY = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              <div class="layout-pref-field" t-att-class="state.layoutSuggestedFields['table.headerWrap'] ? 'layout-pref-field layout-pref-suggested' : 'layout-pref-field'">
+                <label>Header wrapping</label>
+                <select t-att-value="state.layoutPrefs.table.headerWrap ? 'wrap' : 'nowrap'"
+                  t-on-change="(ev) => { state.layoutPrefs.table.headerWrap = ev.target.value === 'wrap'; state.layoutError = ''; markLayoutFieldEdited('table.headerWrap'); }">
+                  <option value="wrap">Wrap</option>
+                  <option value="nowrap">No wrap</option>
+                </select>
+              </div>
+              <div class="layout-pref-field">
+                <label>Cell wrapping</label>
+                <select t-att-value="state.layoutPrefs.table.cellWrap ? 'wrap' : 'nowrap'"
+                  t-on-change="(ev) => { state.layoutPrefs.table.cellWrap = ev.target.value === 'wrap'; state.layoutError = ''; }">
+                  <option value="wrap">Wrap</option>
+                  <option value="nowrap">No wrap</option>
+                </select>
+              </div>
+              <div class="layout-pref-field" t-att-class="state.layoutSuggestedFields['table.layoutMode'] ? 'layout-pref-field layout-pref-suggested' : 'layout-pref-field'">
+                <label>Column sizing</label>
+                <select t-att-value="state.layoutPrefs.table.layoutMode"
+                  t-on-change="(ev) => { state.layoutPrefs.table.layoutMode = ev.target.value; state.layoutError = ''; markLayoutFieldEdited('table.layoutMode'); }">
+                  <option value="fixed">Fixed</option>
+                  <option value="auto">Content-aware</option>
+                </select>
+              </div>
+              
+              <div class="layout-pref-field" t-att-class="state.layoutSuggestedFields['table.minWidth'] ? 'layout-pref-field layout-pref-suggested' : 'layout-pref-field'">
+                <label>Minimum table width (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="0" max="2400"
+                  t-att-value="state.layoutPrefs.table.minWidth"
+                  t-on-input="(ev) => { state.layoutPrefs.table.minWidth = ev.target.value; state.layoutError = ''; markLayoutFieldEdited('table.minWidth'); }"/>
+                <div class="layout-pref-help">0 keeps the table at the available width. Larger values enable horizontal table scrolling.</div>
+              </div>
+              <div class="layout-pref-field" t-att-class="state.layoutSuggestedFields['table.stripeEnabled'] ? 'layout-pref-field layout-pref-suggested' : 'layout-pref-field'">
+                <label>
+                  <input type="checkbox"
+                    t-att-checked="state.layoutPrefs.table.stripeEnabled"
+                    t-on-change="(ev) => { state.layoutPrefs.table.stripeEnabled = ev.target.checked; state.layoutError = ''; markLayoutFieldEdited('table.stripeEnabled'); }"/>
+                  Alternating row stripes
+                </label>
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Border radius (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="0" max="30"
+                  t-att-value="state.layoutPrefs.table.borderRadius"
+                  t-on-input="(ev) => { state.layoutPrefs.table.borderRadius = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field" t-att-class="state.layoutSuggestedFields['table.headerBg'] ? 'layout-pref-field layout-pref-suggested' : 'layout-pref-field'">
+                <label>Header background</label>
+                <input type="color"
+                  t-att-value="state.layoutPrefs.table.headerBg"
+                  t-on-input="(ev) => { state.layoutPrefs.table.headerBg = ev.target.value; state.layoutError = ''; markLayoutFieldEdited('table.headerBg'); }"/>
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Header text</label>
+                <input type="color"
+                  t-att-value="state.layoutPrefs.table.headerColor"
+                  t-on-input="(ev) => { state.layoutPrefs.table.headerColor = ev.target.value; state.layoutError = ''; }"/>
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Row background</label>
+                <input type="color"
+                  t-att-value="state.layoutPrefs.table.rowBg"
+                  t-on-input="(ev) => { state.layoutPrefs.table.rowBg = ev.target.value; state.layoutError = ''; }"/>
+              </div>
+              
+              <div class="layout-pref-field" t-att-class="state.layoutSuggestedFields['table.stripeBg'] ? 'layout-pref-field layout-pref-suggested' : 'layout-pref-field'">
+                <label>Stripe background</label>
+                <input type="color"
+                  t-att-value="state.layoutPrefs.table.stripeBg"
+                  t-on-input="(ev) => { state.layoutPrefs.table.stripeBg = ev.target.value; state.layoutError = ''; markLayoutFieldEdited('table.stripeBg'); }"/>
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Hover background</label>
+                <input type="color"
+                  t-att-value="state.layoutPrefs.table.hoverBg"
+                  t-on-input="(ev) => { state.layoutPrefs.table.hoverBg = ev.target.value; state.layoutError = ''; }"/>
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Active row background</label>
+                <input type="color"
+                  t-att-value="state.layoutPrefs.table.activeBg"
+                  t-on-input="(ev) => { state.layoutPrefs.table.activeBg = ev.target.value; state.layoutError = ''; }"/>
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Border color</label>
+                <input type="color"
+                  t-att-value="state.layoutPrefs.table.borderColor"
+                  t-on-input="(ev) => { state.layoutPrefs.table.borderColor = ev.target.value; state.layoutError = ''; }"/>
+              </div>
+            </div>
+          </details>
+
+          <details class="layout-pref-section">
+            <summary>Table Column Widths</summary>
+            <div class="layout-pref-grid">
+              
+              <div class="layout-pref-field" t-att-class="state.layoutSuggestedFields['table.actionWidth'] ? 'layout-pref-field layout-pref-suggested' : 'layout-pref-field'">
+                <label>Action (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="30" max="700"
+                  t-att-value="state.layoutPrefs.table.actionWidth"
+                  t-on-input="(ev) => { state.layoutPrefs.table.actionWidth = ev.target.value; state.layoutError = ''; markLayoutFieldEdited('table.actionWidth'); }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Priority (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="30" max="700"
+                  t-att-value="state.layoutPrefs.table.priorityWidth"
+                  t-on-input="(ev) => { state.layoutPrefs.table.priorityWidth = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Stage (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="30" max="700"
+                  t-att-value="state.layoutPrefs.table.stageWidth"
+                  t-on-input="(ev) => { state.layoutPrefs.table.stageWidth = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Task / Ticket (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="30" max="700"
+                  t-att-value="state.layoutPrefs.table.itemWidth"
+                  t-on-input="(ev) => { state.layoutPrefs.table.itemWidth = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Hours / Time (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="30" max="700"
+                  t-att-value="state.layoutPrefs.table.hoursWidth"
+                  t-on-input="(ev) => { state.layoutPrefs.table.hoursWidth = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Project / Relation (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="30" max="700"
+                  t-att-value="state.layoutPrefs.table.projectWidth"
+                  t-on-input="(ev) => { state.layoutPrefs.table.projectWidth = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+            </div>
+          </details>
+
+          <details class="layout-pref-section">
+            <summary>Info Footer</summary>
+            <div class="layout-pref-grid">
+              
+              <div class="layout-pref-field">
+                <label>Label font size (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="10" max="22"
+                  t-att-value="state.layoutPrefs.info.fontSize"
+                  t-on-input="(ev) => { state.layoutPrefs.info.fontSize = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Value font size (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="10" max="22"
+                  t-att-value="state.layoutPrefs.info.valueFontSize"
+                  t-on-input="(ev) => { state.layoutPrefs.info.valueFontSize = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Vertical padding (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="0" max="60"
+                  t-att-value="state.layoutPrefs.info.paddingY"
+                  t-on-input="(ev) => { state.layoutPrefs.info.paddingY = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Horizontal padding (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="0" max="60"
+                  t-att-value="state.layoutPrefs.info.paddingX"
+                  t-on-input="(ev) => { state.layoutPrefs.info.paddingX = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Border radius (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="0" max="30"
+                  t-att-value="state.layoutPrefs.info.borderRadius"
+                  t-on-input="(ev) => { state.layoutPrefs.info.borderRadius = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Line height ×10</label>
+                <input type="number" step="1" inputmode="numeric" min="10" max="30"
+                  t-att-value="state.layoutPrefs.info.lineHeight"
+                  t-on-input="(ev) => { state.layoutPrefs.info.lineHeight = ev.target.value; state.layoutError = ''; }"/>
+                <div class="layout-pref-help">17 = line-height 1.7</div>
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Label color</label>
+                <input type="color"
+                  t-att-value="state.layoutPrefs.info.labelColor"
+                  t-on-input="(ev) => { state.layoutPrefs.info.labelColor = ev.target.value; state.layoutError = ''; }"/>
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Value color</label>
+                <input type="color"
+                  t-att-value="state.layoutPrefs.info.valueColor"
+                  t-on-input="(ev) => { state.layoutPrefs.info.valueColor = ev.target.value; state.layoutError = ''; }"/>
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Background</label>
+                <input type="color"
+                  t-att-value="state.layoutPrefs.info.background"
+                  t-on-input="(ev) => { state.layoutPrefs.info.background = ev.target.value; state.layoutError = ''; }"/>
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Border color</label>
+                <input type="color"
+                  t-att-value="state.layoutPrefs.info.borderColor"
+                  t-on-input="(ev) => { state.layoutPrefs.info.borderColor = ev.target.value; state.layoutError = ''; }"/>
+              </div>
+            </div>
+          </details>
+
+          <details class="layout-pref-section">
+            <summary>Options Page</summary>
+            <div class="layout-pref-grid">
+              
+              <div class="layout-pref-field">
+                <label>Page font size (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="10" max="22"
+                  t-att-value="state.layoutPrefs.options.pageFontSize"
+                  t-on-input="(ev) => { state.layoutPrefs.options.pageFontSize = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Sidebar font size (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="10" max="22"
+                  t-att-value="state.layoutPrefs.options.sidebarFontSize"
+                  t-on-input="(ev) => { state.layoutPrefs.options.sidebarFontSize = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Remotes table font (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="10" max="22"
+                  t-att-value="state.layoutPrefs.options.remotesTableFontSize"
+                  t-on-input="(ev) => { state.layoutPrefs.options.remotesTableFontSize = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Remotes header font (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="10" max="22"
+                  t-att-value="state.layoutPrefs.options.remotesHeaderFontSize"
+                  t-on-input="(ev) => { state.layoutPrefs.options.remotesHeaderFontSize = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Remotes cell padding (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="0" max="24"
+                  t-att-value="state.layoutPrefs.options.remotesCellPaddingY"
+                  t-on-input="(ev) => { state.layoutPrefs.options.remotesCellPaddingY = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Remotes table minimum width (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="600" max="1800"
+                  t-att-value="state.layoutPrefs.options.remotesMinWidth"
+                  t-on-input="(ev) => { state.layoutPrefs.options.remotesMinWidth = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              <div class="layout-pref-field">
+                <label>Remotes header wrapping</label>
+                <select t-att-value="state.layoutPrefs.options.remotesHeaderWrap ? 'wrap' : 'nowrap'"
+                  t-on-change="(ev) => { state.layoutPrefs.options.remotesHeaderWrap = ev.target.value === 'wrap'; state.layoutError = ''; }">
+                  <option value="wrap">Wrap</option>
+                  <option value="nowrap">No wrap</option>
+                </select>
+              </div>
+            </div>
+          </details>
+
+          <div class="layout-pref-actions">
+            <button type="button" class="btn btn-info" t-on-click="saveLayoutPreferences">
+              <i class="fa fa-save"/> Save
+            </button>
+            <button type="button" class="btn btn-default" t-on-click="resetLayoutPreferences">
+              <i class="fa fa-undo"/> Reset to source CSS defaults
+            </button>
+            <button type="button" class="btn btn-default" t-on-click="loadSuggestedLayoutSettings">
+              <i class="fa fa-table"/> Try suggested settings
+            </button>
+          </div>
+
+          <t t-if="state.layoutSuggestionActive">
+            <div class="layout-suggestion-note">
+              <i class="fa fa-lightbulb-o"/>
+              <div>
+                <strong>Suggested settings loaded.</strong>
+                Review the blue-highlighted fields, then press <strong>Save</strong> to apply them.
+                If you edit a highlighted field yourself, its suggestion highlight is removed automatically.
+              </div>
+            </div>
+          </t></div>
+      </div>
       <!-- ── Options / remotes page ──────────────────────────────────── -->
       <div
         class="options-box box"
@@ -255,9 +712,10 @@
                     accept="image/png,image/jpeg,image/webp,image/gif"
                     t-on-change="onRemoteLogoChange"
                   t-on-click="onRemoteLogoPickerClick"/>
+                <p class="inline-help logo-file-help">Choose a company logo for this remote. When Options is still inside the toolbar popup, Browse first opens the full Options tab so the native file picker can stay open. Click Browse again in that tab, then choose PNG, JPEG, WebP, or GIF up to 512 KB. Use the Therp default logo button to remove a saved custom logo.</p>
                   <div style="margin-top:5px;font-size:11px;color:#7b8794;line-height:1.35;">
                     PNG, JPEG, WebP or GIF; maximum 512 KB.
-                    <br/><b>Logo files are selected from this persistent Options tab, so the page remains open while the browser file picker is active.</b> if choosing a file closes the extension popup, open Inspect/DevTools for the popup first and then choose the logo.
+                    <br/><b>Company logos are stored with each remote. If this Options page is running inside the extension popup, clicking Browse first opens the full Options tab so the browser file picker can stay open. Click Browse again in that tab to choose PNG, JPEG, WebP, or GIF up to 512 KB. Use the Therp default logo button to remove a saved custom logo.</b> if choosing a file closes the extension popup, open Inspect/DevTools for the popup first and then choose the logo.
                   </div>
                   <button type="button" class="btn btn-sm btn-default"
                     style="margin-top:7px;" t-on-click="clearRemoteLogo">

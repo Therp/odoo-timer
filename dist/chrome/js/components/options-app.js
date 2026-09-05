@@ -193,6 +193,37 @@ class OptionsApp extends Component {
 
     this.state = useState({
       activePage: PAGE_OPTIONS,
+      layoutBrowser: 'Browser',
+      layoutCanCustomize: true,
+      layoutError: '',
+      layoutSuggestionActive: false,
+      layoutSuggestedFields: {},
+      layoutStored: false,
+      layoutPrefs: {
+        main: { width: 960, height: 820, wrapperPaddingX: 16, wrapperPaddingTop: 18, wrapperPaddingBottom: 24 },
+        toolbar: { searchFontSize: 13, controlHeight: 48, iconSize: 30, gap: 10 },
+        table: {
+          fontSize: 15, headerFontSize: 15, cellPaddingY: 7, headerWrap: true, cellWrap: true,
+          layoutMode: 'fixed', minWidth: 0, stripeEnabled: false,
+          headerBg: '#f8fafc', headerColor: '#3f4854', rowBg: '#ffffff',
+          stripeBg: '#f8fafc', hoverBg: '#f3fbff', activeBg: '#eaf8ff',
+          borderColor: '#dde3ee', borderRadius: 12,
+          actionWidth: 66, priorityWidth: 58, stageWidth: 118,
+          itemWidth: 320, hoursWidth: 76, projectWidth: 160,
+        },
+        info: {
+          fontSize: 13, valueFontSize: 14, labelColor: '#3f4854', valueColor: '#33baf6',
+          background: '#ffffff', borderColor: '#dde3ee',
+          paddingY: 14, paddingX: 16, borderRadius: 12, lineHeight: 17,
+        },
+        options: {
+          pageFontSize: 14, sidebarFontSize: 14, remotesTableFontSize: 14,
+          remotesHeaderFontSize: 14, remotesHeaderWrap: true,
+          remotesCellPaddingY: 7, remotesMinWidth: 760,
+        },
+      },
+      layoutDefaults: { popupWidth: 800, popupHeight: 600, density: 'compact', fontSize: 13, spacing: 'compact' },
+      layoutLimits: { popupWidth: [720, 800], popupHeight: [520, 600], fontSize: [12, 15] },
       remotes: [],
       showList: true,
       error: '',
@@ -209,6 +240,8 @@ class OptionsApp extends Component {
 
     onWillStart(async () => {
       await this.loadRemotes();
+      await this.loadLayoutPreferences();
+      await this.detectPersistentLogoPickerContext();
       // THERP UX: Firefox popup logo picker bridge.
       try {
         const firefox = globalThis.browser?.runtime?.getBrowserInfo
@@ -231,6 +264,108 @@ class OptionsApp extends Component {
    *
    * @returns {Promise<void>}
    */
+  async loadLayoutPreferences() {
+    const api = globalThis.TherpLayoutPrefs;
+    if (!api) return;
+    const loaded = await api.getState();
+    this.state.layoutCanCustomize = true;
+    this.state.layoutBrowser = api.browserLabel();
+    this.state.layoutStored = loaded.stored;
+    this.state.layoutPrefs = loaded.value;
+    this.state.layoutError = '';
+    if (loaded.stored) api.apply(loaded.value);
+  }
+
+  async saveLayoutPreferences() {
+    const api = globalThis.TherpLayoutPrefs;
+    if (!api) return;
+    const result = api.validate(this.state.layoutPrefs);
+    if (!result.ok) {
+      this.state.layoutError = result.errors.join(' ');
+      return;
+    }
+    const confirmed = await confirmDialog(`Save these validated ${api.browserLabel()} layout preferences?`);
+    if (!confirmed) return;
+    const saved = await api.save(result.value);
+    this.state.layoutPrefs = saved;
+    this.state.layoutStored = true;
+  this.state.layoutSuggestionActive = false;
+  this.state.layoutSuggestedFields = {};
+    this.state.layoutError = '';
+    api.apply(saved);
+    await notify('Layout preferences saved. Reopen the timer popup for all main-page changes.');
+  }
+
+  async resetLayoutPreferences() {
+    const api = globalThis.TherpLayoutPrefs;
+    if (!api) return;
+    const confirmed = await confirmDialog(`Reset ${api.browserLabel()} layout preferences to the source CSS defaults?`);
+    if (!confirmed) return;
+    const defaults = await api.reset();
+    this.state.layoutPrefs = defaults;
+    this.state.layoutStored = false;
+  this.state.layoutSuggestionActive = false;
+  this.state.layoutSuggestedFields = {};
+    this.state.layoutError = '';
+    await notify('Layout preferences reset to source CSS defaults.');
+  }
+
+
+
+  async getCurrentExtensionTab() {
+    try {
+      if (globalThis.browser?.tabs?.getCurrent) return await globalThis.browser.tabs.getCurrent();
+      if (globalThis.chrome?.tabs?.getCurrent) {
+        return await new Promise((resolve) => globalThis.chrome.tabs.getCurrent(resolve));
+      }
+    } catch (err) {
+      console.debug('[OptionsApp] Could not inspect extension page context.', err);
+    }
+    return null;
+  }
+
+  async detectPersistentLogoPickerContext() {
+    const currentTab = await this.getCurrentExtensionTab();
+    this.state.logoPickerNeedsPersistentTab = !currentTab;
+  }
+
+  onRemoteLogoPickerClick(ev) {
+    if (!this.state.logoPickerNeedsPersistentTab) return;
+    ev?.preventDefault?.();
+    ev?.stopPropagation?.();
+    const runtime = globalThis.browser?.runtime || globalThis.chrome?.runtime;
+    if (!runtime?.openOptionsPage) return;
+    Promise.resolve(runtime.openOptionsPage()).catch((err) => {
+      console.debug('[OptionsApp] Could not open persistent Options tab.', err);
+    });
+  }
+
+  markLayoutFieldEdited(fieldKey) {
+    const current = this.state.layoutSuggestedFields || {};
+    if (!current[fieldKey]) return;
+    const next = { ...current };
+    delete next[fieldKey];
+    this.state.layoutSuggestedFields = next;
+  }
+
+  async loadSuggestedLayoutSettings() {
+    const api = globalThis.TherpLayoutPrefs;
+    if (!api) return;
+    this.state.layoutPrefs = api.suggestedPreset();
+    this.state.layoutSuggestedFields = {
+      'main.width': true,
+      'table.headerWrap': true,
+      'table.layoutMode': true,
+      'table.minWidth': true,
+      'table.stripeEnabled': true,
+      'table.headerBg': true,
+      'table.stripeBg': true,
+      'table.actionWidth': true,
+    };
+    this.state.layoutSuggestionActive = true;
+    this.state.layoutError = '';
+  }
+
   async loadRemotes() {
     this.state.remotes = await readRemotes();
   }

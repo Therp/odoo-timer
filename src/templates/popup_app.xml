@@ -22,7 +22,11 @@
         <div class="popup-login-shell">
           <div class="form">
             <div class="logo">
-              <img t-att-src="currentRemoteLogoSrc" alt="Remote logo"/>
+              <img
+                t-att-src="currentRemoteLogoSrc"
+                t-att-alt="currentRemote ? currentRemote.name + ' logo' : 'Therp logo'"
+                t-on-error="onLoginLogoError"
+              />
             </div>
 
             <t t-if="state.bootError">

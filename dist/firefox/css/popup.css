@@ -486,3 +486,137 @@ body.unselectable {
 .pen-title span .fa,
 .pen-title span a { color: var(--brand-danger); }
 .pen-title span a { font-weight: 600; text-decoration: none; }
+
+/* THERP ADVANCED LAYOUT PREFS V4
+ * Shared dynamic selectors. Inactive until a user saves preferences.
+ */
+html.tt-layout-customized,
+body.tt-layout-customized {
+  width: var(--tt-main-width);
+  min-width: var(--tt-main-width);
+  height: var(--tt-main-height);
+}
+body.tt-layout-customized #app,
+body.tt-layout-customized .app-root {
+  width: var(--tt-main-width);
+}
+body.tt-layout-customized #wrapper {
+  width: var(--tt-main-width);
+  padding:
+    var(--tt-wrapper-pad-top)
+    var(--tt-wrapper-pad-x)
+    var(--tt-wrapper-pad-bottom);
+  box-sizing: border-box;
+}
+
+body.tt-layout-customized .toolbar-row,
+body.tt-layout-customized .footer-btns {
+  gap: var(--tt-toolbar-gap);
+}
+body.tt-layout-customized #searchIssue,
+body.tt-layout-customized #limitTo,
+body.tt-layout-customized #stageFilter {
+  min-height: var(--tt-toolbar-control-height);
+  font-size: var(--tt-search-font-size);
+}
+body.tt-layout-customized .footer-btns .fa-2x {
+  font-size: var(--tt-toolbar-icon-size) !important;
+}
+
+/* One vertical page scrollbar. The data table may scroll horizontally only. */
+body.tt-layout-customized .table-scroll {
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  max-width: 100%;
+  overscroll-behavior-x: contain;
+  border-color: var(--tt-table-border-color);
+  border-radius: var(--tt-table-radius);
+}
+body.tt-layout-customized #table-task-issues {
+  font-size: var(--tt-table-font-size);
+  table-layout: var(--tt-table-layout);
+  width: max(100%, var(--tt-table-min-width));
+  min-width: var(--tt-table-min-width);
+}
+body.tt-layout-customized #table-task-issues th {
+  font-size: var(--tt-table-header-font-size);
+  white-space: var(--tt-table-header-wrap);
+  color: var(--tt-table-header-color);
+  background: var(--tt-table-header-bg);
+}
+body.tt-layout-customized #table-task-issues td {
+  white-space: var(--tt-table-cell-wrap);
+}
+body.tt-layout-customized #table-task-issues th,
+body.tt-layout-customized #table-task-issues td {
+  padding-top: var(--tt-table-cell-pad-y);
+  padding-bottom: var(--tt-table-cell-pad-y);
+  border-color: var(--tt-table-border-color);
+}
+body.tt-layout-customized #table-task-issues tbody > tr > td {
+  background: var(--tt-table-row-bg);
+}
+body.tt-layout-customized #table-task-issues tbody > tr:nth-child(even) > td {
+  background: var(--tt-table-stripe-bg);
+}
+body.tt-layout-customized #table-task-issues tbody > tr:hover > td {
+  background: var(--tt-table-hover-bg);
+}
+body.tt-layout-customized #table-task-issues tbody > tr.active-row > td {
+  background: var(--tt-table-active-bg);
+}
+body.tt-layout-customized #table-task-issues th.action-col,
+body.tt-layout-customized #table-task-issues td.action-col {
+  width: var(--tt-col-action) !important;
+  min-width: var(--tt-col-action) !important;
+}
+body.tt-layout-customized #table-task-issues .priority-col,
+body.tt-layout-customized #table-task-issues .priority-cell {
+  width: var(--tt-col-priority) !important;
+}
+body.tt-layout-customized #table-task-issues .stage-col,
+body.tt-layout-customized #table-task-issues .stage-cell {
+  width: var(--tt-col-stage) !important;
+}
+body.tt-layout-customized #table-task-issues .item-col,
+body.tt-layout-customized #table-task-issues .issue-desc-cell {
+  width: var(--tt-col-item) !important;
+}
+body.tt-layout-customized #table-task-issues th:nth-child(5),
+body.tt-layout-customized #table-task-issues th:nth-child(6),
+body.tt-layout-customized #table-task-issues td:nth-child(5),
+body.tt-layout-customized #table-task-issues td:nth-child(6) {
+  width: var(--tt-col-hours) !important;
+}
+body.tt-layout-customized #table-task-issues .project-col,
+body.tt-layout-customized #table-task-issues .project-cell {
+  width: var(--tt-col-project) !important;
+}
+
+body.tt-layout-customized .remote-info-block {
+  font-size: var(--tt-info-font-size);
+  color: var(--tt-info-label-color);
+  background: var(--tt-info-bg);
+  border-color: var(--tt-info-border-color);
+  border-radius: var(--tt-info-radius);
+  padding: var(--tt-info-pad-y) var(--tt-info-pad-x);
+  line-height: var(--tt-info-line-height);
+}
+body.tt-layout-customized .remote-info-block b {
+  color: var(--tt-info-label-color);
+}
+body.tt-layout-customized .remote-info-block .remote-value {
+  font-size: var(--tt-info-value-font-size);
+  color: var(--tt-info-value-color);
+}
+
+/* Make both navigation hand icons look like deliberate buttons. */
+.remote-info-block a[aria-label="Open Options"],
+.remote-info-block a[title="Open Options"] {
+  border-width: 2px !important;
+  box-shadow: 0 2px 7px rgba(31, 167, 230, 0.16);
+}
+.remote-info-block .fa-hand-o-right {
+  -webkit-text-stroke: 0.45px currentColor;
+  transform: scale(1.08);
+}

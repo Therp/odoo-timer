@@ -543,7 +543,36 @@ class PopupApp extends Component {
             : source === DATA_SOURCE_TASK ? 'Tasks' : 'Issues';
         return `${remote?.name || remote?.database || 'Remote'} — ${sourceLabel}`;
     }
-    get currentRemoteLogoSrc() { return this.currentRemote?.logoDataUrl || '/img/logo.png'; }
+    /**
+     * Logo for the remote currently selected on the login screen.
+     * Reactive because currentRemote depends on state.selectedRemoteIndex.
+     */
+    get currentRemoteLogoSrc() {
+      const remote = this.currentRemote;
+      const candidate =
+        remote?.logoDataUrl ||
+        remote?.logo_data_url ||
+        remote?.companyLogo ||
+        remote?.logo ||
+        '';
+    
+      if (typeof candidate !== 'string' || !candidate.trim()) {
+        return '/img/logo.png';
+      }
+    
+      const src = candidate.trim();
+      if (
+        src.startsWith('data:image/') ||
+        src.startsWith('blob:') ||
+        src.startsWith('chrome-extension://') ||
+        src.startsWith('moz-extension://') ||
+        src.startsWith('/')
+      ) {
+        return src;
+      }
+    
+      return '/img/logo.png';
+    }
     get currentDataSourceLabel() {
         return this.state.dataSource === DATA_SOURCE_HELPDESK
             ? 'Helpdesk Tickets'
@@ -568,6 +597,13 @@ class PopupApp extends Component {
     /**
      * Formatted active timer duration.
      */
+    onLoginLogoError(ev) {
+      const image = ev?.target;
+      if (!image) return;
+      if (image.getAttribute('src') !== '/img/logo.png') {
+        image.setAttribute('src', '/img/logo.png');
+      }
+    }
     get formattedTimer() {
         if (!this.state.timerStartIso) {
             return '00:00:00';
