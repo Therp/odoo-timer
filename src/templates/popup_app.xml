@@ -6,9 +6,7 @@
         t-att-class="state.view === 'loading' ? '' : 'hide'"
       >
         <div class="loader-card">
-          <div class="loader-text">
-            Loading current session and projects…
-          </div>
+          <div class="loader-text" t-out="state.busyMessage"/>
           <div class="loader-subtext">
             Please wait — or grab a cup of coffee ☕
           </div>
@@ -24,7 +22,11 @@
         <div class="popup-login-shell">
           <div class="form">
             <div class="logo">
-              <img src="/img/logo.png"/>
+              <img
+                t-att-src="currentRemoteLogoSrc"
+                t-att-alt="currentRemote ? currentRemote.name + ' logo' : 'Therp logo'"
+                t-on-error="onLoginLogoError"
+              />
             </div>
 
             <t t-if="state.bootError">
@@ -91,12 +93,12 @@
                   <t
                     t-foreach="state.remotes"
                     t-as="remote"
-                    t-key="remote.database + remote.url"
+                    t-key="remoteKey(remote)"
                   >
                     <option
                       t-att-value="remote.__index"
                       t-att-selected="state.selectedRemoteIndex === remote.__index"
-                      t-out="remote.name"
+                      t-out="remoteOptionLabel(remote)"
                     />
                   </t>
                 </select>
@@ -144,6 +146,9 @@
         id="wrapper"
         t-att-class="state.view === 'main' ? '' : 'hide'"
       >
+        <t t-if="state.sourceError">
+          <div class="odooError source-warning" t-out="state.sourceError"/>
+        </t>
         <div class="toolbar-row">
           <input
             id="searchIssue"
@@ -152,6 +157,23 @@
             t-att-value="state.searchQuery"
             t-on-input="(ev) => state.searchQuery = ev.target.value"
           />
+          <!-- THERP UX PATCH: one dynamic stage filter for all supported sources. -->
+          <t t-if="(stageOptions || []).length">
+            <select
+              id="stageFilter"
+              aria-label="Filter by stage"
+              t-att-value="state.stageFilter"
+              t-on-change="(ev) => { state.stageFilter = ev.target.value; }"
+            >
+              <option value="">All stages</option>
+              <t t-foreach="stageOptions || []" t-as="stage" t-key="stage.id">
+                <option
+                  t-att-value="'' + stage.id"
+                  t-att-selected="state.stageFilter === '' + stage.id"
+                ><t t-out="stage.name"/></option>
+              </t>
+            </select>
+          </t>
           <select
             id="limitTo"
             t-model="state.limitTo"
@@ -165,19 +187,6 @@
         </div>
 
         <div class="container footer top-actions">
-          <div
-            class="auto_download_timesheet"
-            title="Store timesheet locally when you stop timer on the current item"
-          >
-            <input
-              id="auto_download_timesheet_input"
-              type="checkbox"
-              t-att-checked="state.autoDownloadIssueTimesheet"
-              t-on-change="toggleAutoDownload"
-            />
-            Auto Download Current Item Timesheet
-          </div>
-
           <div class="row">
             <div class="mx-3 col-md-12 footer-btns pointer">
               <i
@@ -205,13 +214,7 @@
                 title="Log out"
                 t-on-click="logout"
               />
-              <a
-                href="options_main_page.html"
-                class="options-btn"
-                title="Go To options"
-              >
-                <i class="fa fa-cogs fa-2x"/>
-              </a>
+              <a href="options_main_page.html" class="options-btn" title="Go To options"><i class="fa fa-cogs fa-2x"/></a>
             </div>
           </div>
         </div>
@@ -224,60 +227,97 @@
             <thead>
               <tr>
                 <th class="action-col">
-                  <div/>
-
+                  <!-- THERP UX: inline discard active timer -->
                   <t t-if="state.timerStartIso">
-                    <span class="startTimeCount" t-out="formattedTimer"/>
+                    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;">
+                      <span class="startTimeCount" t-out="formattedTimer"/>
+                      <button type="button"
+                        title="Discard active timer without recording a timesheet"
+                        aria-label="Discard active timer without recording a timesheet"
+                        t-on-click="resetTimer"
+                        style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:50%;cursor:pointer;background:#dc3545;color:#fff;line-height:1;">
+                        <i class="fa fa-times" style="font-size:11px;"/>
+                      </button>
+                    </div>
                   </t>
                 </th>
 
-                <th class="priority-col">Priority</th>
-                <th class="stage-col">Stage</th>
-
-                <th class="item-col">
-                  <div class="item-header-title">
-                    <t t-out="itemLabelPlural"/> [<t t-out="filteredIssues.length"/>]
-                  </div>
-                  <label class="allIssues">
-                    <input
-                      id="showAllIssues"
-                      type="checkbox"
-                      t-att-checked="state.allIssues"
-                      t-on-input="(ev) => updateShowAllPreference(ev.target.checked)"
-                    />
-                    Show for everyone
-                  </label>
-                </th>
-
-                <t t-if="state.dataSource === 'project.task'">
-                  <th>Hours Spent</th>
-                  <th>Remaining Hours</th>
+                <t t-if="isHelpdeskSource">
+                  <t t-if="showHelpdeskTherpLink">
+                    <th class="text-center" style="width:72px">Therp Task</th>
+                  </t>
+                  <th class="priority-col">Priority</th>
+                  <th class="item-col" style="width:280px">
+                    <div class="item-header-title">
+                      <t t-out="itemLabelPlural"/> [<t t-out="filteredIssues.length"/>]
+                    </div>
+                    <label class="allIssues">
+                      <input
+                        id="showAllIssues"
+                        type="checkbox"
+                        t-att-checked="state.allIssues"
+                        t-on-input="(ev) => updateShowAllPreference(ev.target.checked)"
+                      />
+                      Show for everyone
+                    </label>
+                  </th>
+                  <th class="stage-col">Stage</th>
+                  <t t-if="showHelpdeskAssignee">
+                    <th style="width:120px">Assigned To</th>
+                  </t>
+                  <t t-if="showHelpdeskHours">
+                    <th class="text-center" style="width:88px">Time Spent</th>
+                  </t>
                 </t>
 
-                <th class="project-col">Project</th>
+                <t t-else="">
+                  <th class="priority-col">Priority</th>
+                  <th class="stage-col">Stage</th>
+                  <th class="item-col">
+                    <div class="item-header-title">
+                      <t t-out="itemLabelPlural"/> [<t t-out="filteredIssues.length"/>]
+                    </div>
+                    <label class="allIssues">
+                      <input
+                        id="showAllIssues"
+                        type="checkbox"
+                        t-att-checked="state.allIssues"
+                        t-on-input="(ev) => updateShowAllPreference(ev.target.checked)"
+                      />
+                      Show for everyone
+                    </label>
+                  </th>
+                  <t t-if="state.dataSource === 'project.task'">
+                    <th class="text-center">Hours Spent</th>
+                    <th class="text-center">Hours Left</th>
+                  </t>
+                  <th class="project-col" t-out="relationHeaderLabel"/>
+                </t>
               </tr>
             </thead>
 
             <tbody>
               <t t-if="filteredIssues.length">
-                <t
-                  t-foreach="filteredIssues"
-                  t-as="issue"
-                  t-key="issue.id"
-                >
-                  <tr
-                    t-att-class="state.activeTimerId === issue.id ? 'active-row' : ''"
-                  >
+                <t t-foreach="filteredIssues" t-as="issue" t-key="issue.id">
+                  <tr t-att-class="isActiveTimerItem(issue) ? 'active-row' : ''">
                     <td class="text-center px-2 td-btn action-col">
                       <t t-if="!state.activeTimerId">
-                        <i
-                          class="fa fa-play-circle action-btn pointer"
-                          title="Start the timer for the selected item"
-                          t-on-click="() => startTimer(issue)"
-                        />
+                        <t t-if="isHelpdeskSource &amp;&amp; helpdeskTimesheetBlocked(issue)">
+                          <i
+                            class="fa fa-info-circle action-btn pointer text-info"
+                            t-att-title="helpdeskTimesheetBlockMessage(issue)"
+                            t-on-click="() => showHelpdeskTimesheetInfo(issue)"
+                          />
+                        </t>
+                        <t t-else="">
+                          <i
+                            class="fa fa-play-circle action-btn pointer"
+                            title="Start the timer for the selected item"
+                            t-on-click="() => startTimer(issue)"
+                          />
+                        </t>
                       </t>
-
-                      <t t-if="state.activeTimerId === issue.id">
+                      <t t-if="isActiveTimerItem(issue)">
                         <i
                           class="text-danger fa fa-stop-circle action-btn pointer"
                           title="Stop timer and record the time to Odoo timesheets"
@@ -286,68 +326,114 @@
                       </t>
                     </td>
 
-                    <td class="priority-cell">
-                      <t t-if="issue.priority_level.length">
-                        <t
-                          t-foreach="issue.priority_level"
-                          t-as="priority"
-                          t-key="priority + '_' + issue.id"
-                        >
-                          <span class="fa fa-star checked"/>
+                    <t t-if="isHelpdeskSource">
+                      <t t-if="showHelpdeskTherpLink">
+                        <td class="text-center" style="width:72px">
+                          <t t-if="helpdeskTherpLinkHref(issue)">
+                            <a
+                              t-att-href="helpdeskTherpLinkHref(issue)"
+                              target="_blank"
+                              rel="noreferrer"
+                              class="btn btn-sm btn-outline-secondary"
+                              title="Open linked Therp task"
+                            >
+                              <i class="fa fa-external-link"/>
+                            </a>
+                          </t>
+                        </td>
+                      </t>
+
+                      <td class="priority-cell">
+                        <t t-if="issue.priority_level.length">
+                          <t
+                            t-foreach="issue.priority_level"
+                            t-as="priority"
+                            t-key="priority + '_' + issue.id"
+                          >
+                            <span class="fa fa-star checked"/>
+                          </t>
                         </t>
-                      </t>
-                      <t t-if="!issue.priority_level.length">
-                        <i class="fa fa-star-o"/>
-                      </t>
-                    </td>
-
-                    <td class="stage-cell">
-                      <ReadMore
-                        text="relationLabel(issue.stage_id)"
-                        limit="15"
-                      />
-                    </td>
-
-                    <td class="issue-desc-cell">
-                      <ReadMore
-                        text="issueLabel(issue)"
-                        limit="70"
-                        href="issueHref(issue)"
-                      />
-                    </td>
-
-                    <t t-if="state.dataSource === 'project.task'">
-                      <td>
-                        <ReadMore
-                          text="normalizeText(formatHours(issue.effective_hours))"
-                          limit="9"
-                        />
+                        <t t-if="!issue.priority_level.length">
+                          <i class="fa fa-star-o"/>
+                        </t>
                       </td>
-                      <td>
+
+                      <td class="issue-desc-cell" style="width:280px">
                         <ReadMore
-                          text="normalizeText(formatHours(issue.remaining_hours))"
-                          limit="9"
+                          text="issueLabel(issue)"
+                          limit="55"
+                          href="issueHref(issue)"
                         />
+                        <t t-if="showHelpdeskDescription &amp;&amp; helpdeskDescriptionText(issue)">
+                          <div class="text-muted-soft small" style="margin-top:3px;line-height:1.3">
+                            <ReadMore text="helpdeskDescriptionText(issue)" limit="70"/>
+                          </div>
+                        </t>
                       </td>
+
+                      <td class="stage-cell">
+                        <ReadMore text="relationLabel(issue.stage_id)" limit="15"/>
+                      </td>
+
+                      <t t-if="showHelpdeskAssignee">
+                        <td style="width:120px">
+                          <ReadMore text="relationLabel(helpdeskAssigneeValue(issue))" limit="22"/>
+                        </td>
+                      </t>
+
+                      <t t-if="showHelpdeskHours">
+                        <td class="text-center" style="width:88px">
+                          <ReadMore text="formatHours(helpdeskHoursValue(issue))" limit="10"/>
+                        </td>
+                      </t>
                     </t>
 
-                    <td class="project-cell">
-                      <ReadMore
-                        text="relationLabel(issue.project_id)"
-                        limit="15"
-                      />
-                    </td>
+                    <t t-else="">
+                      <td class="priority-cell">
+                        <t t-if="issue.priority_level.length">
+                          <t
+                            t-foreach="issue.priority_level"
+                            t-as="priority"
+                            t-key="priority + '_' + issue.id"
+                          >
+                            <span class="fa fa-star checked"/>
+                          </t>
+                        </t>
+                        <t t-if="!issue.priority_level.length">
+                          <i class="fa fa-star-o"/>
+                        </t>
+                      </td>
+                      <td class="stage-cell">
+                        <ReadMore text="relationLabel(issue.stage_id)" limit="15"/>
+                      </td>
+                      <td class="issue-desc-cell">
+                        <ReadMore text="issueLabel(issue)" limit="70" href="issueHref(issue)"/>
+                      </td>
+                      <t t-if="state.dataSource === 'project.task'">
+                        <td class="text-center">
+                          <ReadMore text="normalizeText(formatHours(issue.effective_hours))" limit="9"/>
+                        </td>
+                        <td class="text-center">
+                          <ReadMore text="normalizeText(formatHours(issue.remaining_hours))" limit="9"/>
+                        </td>
+                      </t>
+                      <td class="project-cell">
+                        <ReadMore text="relationLabel(resourceRelationValue(issue))" limit="22"/>
+                      </td>
+                    </t>
                   </tr>
                 </t>
               </t>
 
               <t t-if="!filteredIssues.length">
                 <tr>
-                  <td
-                    class="text-center text-danger"
-                    t-att-colspan="state.dataSource === 'project.task' ? 7 : 5"
-                  >
-                    No matching items are currently available
+                  <td class="text-center text-danger" t-att-colspan="tableColumnCount">
+                    <t t-if="state.stageFilter and !state.allIssues">
+                      No matching items assigned to you for this stage. Turn on &quot;Show for everyone&quot; to include other users' items.
+                    </t>
+                    <t t-if="!state.stageFilter or state.allIssues">
+                      No matching items are currently available
+                    </t>
                   </td>
                 </tr>
               </t>
@@ -357,15 +443,26 @@
 
         <div class="container footer info-footer">
           <div class="row">
-            <div class="remote-info-block col-md-12">
+            <div class="remote-info-block col-md-12" style="position:relative;padding-right:68px;">
               <span><b>Odoo:</b> <span class="remote-value" t-out="state.serverVersion || 'Unknown'"/></span><br/>
               <span><b>OWL:</b> <span class="remote-value" t-out="state.odooOWLVersion || 'Unknown'"/></span><br/>
               <span><b>Host:</b> <span class="remote-value" t-out="state.currentHost || '-'"/></span><br/>
               <span><b>Database:</b> <span class="remote-value" t-out="state.currentDatabase || '-'"/></span><br/>
               <span><b>Current User:</b> <span class="remote-value" t-out="state.user ? state.user.display_name : '-'"/></span><br/>
-            </div>
+              <span><b>Current Company:</b> <span class="remote-value" t-out="currentCompanyLabel"/></span><br/>
+              <span t-att-title="allowedCompanyLabels"><b>Allowed Companies:</b> <span class="remote-value" t-out="allowedCompanyLabels || '-'"/></span>
+            
+              <!-- THERP UX: Options shortcut inside info footer -->
+              <a href="options_main_page.html"
+                title="Open Options" aria-label="Open Options"
+                style="position:absolute;right:14px;top:50%;transform:translateY(-50%);width:42px;height:42px;display:inline-flex;align-items:center;justify-content:center;border:2px solid #1aa7d7;border-radius:50%;background:#fff;color:#1aa7d7;text-decoration:none;box-sizing:border-box;">
+                <i class="fa fa-hand-o-right" style="font-size:23px;"/>
+              </a>
+</div>
           </div>
         </div>
+
+
       </div>
     </div>
   </t>

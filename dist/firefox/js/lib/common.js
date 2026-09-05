@@ -10,15 +10,6 @@ function getCustomAlert() {
   return null;
 }
 
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
 export async function notify(message, options = {}) {
   const customAlert = getCustomAlert();
   if (customAlert) {
@@ -44,23 +35,45 @@ export async function promptDialog(title, defaultValue = '', options = {}) {
   }
 
   const inputId = `therp-timer-prompt-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  const escapedTitle = escapeHtml(title || 'Input');
-  const escapedValue = escapeHtml(defaultValue || '');
   const accentColor = options.accentColor || customAlert.accentColor || 'orange';
-  const html = `
-    <div style="min-width:320px;max-width:520px;text-align:left;">
-      <div style="margin-bottom:12px;font-weight:700;font-size:18px;color:#42475a;text-align:center;">${escapedTitle}</div>
-      <textarea id="${inputId}" style="width:100%;min-height:180px;box-sizing:border-box;padding:12px;border:1px solid #cbd5e1;border-radius:4px;resize:vertical;font:14px/1.4 Arial,Helvetica,sans-serif;color:#334155;background:#fff;">${escapedValue}</textarea>
-    </div>
-  `;
 
-  const result = await customAlert.show(html, ['close', 'Save'], { ...options, accentColor });
+  // Build prompt content with DOM APIs instead of HTML strings. This keeps
+  // dynamic values out of HTML-string rendering and satisfies Firefox add-on validation.
+  const content = document.createElement('div');
+  content.style.minWidth = '320px';
+  content.style.maxWidth = '520px';
+  content.style.textAlign = 'left';
+
+  const titleElement = document.createElement('div');
+  titleElement.style.marginBottom = '12px';
+  titleElement.style.fontWeight = '700';
+  titleElement.style.fontSize = '18px';
+  titleElement.style.color = '#42475a';
+  titleElement.style.textAlign = 'center';
+  titleElement.textContent = String(title || 'Input');
+
+  const textarea = document.createElement('textarea');
+  textarea.id = inputId;
+  textarea.value = String(defaultValue ?? '');
+  textarea.style.width = '100%';
+  textarea.style.minHeight = '180px';
+  textarea.style.boxSizing = 'border-box';
+  textarea.style.padding = '12px';
+  textarea.style.border = '1px solid #cbd5e1';
+  textarea.style.borderRadius = '4px';
+  textarea.style.resize = 'vertical';
+  textarea.style.font = '14px/1.4 Arial,Helvetica,sans-serif';
+  textarea.style.color = '#334155';
+  textarea.style.background = '#fff';
+
+  content.append(titleElement, textarea);
+
+  const result = await customAlert.show(content, ['close', 'Save'], { ...options, accentColor });
   if (result !== 'Save') {
     return null;
   }
 
-  const el = document.getElementById(inputId);
-  return el ? el.value : String(defaultValue ?? '');
+  return textarea.value;
 }
 
 export const storage = {
@@ -136,6 +149,22 @@ export function normalizeHost(host) {
   return out.replace(/\/$/, '');
 }
 
+/**
+ * Return the functional identity of a saved remote.
+ *
+ * A single Odoo database can legitimately be configured more than once when
+ * each entry targets a different timer resource (for example Tasks and
+ * Helpdesk Tickets). Display name, logo and UI state are intentionally not
+ * part of this identity.
+ */
+export function remoteIdentity(remote) {
+  const host = normalizeHost(remote?.url || '');
+  const database = String(remote?.database || '').trim();
+  const dataSource = String(remote?.datasrc || 'project.issue').trim() || 'project.issue';
+  return JSON.stringify([host, database, dataSource]);
+}
+
+
 export function toCSV(rows) {
   if (!rows || !rows.length) return '';
   const headers = Array.from(new Set(rows.flatMap((r) => Object.keys(r))));
@@ -187,9 +216,13 @@ export function matchesIssue(issue, query) {
     issue.id,
     issue.code,
     issue.name,
+    issue.display_name,
+    issue.ticket_ref,
+    issue.number,
     issue.message_summary,
     issue.stage_id?.[1],
     issue.project_id?.[1],
+    issue.team_id?.[1],
     issue.user_id?.[1],
     issue.priority,
     issue.create_date,
@@ -239,7 +272,14 @@ export class OdooRpc {
   }
   getSessionInfo() { return this.send('/web/session/get_session_info', {}); }
   getServerInfo() { return this.send('/web/webclient/version_info', {}); }
-  searchRead(model, domain, fields = []) { return this.send('/web/dataset/search_read', { model, domain, fields }); }
+  async searchRead(model, domain, fields = [], kwargs = {}) {
+    const { sort, ...rest } = kwargs;
+    const callKwargs = { fields, ...rest };
+    if (sort !== undefined && callKwargs.order === undefined) callKwargs.order = sort;
+    const records = await this.call(model, 'search_read', [domain], callKwargs);
+    const normalized = Array.isArray(records) ? records : [];
+    return { records: normalized, length: normalized.length };
+  }
   fieldsGet(model, attributes = []) { return this.send('/web/dataset/call_kw', { model, method: 'fields_get', args: [], kwargs: attributes.length ? { attributes } : {} }); }
   call(model, method, args = [], kwargs = {}) { return this.send('/web/dataset/call_kw', { model, method, args, kwargs }); }
   callBtn(model, method, args = [], kwargs = {}) { return this.send('/web/dataset/call_button', { model, method, args, kwargs }); }

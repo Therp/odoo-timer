@@ -43,24 +43,36 @@ export async function promptDialog(title, defaultValue = '', options = {}) {
     return globalThis.prompt(String(title ?? ''), String(defaultValue ?? ''));
   }
 
-  const inputId = `therp-timer-prompt-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  const escapedTitle = escapeHtml(title || 'Input');
-  const escapedValue = escapeHtml(defaultValue || '');
   const accentColor = options.accentColor || customAlert.accentColor || 'orange';
-  const html = `
-    <div style="min-width:320px;max-width:520px;text-align:left;">
-      <div style="margin-bottom:12px;font-weight:700;font-size:18px;color:#42475a;text-align:center;">${escapedTitle}</div>
-      <textarea id="${inputId}" style="width:100%;min-height:180px;box-sizing:border-box;padding:12px;border:1px solid #cbd5e1;border-radius:4px;resize:vertical;font:14px/1.4 Arial,Helvetica,sans-serif;color:#334155;background:#fff;">${escapedValue}</textarea>
-    </div>
-  `;
 
-  const result = await customAlert.show(html, ['close', 'Save'], { ...options, accentColor });
+  // THERP SECURITY PATCH: build the prompt with DOM APIs instead of injecting
+  // a dynamic HTML string into alert.js.
+  const container = document.createElement('div');
+  container.style.cssText = 'min-width:320px;max-width:520px;text-align:left;';
+
+  const heading = document.createElement('div');
+  heading.style.cssText =
+    'margin-bottom:12px;font-weight:700;font-size:18px;color:#42475a;text-align:center;';
+  heading.textContent = String(title || 'Input');
+
+  const textarea = document.createElement('textarea');
+  textarea.style.cssText =
+    'width:100%;min-height:180px;box-sizing:border-box;padding:12px;' +
+    'border:1px solid #cbd5e1;border-radius:4px;resize:vertical;' +
+    'font:14px/1.4 Arial,Helvetica,sans-serif;color:#334155;background:#fff;';
+  textarea.value = String(defaultValue ?? '');
+
+  container.append(heading, textarea);
+
+  const result = await customAlert.show(
+    container,
+    ['close', 'Save'],
+    { ...options, accentColor }
+  );
   if (result !== 'Save') {
     return null;
   }
-
-  const el = document.getElementById(inputId);
-  return el ? el.value : String(defaultValue ?? '');
+  return textarea.value;
 }
 
 export const storage = {
@@ -136,6 +148,22 @@ export function normalizeHost(host) {
   return out.replace(/\/$/, '');
 }
 
+/**
+ * Return the functional identity of a saved remote.
+ *
+ * A single Odoo database can legitimately be configured more than once when
+ * each entry targets a different timer resource (for example Tasks and
+ * Helpdesk Tickets). Display name, logo and UI state are intentionally not
+ * part of this identity.
+ */
+export function remoteIdentity(remote) {
+  const host = normalizeHost(remote?.url || '');
+  const database = String(remote?.database || '').trim();
+  const dataSource = String(remote?.datasrc || 'project.issue').trim() || 'project.issue';
+  return JSON.stringify([host, database, dataSource]);
+}
+
+
 export function toCSV(rows) {
   if (!rows || !rows.length) return '';
   const headers = Array.from(new Set(rows.flatMap((r) => Object.keys(r))));
@@ -187,9 +215,13 @@ export function matchesIssue(issue, query) {
     issue.id,
     issue.code,
     issue.name,
+    issue.display_name,
+    issue.ticket_ref,
+    issue.number,
     issue.message_summary,
     issue.stage_id?.[1],
     issue.project_id?.[1],
+    issue.team_id?.[1],
     issue.user_id?.[1],
     issue.priority,
     issue.create_date,
@@ -239,7 +271,14 @@ export class OdooRpc {
   }
   getSessionInfo() { return this.send('/web/session/get_session_info', {}); }
   getServerInfo() { return this.send('/web/webclient/version_info', {}); }
-  searchRead(model, domain, fields = []) { return this.send('/web/dataset/search_read', { model, domain, fields }); }
+  async searchRead(model, domain, fields = [], kwargs = {}) {
+    const { sort, ...rest } = kwargs;
+    const callKwargs = { fields, ...rest };
+    if (sort !== undefined && callKwargs.order === undefined) callKwargs.order = sort;
+    const records = await this.call(model, 'search_read', [domain], callKwargs);
+    const normalized = Array.isArray(records) ? records : [];
+    return { records: normalized, length: normalized.length };
+  }
   fieldsGet(model, attributes = []) { return this.send('/web/dataset/call_kw', { model, method: 'fields_get', args: [], kwargs: attributes.length ? { attributes } : {} }); }
   call(model, method, args = [], kwargs = {}) { return this.send('/web/dataset/call_kw', { model, method, args, kwargs }); }
   callBtn(model, method, args = [], kwargs = {}) { return this.send('/web/dataset/call_button', { model, method, args, kwargs }); }

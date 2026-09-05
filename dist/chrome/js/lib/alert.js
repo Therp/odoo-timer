@@ -18,7 +18,7 @@
         //Add styles & elements
         css = document.createElement("style");
         css.type = "text/css";
-        css.innerHTML = "#alertBox{position:absolute;left:50%;top:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);max-height:90vh;max-width:95vw;z-index:5;background:#F5F5F5;box-shadow:0 0 10px 0 rgba(0,0,0,.7);-webkit-animation:alertoutro .3s cubic-bezier(.4,0,1,1);animation:alertoutro .3s cubic-bezier(.4,0,1,1);overflow:hidden}#alertBox[show]{-webkit-animation:alertintro .3s cubic-bezier(0,0,.2,1);animation:alertintro .3s cubic-bezier(0,0,.2,1)}#alertDropShadow[show]{transition:opacity .3s cubic-bezier(0,0,.2,1);opacity:1;pointer-events:all}#alertDropShadow{transition:opacity .3s cubic-bezier(.4,0,1,1);position:absolute;left:0;top:0;bottom:0;width:100%;pointer-events:none;opacity:0;background:rgba(0,0,0,.65);z-index:4}#alertBox>.body{padding:20px;box-sizing:border-box;max-height:calc(90vh - 30px);overflow:auto}#alertBox>.actionfooter{padding:0 10px 0 30px;overflow:auto;width:100%;box-sizing:border-box;display:-webkit-flex;display:-ms-flexbox;display:flex}#alertBox>.actionfooter>.button{height:32px;padding:0 10px;margin:0 10px 0 auto;cursor:pointer;box-sizing:content-box;font:700 18px/32px Arial,Helvetica,sans-serif}.noSelect{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}@-webkit-keyframes alertoutro{from{display:block!important;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);opacity:1}to{display:block!important;-webkit-transform:translate(-50%,calc(-50% + 50px));transform:translate(-50%,calc(-50% + 50px));opacity:0}}@keyframes alertoutro{from{display:block!important;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);opacity:1}to{display:block!important;-webkit-transform:translate(-50%,calc(-50% + 50px));transform:translate(-50%,calc(-50% + 50px));opacity:0}}@-webkit-keyframes alertintro{0%{-webkit-transform:translate(-50%,calc(-50% - 100px));transform:translate(-50%,calc(-50% - 100px));opacity:0}30%{opacity:0}100%{-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);opacity:1}}@keyframes alertintro{0%{-webkit-transform:translate(-50%,calc(-50% - 100px));transform:translate(-50%,calc(-50% - 100px));opacity:0}30%{opacity:0}100%{-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);opacity:1}}";
+        css.innerHTML = "#alertBox{position:fixed;left:50%;top:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);max-height:90vh;max-width:95vw;z-index:5;background:#F5F5F5;box-shadow:0 0 10px 0 rgba(0,0,0,.7);-webkit-animation:alertoutro .3s cubic-bezier(.4,0,1,1);animation:alertoutro .3s cubic-bezier(.4,0,1,1);overflow:hidden}#alertBox[show]{-webkit-animation:alertintro .3s cubic-bezier(0,0,.2,1);animation:alertintro .3s cubic-bezier(0,0,.2,1)}#alertDropShadow[show]{transition:opacity .3s cubic-bezier(0,0,.2,1);opacity:1;pointer-events:all}#alertDropShadow{transition:opacity .3s cubic-bezier(.4,0,1,1);position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;opacity:0;background:rgba(0,0,0,.65);z-index:4}#alertBox>.body{padding:20px;box-sizing:border-box;max-height:calc(90vh - 30px);overflow:auto}#alertBox>.actionfooter{padding:0 10px 0 30px;overflow:auto;width:100%;box-sizing:border-box;display:-webkit-flex;display:-ms-flexbox;display:flex}#alertBox>.actionfooter>.button{height:32px;padding:0 10px;margin:0 10px 0 auto;cursor:pointer;box-sizing:content-box;font:700 18px/32px Arial,Helvetica,sans-serif}.noSelect{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}html.therp-alert-open,body.therp-alert-open{overflow:hidden!important}/* THERP ALERT OVERLAY V2 */@-webkit-keyframes alertoutro{from{display:block!important;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);opacity:1}to{display:block!important;-webkit-transform:translate(-50%,calc(-50% + 50px));transform:translate(-50%,calc(-50% + 50px));opacity:0}}@keyframes alertoutro{from{display:block!important;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);opacity:1}to{display:block!important;-webkit-transform:translate(-50%,calc(-50% + 50px));transform:translate(-50%,calc(-50% + 50px));opacity:0}}@-webkit-keyframes alertintro{0%{-webkit-transform:translate(-50%,calc(-50% - 100px));transform:translate(-50%,calc(-50% - 100px));opacity:0}30%{opacity:0}100%{-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);opacity:1}}@keyframes alertintro{0%{-webkit-transform:translate(-50%,calc(-50% - 100px));transform:translate(-50%,calc(-50% - 100px));opacity:0}30%{opacity:0}100%{-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);opacity:1}}";
         document.head.appendChild(css);
 
         el = document.createElement("div");
@@ -131,7 +131,16 @@
         }
         visible = true;
 
-        alertBox.childNodes[0].innerHTML = text;
+        // THERP SECURITY PATCH: dynamic alert content is rendered without innerHTML.
+        const alertBody = alertBox.childNodes[0];
+        while (alertBody.firstChild) {
+            alertBody.removeChild(alertBody.firstChild);
+        }
+        if (text && typeof text === "object" && typeof text.nodeType === "number") {
+            alertBody.appendChild(text);
+        } else {
+            alertBody.textContent = String(text ?? "");
+        }
         while (alertBox.childNodes[1].firstChild) {
             alertBox.childNodes[1].removeChild(alertBox.childNodes[1].firstChild);
         }
@@ -154,13 +163,15 @@
 
             el.setAttribute("ripple-cancel-on-move", "");
 
-            el.innerHTML = actions[i];
+            el.textContent = String(actions[i] ?? "");
             el.style.minWidth = getTextWidth(actions[i]) + "px";
             alertBox.childNodes[1].appendChild(el);
         }
 
         ripple.registerRipples();
 
+        document.documentElement.classList.add("therp-alert-open");
+        document.body.classList.add("therp-alert-open");
         alertBox.style.display = "block";
         alertBox.setAttribute("show", "");
         alertDropShadow.setAttribute("show", "");
@@ -182,6 +193,8 @@
         alert.open = false;
         if (queue.length == 0) {
             alertDropShadow.removeAttribute("show");
+            document.documentElement.classList.remove("therp-alert-open");
+            document.body.classList.remove("therp-alert-open");
         }
     }
 

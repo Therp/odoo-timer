@@ -1,378 +1,827 @@
 <templates xml:space="preserve">
-  <t t-name="PopupApp" owl="1">
-    <div class="app-root">
-      <div
-        id="loader-container"
-        t-att-class="state.view === 'loading' ? '' : 'hide'"
-      >
-        <div class="loader-card">
-          <div class="loader-text">
-            Loading current session and projects…
-          </div>
-          <div class="loader-subtext">
-            Please wait — or grab a cup of coffee ☕
-          </div>
-          <i class="fa fa-cog fa-spin fa-5x"/>
+  <t t-name="OptionsApp" owl="1">
+    <div>
+
+      <!-- ── Left navigation sidebar ─────────────────────────────────── -->
+      <div id="navigation">
+        <h1 class="title-app">Timer Options</h1>
+        <ul class="list-group">
+          <li
+            class="chooser list-group-item"
+            t-att-class="state.activePage === 'about' ? 'selected' : 'notselected'"
+            t-on-click="() => state.activePage = 'about'"
+          >
+            <i class="fa fa-info-circle"/> <span>About Timer</span>
+          </li>
+          <li
+            class="chooser list-group-item"
+            t-att-class="state.activePage === 'privacy' ? 'selected' : 'notselected'"
+            t-on-click="() => state.activePage = 'privacy'"
+          >
+            <i class="fa fa-shield"/> <span>Privacy &amp; License</span>
+          </li>
+          <li
+            class="chooser list-group-item"
+            t-att-class="state.activePage === 'preferences' ? 'selected' : 'notselected'"
+            t-on-click="() => state.activePage = 'preferences'"
+          >
+            <i class="fa fa-sliders"/> <span>Preferences</span>
+          </li>
+
+          <li
+            class="chooser list-group-item"
+            t-att-class="state.activePage === 'options' ? 'selected' : 'notselected'"
+            t-on-click="() => state.activePage = 'options'"
+          >
+            <i class="fa fa-cogs"/> <span>Options</span>
+          </li>
+        </ul>
+        <hr/>
+        <div class="footer-app">
+          <a href="popup.html" class="back-left nav-hand-button" title="Back to timer" aria-label="Back to timer"><i class="fa fa-hand-o-left"/></a>
         </div>
       </div>
 
+      <!-- ── About page ──────────────────────────────────────────────── -->
       <div
-        id="login"
-        class="login-view"
-        t-att-class="state.view === 'login' ? 'login-view' : 'login-view hide'"
+        class="options-box box"
+        t-att-class="state.activePage === 'about' ? 'active_page' : 'inactive_page'"
       >
-        <div class="popup-login-shell">
-          <div class="form">
-            <div class="logo">
-              <img src="/img/logo.png"/>
+        <h1>
+          <div class="logo">
+            <img src="/img/logo.png"/>
+          </div>
+        </h1>
+        <hr/>
+        <div class="about-app">
+          <h4 class="title-app text-center">Description</h4>
+          <hr/>
+          This is the Owl browser extension for posting work hours to Odoo timesheets.
+          It supports Project Tasks, legacy Issues and Helpdesk Tickets across saved Odoo remotes.
+          <hr/>
+          <h4 class="title-app text-center">Features</h4>
+          <hr/>
+          <div class="timer-features">
+            <ul class="list-group">
+              <li class="list-group-item">Project Tasks, legacy Issues and Helpdesk Tickets</li>
+              <li class="list-group-item">Start/stop timing and create native Odoo timesheet lines</li>
+              <li class="list-group-item">Helpdesk stage filtering plus a readiness check before starting a ticket timer</li>
+              <li class="list-group-item">A blue info icon explains when Odoo company/employee configuration prevents Helpdesk timesheets</li>
+              <li class="list-group-item">Filter by stage and show assigned items or everyone’s items</li>
+              <li class="list-group-item">Save the same Odoo database as separate Task, Issue or Helpdesk remotes</li>
+              <li class="list-group-item">Optional company logo per remote, with the Therp logo as fallback</li>
+              <li class="list-group-item">Switch between remote sessions and data sources and data sources and download timesheets as CSV</li>
+            </ul>
+          </div>
+          <!-- THERP UX PATCH: supported-version matrix. -->
+          <h4 class="title-app text-center" style="margin-top:16px;">Supported Odoo Versions</h4>
+          <hr/>
+          <div class="timer-features">
+            <ul class="list-group">
+              <li class="list-group-item"><b>Issues (project.issue):</b> Odoo 8.0–10.0 when the legacy Issue Tracking module is installed.</li>
+              <li class="list-group-item"><b>Project Tasks (project.task):</b> Odoo 14.0–19.0 is the current supported/tested compatibility range.</li>
+              <li class="list-group-item"><b>Helpdesk Tickets (helpdesk.ticket):</b> target compatibility is Odoo 16.0–19.0 when Helpdesk is installed; Helpdesk timesheet recording additionally requires a compatible server-side timesheet integration. Current acceptance testing focuses on 18.0–19.0.</li>
+              <li class="list-group-item"><i class="fa fa-info-circle"/> The timer also detects fields/capabilities from the connected server, so installed modules and customizations can affect what is available.</li>
+            </ul>
+          </div>
+          <h4 class="title-app text-center" style="margin-top:16px;">Helpdesk notes</h4>
+          <hr/>
+          <ul class="list-group">
+            <li class="list-group-item">Choose <b>From Helpdesk Tickets</b> on the saved remote. The same host/database can also have a separate <b>From Tasks</b> remote.</li>
+            <li class="list-group-item">If a blue <i class="fa fa-info-circle"/> appears instead of Play, click it for the exact reason that Odoo cannot currently create a Helpdesk timesheet.</li>
+            <li class="list-group-item">Odoo normally requires an active employee linked to the current user in the ticket/project company. The extension checks this when the server permits it; Odoo remains the final authority.</li>
+            <li class="list-group-item">When available, the Therp Task button opens the ticket's linked Therp task. Tickets without a link simply show an empty cell.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- THERP UX PATCH: privacy-license-page -->
+      <div
+        class="options-box box"
+        t-att-class="state.activePage === 'privacy' ? 'active_page' : 'inactive_page'"
+      >
+        <div class="about-app">
+          <h4 class="title-app text-center"><i class="fa fa-shield"/> Privacy &amp; License</h4>
+          <hr/>
+          <div class="timer-features">
+            <ul class="list-group">
+              <li class="list-group-item"><b>Local configuration:</b> saved Odoo remotes, data-source choices, preferences and optional remote logos are stored in browser-extension storage.</li>
+              <li class="list-group-item"><b>Odoo communication:</b> the extension communicates with the Odoo hosts you configure in order to authenticate, load work items and create/read timesheets.</li>
+              <li class="list-group-item"><b>Sessions:</b> after login the extension uses the Odoo session for subsequent RPC calls; do not share browser profiles containing active sessions.</li>
+              <li class="list-group-item"><b>Exports:</b> CSV files are produced only when you request a download.</li>
+              <li class="list-group-item"><b>Security:</b> keep Odoo permissions, employee/company access and browser profiles appropriately restricted for the people using this timer.</li>
+            </ul>
+          </div>
+          <h4 class="title-app text-center" style="margin-top:16px;">License</h4>
+          <hr/>
+          <p>
+            Therp Timer is distributed under the repository's <b>Therp Timer License</b>.
+            The full license text, conditions, warranty disclaimer and liability terms are maintained with the source code.
+          </p>
+          <p class="text-center">
+            <a href="https://github.com/Therp/odoo-timer/blob/master/LICENSE.md" target="_blank" rel="noreferrer">
+              <i class="fa fa-file-text-o"/> Read the full software license
+            </a>
+          </p>
+          <hr/>
+          <p class="text-muted" style="font-size:12px;line-height:1.5;">
+            This page is a product-oriented summary. For the current and authoritative
+            Therp privacy statement, including how Therp B.V. processes personal data,
+            retention, data-subject rights and contact information, use the link below.
+          </p>
+          <p class="text-center">
+            <a href="https://therp.nl/terms-and-conditions#Therp-Privacy-Statement" target="_blank" rel="noreferrer">
+              <i class="fa fa-external-link"/> Open the current Therp Privacy Statement
+            </a>
+          </p>
+        </div>
+      </div>
+
+      
+      <!-- THERP ADVANCED LAYOUT PREFS V5 -->
+      <div
+        class="options-box box"
+        t-if="state.layoutCanCustomize"
+        t-att-class="state.activePage === 'preferences' ? 'active_page' : 'inactive_page'"
+      >
+        <h4 class="title-app">Preferences</h4>
+        <hr/>
+        <div class="layout-pref-card">
+          <h5><t t-out="state.layoutBrowser"/> Layout</h5>
+          <p class="inline-help">
+            Defaults shown here mirror the current browser's source CSS. Until you press Save, the source CSS remains authoritative. Saved values are local to this browser, validated before storage, and revalidated every time the timer loads.
+          </p>
+
+          <t t-if="state.layoutError">
+            <div class="layout-pref-error" t-out="state.layoutError"/>
+          </t>
+
+          <details class="layout-pref-section" open="open">
+            <summary>Main Timer Page</summary>
+            <div class="layout-pref-grid">
+              
+              <div class="layout-pref-field" t-att-class="state.layoutSuggestedFields['main.width'] ? 'layout-pref-field layout-pref-suggested' : 'layout-pref-field'">
+                <label>Internal width (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="700" max="1200"
+                  t-att-value="state.layoutPrefs.main.width"
+                  t-on-input="(ev) => { state.layoutPrefs.main.width = ev.target.value; state.layoutError = ''; markLayoutFieldEdited('main.width'); }"/>
+                <div class="layout-pref-help">Chrome may cap the visible action popup; this controls the internal layout width.</div>
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Internal height (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="500" max="1000"
+                  t-att-value="state.layoutPrefs.main.height"
+                  t-on-input="(ev) => { state.layoutPrefs.main.height = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Horizontal padding (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="0" max="60"
+                  t-att-value="state.layoutPrefs.main.wrapperPaddingX"
+                  t-on-input="(ev) => { state.layoutPrefs.main.wrapperPaddingX = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Top padding (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="0" max="60"
+                  t-att-value="state.layoutPrefs.main.wrapperPaddingTop"
+                  t-on-input="(ev) => { state.layoutPrefs.main.wrapperPaddingTop = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Bottom padding (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="0" max="60"
+                  t-att-value="state.layoutPrefs.main.wrapperPaddingBottom"
+                  t-on-input="(ev) => { state.layoutPrefs.main.wrapperPaddingBottom = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+            </div>
+          </details>
+
+          <details class="layout-pref-section">
+            <summary>Toolbar &amp; Search</summary>
+            <div class="layout-pref-grid">
+              
+              <div class="layout-pref-field">
+                <label>Search/control font (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="10" max="22"
+                  t-att-value="state.layoutPrefs.toolbar.searchFontSize"
+                  t-on-input="(ev) => { state.layoutPrefs.toolbar.searchFontSize = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Control height (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="28" max="72"
+                  t-att-value="state.layoutPrefs.toolbar.controlHeight"
+                  t-on-input="(ev) => { state.layoutPrefs.toolbar.controlHeight = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Action icon size (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="16" max="48"
+                  t-att-value="state.layoutPrefs.toolbar.iconSize"
+                  t-on-input="(ev) => { state.layoutPrefs.toolbar.iconSize = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Toolbar gap (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="0" max="30"
+                  t-att-value="state.layoutPrefs.toolbar.gap"
+                  t-on-input="(ev) => { state.layoutPrefs.toolbar.gap = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+            </div>
+          </details>
+
+          <details class="layout-pref-section" open="open">
+            <summary>Task / Ticket Table</summary>
+            <div class="layout-pref-grid">
+              
+              <div class="layout-pref-field">
+                <label>Body font size (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="10" max="22"
+                  t-att-value="state.layoutPrefs.table.fontSize"
+                  t-on-input="(ev) => { state.layoutPrefs.table.fontSize = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Header font size (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="10" max="22"
+                  t-att-value="state.layoutPrefs.table.headerFontSize"
+                  t-on-input="(ev) => { state.layoutPrefs.table.headerFontSize = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Cell vertical padding (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="0" max="24"
+                  t-att-value="state.layoutPrefs.table.cellPaddingY"
+                  t-on-input="(ev) => { state.layoutPrefs.table.cellPaddingY = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              <div class="layout-pref-field" t-att-class="state.layoutSuggestedFields['table.headerWrap'] ? 'layout-pref-field layout-pref-suggested' : 'layout-pref-field'">
+                <label>Header wrapping</label>
+                <select t-att-value="state.layoutPrefs.table.headerWrap ? 'wrap' : 'nowrap'"
+                  t-on-change="(ev) => { state.layoutPrefs.table.headerWrap = ev.target.value === 'wrap'; state.layoutError = ''; markLayoutFieldEdited('table.headerWrap'); }">
+                  <option value="wrap">Wrap</option>
+                  <option value="nowrap">No wrap</option>
+                </select>
+              </div>
+              <div class="layout-pref-field">
+                <label>Cell wrapping</label>
+                <select t-att-value="state.layoutPrefs.table.cellWrap ? 'wrap' : 'nowrap'"
+                  t-on-change="(ev) => { state.layoutPrefs.table.cellWrap = ev.target.value === 'wrap'; state.layoutError = ''; }">
+                  <option value="wrap">Wrap</option>
+                  <option value="nowrap">No wrap</option>
+                </select>
+              </div>
+              <div class="layout-pref-field" t-att-class="state.layoutSuggestedFields['table.layoutMode'] ? 'layout-pref-field layout-pref-suggested' : 'layout-pref-field'">
+                <label>Column sizing</label>
+                <select t-att-value="state.layoutPrefs.table.layoutMode"
+                  t-on-change="(ev) => { state.layoutPrefs.table.layoutMode = ev.target.value; state.layoutError = ''; markLayoutFieldEdited('table.layoutMode'); }">
+                  <option value="fixed">Fixed</option>
+                  <option value="auto">Content-aware</option>
+                </select>
+              </div>
+              
+              <div class="layout-pref-field" t-att-class="state.layoutSuggestedFields['table.minWidth'] ? 'layout-pref-field layout-pref-suggested' : 'layout-pref-field'">
+                <label>Minimum table width (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="0" max="2400"
+                  t-att-value="state.layoutPrefs.table.minWidth"
+                  t-on-input="(ev) => { state.layoutPrefs.table.minWidth = ev.target.value; state.layoutError = ''; markLayoutFieldEdited('table.minWidth'); }"/>
+                <div class="layout-pref-help">0 keeps the table at the available width. Larger values enable horizontal table scrolling.</div>
+              </div>
+              <div class="layout-pref-field" t-att-class="state.layoutSuggestedFields['table.stripeEnabled'] ? 'layout-pref-field layout-pref-suggested' : 'layout-pref-field'">
+                <label>
+                  <input type="checkbox"
+                    t-att-checked="state.layoutPrefs.table.stripeEnabled"
+                    t-on-change="(ev) => { state.layoutPrefs.table.stripeEnabled = ev.target.checked; state.layoutError = ''; markLayoutFieldEdited('table.stripeEnabled'); }"/>
+                  Alternating row stripes
+                </label>
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Border radius (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="0" max="30"
+                  t-att-value="state.layoutPrefs.table.borderRadius"
+                  t-on-input="(ev) => { state.layoutPrefs.table.borderRadius = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field" t-att-class="state.layoutSuggestedFields['table.headerBg'] ? 'layout-pref-field layout-pref-suggested' : 'layout-pref-field'">
+                <label>Header background</label>
+                <input type="color"
+                  t-att-value="state.layoutPrefs.table.headerBg"
+                  t-on-input="(ev) => { state.layoutPrefs.table.headerBg = ev.target.value; state.layoutError = ''; markLayoutFieldEdited('table.headerBg'); }"/>
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Header text</label>
+                <input type="color"
+                  t-att-value="state.layoutPrefs.table.headerColor"
+                  t-on-input="(ev) => { state.layoutPrefs.table.headerColor = ev.target.value; state.layoutError = ''; }"/>
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Row background</label>
+                <input type="color"
+                  t-att-value="state.layoutPrefs.table.rowBg"
+                  t-on-input="(ev) => { state.layoutPrefs.table.rowBg = ev.target.value; state.layoutError = ''; }"/>
+              </div>
+              
+              <div class="layout-pref-field" t-att-class="state.layoutSuggestedFields['table.stripeBg'] ? 'layout-pref-field layout-pref-suggested' : 'layout-pref-field'">
+                <label>Stripe background</label>
+                <input type="color"
+                  t-att-value="state.layoutPrefs.table.stripeBg"
+                  t-on-input="(ev) => { state.layoutPrefs.table.stripeBg = ev.target.value; state.layoutError = ''; markLayoutFieldEdited('table.stripeBg'); }"/>
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Hover background</label>
+                <input type="color"
+                  t-att-value="state.layoutPrefs.table.hoverBg"
+                  t-on-input="(ev) => { state.layoutPrefs.table.hoverBg = ev.target.value; state.layoutError = ''; }"/>
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Active row background</label>
+                <input type="color"
+                  t-att-value="state.layoutPrefs.table.activeBg"
+                  t-on-input="(ev) => { state.layoutPrefs.table.activeBg = ev.target.value; state.layoutError = ''; }"/>
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Border color</label>
+                <input type="color"
+                  t-att-value="state.layoutPrefs.table.borderColor"
+                  t-on-input="(ev) => { state.layoutPrefs.table.borderColor = ev.target.value; state.layoutError = ''; }"/>
+              </div>
+            </div>
+          </details>
+
+          <details class="layout-pref-section">
+            <summary>Table Column Widths</summary>
+            <div class="layout-pref-grid">
+              
+              <div class="layout-pref-field" t-att-class="state.layoutSuggestedFields['table.actionWidth'] ? 'layout-pref-field layout-pref-suggested' : 'layout-pref-field'">
+                <label>Action (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="30" max="700"
+                  t-att-value="state.layoutPrefs.table.actionWidth"
+                  t-on-input="(ev) => { state.layoutPrefs.table.actionWidth = ev.target.value; state.layoutError = ''; markLayoutFieldEdited('table.actionWidth'); }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Priority (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="30" max="700"
+                  t-att-value="state.layoutPrefs.table.priorityWidth"
+                  t-on-input="(ev) => { state.layoutPrefs.table.priorityWidth = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Stage (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="30" max="700"
+                  t-att-value="state.layoutPrefs.table.stageWidth"
+                  t-on-input="(ev) => { state.layoutPrefs.table.stageWidth = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Task / Ticket (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="30" max="700"
+                  t-att-value="state.layoutPrefs.table.itemWidth"
+                  t-on-input="(ev) => { state.layoutPrefs.table.itemWidth = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Hours / Time (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="30" max="700"
+                  t-att-value="state.layoutPrefs.table.hoursWidth"
+                  t-on-input="(ev) => { state.layoutPrefs.table.hoursWidth = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Project / Relation (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="30" max="700"
+                  t-att-value="state.layoutPrefs.table.projectWidth"
+                  t-on-input="(ev) => { state.layoutPrefs.table.projectWidth = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+            </div>
+          </details>
+
+          <details class="layout-pref-section">
+            <summary>Info Footer</summary>
+            <div class="layout-pref-grid">
+              
+              <div class="layout-pref-field">
+                <label>Label font size (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="10" max="22"
+                  t-att-value="state.layoutPrefs.info.fontSize"
+                  t-on-input="(ev) => { state.layoutPrefs.info.fontSize = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Value font size (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="10" max="22"
+                  t-att-value="state.layoutPrefs.info.valueFontSize"
+                  t-on-input="(ev) => { state.layoutPrefs.info.valueFontSize = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Vertical padding (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="0" max="60"
+                  t-att-value="state.layoutPrefs.info.paddingY"
+                  t-on-input="(ev) => { state.layoutPrefs.info.paddingY = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Horizontal padding (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="0" max="60"
+                  t-att-value="state.layoutPrefs.info.paddingX"
+                  t-on-input="(ev) => { state.layoutPrefs.info.paddingX = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Border radius (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="0" max="30"
+                  t-att-value="state.layoutPrefs.info.borderRadius"
+                  t-on-input="(ev) => { state.layoutPrefs.info.borderRadius = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Line height ×10</label>
+                <input type="number" step="1" inputmode="numeric" min="10" max="30"
+                  t-att-value="state.layoutPrefs.info.lineHeight"
+                  t-on-input="(ev) => { state.layoutPrefs.info.lineHeight = ev.target.value; state.layoutError = ''; }"/>
+                <div class="layout-pref-help">17 = line-height 1.7</div>
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Label color</label>
+                <input type="color"
+                  t-att-value="state.layoutPrefs.info.labelColor"
+                  t-on-input="(ev) => { state.layoutPrefs.info.labelColor = ev.target.value; state.layoutError = ''; }"/>
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Value color</label>
+                <input type="color"
+                  t-att-value="state.layoutPrefs.info.valueColor"
+                  t-on-input="(ev) => { state.layoutPrefs.info.valueColor = ev.target.value; state.layoutError = ''; }"/>
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Background</label>
+                <input type="color"
+                  t-att-value="state.layoutPrefs.info.background"
+                  t-on-input="(ev) => { state.layoutPrefs.info.background = ev.target.value; state.layoutError = ''; }"/>
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Border color</label>
+                <input type="color"
+                  t-att-value="state.layoutPrefs.info.borderColor"
+                  t-on-input="(ev) => { state.layoutPrefs.info.borderColor = ev.target.value; state.layoutError = ''; }"/>
+              </div>
+            </div>
+          </details>
+
+          <details class="layout-pref-section">
+            <summary>Options Page</summary>
+            <div class="layout-pref-grid">
+              
+              <div class="layout-pref-field">
+                <label>Page font size (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="10" max="22"
+                  t-att-value="state.layoutPrefs.options.pageFontSize"
+                  t-on-input="(ev) => { state.layoutPrefs.options.pageFontSize = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Sidebar font size (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="10" max="22"
+                  t-att-value="state.layoutPrefs.options.sidebarFontSize"
+                  t-on-input="(ev) => { state.layoutPrefs.options.sidebarFontSize = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Remotes table font (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="10" max="22"
+                  t-att-value="state.layoutPrefs.options.remotesTableFontSize"
+                  t-on-input="(ev) => { state.layoutPrefs.options.remotesTableFontSize = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Remotes header font (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="10" max="22"
+                  t-att-value="state.layoutPrefs.options.remotesHeaderFontSize"
+                  t-on-input="(ev) => { state.layoutPrefs.options.remotesHeaderFontSize = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Remotes cell padding (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="0" max="24"
+                  t-att-value="state.layoutPrefs.options.remotesCellPaddingY"
+                  t-on-input="(ev) => { state.layoutPrefs.options.remotesCellPaddingY = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              
+              <div class="layout-pref-field">
+                <label>Remotes table minimum width (px)</label>
+                <input type="number" step="1" inputmode="numeric" min="600" max="1800"
+                  t-att-value="state.layoutPrefs.options.remotesMinWidth"
+                  t-on-input="(ev) => { state.layoutPrefs.options.remotesMinWidth = ev.target.value; state.layoutError = ''; }"/>
+                
+              </div>
+              <div class="layout-pref-field">
+                <label>Remotes header wrapping</label>
+                <select t-att-value="state.layoutPrefs.options.remotesHeaderWrap ? 'wrap' : 'nowrap'"
+                  t-on-change="(ev) => { state.layoutPrefs.options.remotesHeaderWrap = ev.target.value === 'wrap'; state.layoutError = ''; }">
+                  <option value="wrap">Wrap</option>
+                  <option value="nowrap">No wrap</option>
+                </select>
+              </div>
+            </div>
+          </details>
+
+          <div class="layout-pref-actions">
+            <button type="button" class="btn btn-info" t-on-click="saveLayoutPreferences">
+              <i class="fa fa-save"/> Save
+            </button>
+            <button type="button" class="btn btn-default" t-on-click="resetLayoutPreferences">
+              <i class="fa fa-undo"/> Reset to source CSS defaults
+            </button>
+            <button type="button" class="btn btn-default" t-on-click="loadSuggestedLayoutSettings">
+              <i class="fa fa-table"/> Try suggested settings
+            </button>
+          </div>
+
+          <t t-if="state.layoutSuggestionActive">
+            <div class="layout-suggestion-note">
+              <i class="fa fa-lightbulb-o"/>
+              <div>
+                <strong>Suggested settings loaded.</strong>
+                Review the blue-highlighted fields, then press <strong>Save</strong> to apply them.
+                If you edit a highlighted field yourself, its suggestion highlight is removed automatically.
+              </div>
+            </div>
+          </t></div>
+      </div>
+      <!-- ── Options / remotes page ──────────────────────────────────── -->
+      <div
+        class="options-box box"
+        t-att-class="state.activePage === 'options' ? 'active_page' : 'inactive_page'"
+      >
+        <div class="form remote-options-form">
+          <form t-on-submit.prevent="addRemote">
+
+            <!-- [FIX #38] General Settings ──────────────────────────── -->
+            <h4 class="remote-title text-info">General Settings</h4>
+            <hr/>
+            <div class="form-group" style="padding:0 2px;">
+              <label class="general-setting-label"
+                style="display:flex;align-items:center;gap:8px;margin:0;line-height:1.35;">
+                <input
+                  type="checkbox"
+                  class="defaultCheckbox"
+                  style="margin:0;position:static;flex:0 0 auto;"
+                  t-att-checked="state.autoDownloadIssueTimesheet"
+                  t-on-change="toggleAutoDownload"
+                />
+                <span>Auto Download Current Item Timesheet</span>
+              </label>
+              <p class="inline-help" style="margin:6px 0 0 24px;line-height:1.35;">
+                Store the timesheet locally each time you stop the timer on an item.
+              </p>
+            </div>
+            <hr/>
+
+            <!-- Add Remote form ─────────────────────────────────────── -->
+            <h4 class="remote-title text-info">Add Remote</h4>
+            <hr/>
+
+            <div class="form-group">
+              <label for="remote-host">Odoo Host</label>
+              <input
+                type="text"
+                class="form-control"
+                id="remote-host"
+                placeholder="https://your-odoo-host.example"
+                t-att-value="state.form.remote_host"
+                t-on-input="(ev) => state.form.remote_host = ev.target.value"
+              />
             </div>
 
-            <t t-if="state.bootError">
-              <div>
-                <p class="odooError" t-out="state.bootError"/>
-              </div>
-            </t>
+            <div class="form-group">
+              <label for="remote-name">Display Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="remote-name"
+                placeholder="Therp"
+                t-att-value="state.form.remote_name"
+                t-on-input="(ev) => state.form.remote_name = ev.target.value"
+              />
+            </div>
 
-            <t t-if="!state.remotes.length">
-              <div class="container no-remotes-set">
-                <div class="alert alert-warning">
-                  Hello <span class="fun-man">😉</span>, you have not configured
-                  any remotes. Open
-                  <b><i class="fa fa-cogs"/> Options</b>
-                  below and add one.
-                </div>
-              </div>
-            </t>
+            <div class="form-group">
+              <label for="remote-database">Odoo Database</label>
+              <input
+                type="text"
+                class="form-control"
+                id="remote-database"
+                placeholder="someodoodatabase"
+                t-att-value="state.form.remote_database"
+                t-on-input="(ev) => state.form.remote_database = ev.target.value"
+              />
+            </div>
 
-            <t t-if="state.remotes.length">
-              <form t-on-submit.prevent="login">
-                <t t-if="state.loginError">
-                  <p class="odooError" t-out="state.loginError"/>
-                </t>
-
-                <t t-if="!state.useExistingSession">
-                  <input
-                    type="text"
-                    placeholder="Username"
-                    t-att-value="state.username"
-                    t-on-input="(ev) => state.username = ev.target.value"
-                  />
-                </t>
-
-                <div class="password-field">
-                  <t t-if="!state.useExistingSession">
+            <div class="form-group">
+              <label class="label">Data Source</label>
+              <ul class="data-source-list list-group">
+                <li class="list-group-item">
+                  <div class="form-check">
                     <input
-                      id="unique-password"
-                      t-att-type="state.showPassword ? 'text' : 'password'"
-                      placeholder="Password"
-                      t-att-value="state.password"
-                      t-on-input="(ev) => state.password = ev.target.value"
+                      class="form-check-input"
+                      type="radio"
+                      value="project.issue"
+                      id="FromIssues"
+                      t-att-checked="state.form.remote_datasrc === 'project.issue'"
+                      t-on-change="() => state.form.remote_datasrc = 'project.issue'"
                     />
-                  </t>
+                    <label class="form-check-label" for="FromIssues">From Issues</label>
+                  </div>
+                </li>
+                <li class="list-group-item">
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      value="project.task"
+                      id="FromTasks"
+                      t-att-checked="state.form.remote_datasrc === 'project.task'"
+                      t-on-change="() => state.form.remote_datasrc = 'project.task'"
+                    />
+                    <label class="form-check-label" for="FromTasks">From Tasks</label>
+                  </div>
+                </li>
+                <li class="list-group-item">
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      value="helpdesk.ticket"
+                      id="FromHelpdeskTickets"
+                      t-att-checked="state.form.remote_datasrc === 'helpdesk.ticket'"
+                      t-on-change="() => state.form.remote_datasrc = 'helpdesk.ticket'"
+                    />
+                    <label class="form-check-label" for="FromHelpdeskTickets">From Helpdesk Tickets</label>
+                  </div>
+                </li>
+              </ul>
+            </div>
 
-                  <t t-if="!state.useExistingSession">
-                    <span
-                      class="pass-viewer"
-                      t-on-click="togglePassword"
-                    >
-                      <i
-                        class="fa"
-                        t-att-class="state.showPassword ? 'fa fa-eye-slash' : 'fa fa-eye'"
-                      />
-                    </span>
-                  </t>
+            <div class="form-group">
+              <label for="remote-logo">Company Logo <span class="text-muted">(optional)</span></label>
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                <img t-att-src="formLogoSrc" alt="Remote logo preview"
+                  style="width:76px;height:54px;object-fit:contain;border:1px solid #dbe3ea;border-radius:6px;background:#fff;padding:4px;"/>
+                <div style="min-width:220px;flex:1;">
+                  <input id="remote-logo" type="file" class="form-control"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    t-on-change="onRemoteLogoChange"
+                  t-on-click="onRemoteLogoPickerClick"/>
+                <p class="inline-help logo-file-help">Choose a company logo for this remote. When Options is still inside the toolbar popup, Browse first opens the full Options tab so the native file picker can stay open. Click Browse again in that tab, then choose PNG, JPEG, WebP, or GIF up to 512 KB. Use the Therp default logo button to remove a saved custom logo.</p>
+                  <div style="margin-top:5px;font-size:11px;color:#7b8794;line-height:1.35;">
+                    PNG, JPEG, WebP or GIF; maximum 512 KB.
+                    <br/><b>Company logos are stored with each remote. If this Options page is running inside the extension popup, clicking Browse first opens the full Options tab so the browser file picker can stay open. Click Browse again in that tab to choose PNG, JPEG, WebP, or GIF up to 512 KB. Use the Therp default logo button to remove a saved custom logo.</b> if choosing a file closes the extension popup, open Inspect/DevTools for the popup first and then choose the logo.
+                  </div>
+                  <button type="button" class="btn btn-sm btn-default"
+                    style="margin-top:7px;" t-on-click="clearRemoteLogo">
+                    Use Therp default logo
+                  </button>
                 </div>
+              </div>
+            </div>
+            <span class="caption-remotes">Controls</span>
+            <div class="remotes-control-btns col-md-12 text-center text-info pointer">
+              <i
+                title="Add a remote host"
+                class="fa fa-2x fa-plus-circle"
+                t-on-click="addRemote"
+              />
+              <i
+                title="Refresh list of remotes"
+                class="fa fa-2x fa-refresh"
+                t-on-click="loadRemotes"
+              />
+              <i
+                title="View list of remotes"
+                class="fa fa-2x fa-eye"
+                t-on-click="() => state.showList = !state.showList"
+              />
+              <i
+                title="Remove all remotes"
+                class="fa fa-2x fa-minus-circle"
+                t-on-click="removeAllRemotes"
+              />
+            </div>
 
-                <select
-                  id="remote-selection"
-                  class="form-control"
-                  t-on-change="(ev) => state.selectedRemoteIndex = ev.target.value"
-                >
+            <t t-if="state.error">
+              <div class="remote-error" t-out="state.error"/>
+            </t>
+
+          </form>
+
+          <!-- Saved remotes table ──────────────────────────────────── -->
+          <t t-if="state.showList and state.remotes.length">
+            <div class="remotes-table-info">
+              <table class="table table-bordered">
+                <caption class="text-info caption-remotes">
+                  List of Available Remotes
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col" style="width:64px">Logo</th>
+                    <th scope="col">Remote</th>
+                    <th scope="col">Host</th>
+                    <th scope="col">Database</th>
+                    <th scope="col">Source</th>
+                    <th scope="col">State</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
                   <t
                     t-foreach="state.remotes"
                     t-as="remote"
-                    t-key="remote.database + remote.url"
+                    t-key="remoteKey(remote)"
                   >
-                    <option
-                      t-att-value="remote.__index"
-                      t-att-selected="state.selectedRemoteIndex === remote.__index"
-                      t-out="remote.name"
-                    />
+                    <tr>
+                      <td class="text-center" style="width:64px">
+                        <img t-att-src="remoteLogoSrc(remote)" alt="Remote logo"
+                          style="width:48px;height:34px;object-fit:contain;background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:2px;"/>
+                      </td>
+                      <td class="text-info">
+                        <ReadMore text="remote.name" limit="18"/>
+                      </td>
+                      <td>
+                        <ReadMore text="remote.url" limit="25"/>
+                      </td>
+                      <td>
+                        <ReadMore text="remote.database" limit="18"/>
+                      </td>
+                      <td>
+                        <ReadMore text="remote.datasrc || 'project.issue'" limit="18"/>
+                      </td>
+                      <td>
+                        <ReadMore text="remote.state || 'Inactive'" limit="18"/>
+                      </td>
+                      <td class="remote-row-actions">
+                        <i
+                          class="fa fa-pencil text-primary"
+                          title="Edit remote"
+                          t-on-click="() => editRemote(remote)"
+                          style="margin-right: 10px; cursor: pointer;"
+                        />
+                        <i
+                          class="fa fa-trash text-danger"
+                          title="Remove remote"
+                          t-on-click="() => removeRemote(remote)"
+                          style="cursor: pointer;"
+                        />
+                      </td>
+                    </tr>
                   </t>
-                </select>
+                </tbody>
+              </table>
+            </div>
+          </t>
 
-                <div class="checkbox">
-                  <label>
-                    <input
-                      type="checkbox"
-                      t-att-checked="state.useExistingSession"
-                      t-on-change="toggleUseExistingSession"
-                    />
-                    Use Existing Session
-                  </label>
-                </div>
-
-                <button class="login" type="submit">
-                  Login
-                  <t t-if="state.loginLoading">
-                    <i class="fa fa-cog fa-spin"/>
-                  </t>
-                </button>
-
-                <t t-if="currentRemote">
-                  <div class="remote-info small-note">
-                    Host:
-                    <t t-out="currentRemote.url"/>
-                    <span class="current-source-chip">
-                      <t t-out="currentRemote.datasrc || 'project.issue'"/>
-                    </span>
-                  </div>
-                </t>
-              </form>
-            </t>
-          </div>
-        </div>
-
-        <div class="cta forgotpwd footer-app-opts login-footer-bar">
-          <a href="options_main_page.html">
-            <i class="fa fa-cogs"/> Options
-          </a>
         </div>
       </div>
 
-      <div
-        id="wrapper"
-        t-att-class="state.view === 'main' ? '' : 'hide'"
-      >
-        <div class="toolbar-row">
-          <input
-            id="searchIssue"
-            type="text"
-            placeholder="Search by ID, name, user, priority, stage..."
-            t-att-value="state.searchQuery"
-            t-on-input="(ev) => state.searchQuery = ev.target.value"
-          />
-          <select
-            id="limitTo"
-            t-att-value="state.limitTo"
-            t-on-change="(ev) => updateLimitPreference(ev.target.value)"
-          >
-            <option value="10">10</option>
-            <option value="15">15</option>
-            <option value="25">25</option>
-            <option value="">All</option>
-          </select>
-        </div>
-
-        <div class="container footer top-actions">
-          <div
-            class="auto_download_timesheet"
-            title="Store timesheet locally when you stop timer on the current item"
-          >
-            <input
-              id="auto_download_timesheet_input"
-              type="checkbox"
-              t-att-checked="state.autoDownloadIssueTimesheet"
-              t-on-change="toggleAutoDownload"
-            />
-            Auto Download Current Item Timesheet
-          </div>
-
-          <div class="row">
-            <div class="mx-3 col-md-12 footer-btns pointer">
-              <i
-                class="fa fa-download fa-2x"
-                title="Download current month timesheet"
-                t-on-click="downloadCurrentMonthTimesheets"
-              />
-              <i
-                class="fa fa-hand-o-left fa-2x"
-                title="Switch between remotes"
-                t-on-click="switchBetweenRemotes"
-              />
-              <i
-                class="fa fa-refresh fa-2x"
-                title="Refresh current items"
-                t-on-click="refreshAll"
-              />
-              <i
-                class="fa fa-undo fa-2x"
-                title="Discard the active timer"
-                t-on-click="resetTimer"
-              />
-              <i
-                class="fa fa-sign-out fa-2x"
-                title="Log out"
-                t-on-click="logout"
-              />
-              <a
-                href="options_main_page.html"
-                class="options-btn"
-                title="Go To options"
-              >
-                <i class="fa fa-cogs fa-2x"/>
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <div class="table-scroll">
-          <table
-            id="table-task-issues"
-            class="table table-responsive-sm table-bordered table-fixed"
-          >
-            <thead>
-              <tr>
-                <th class="action-col">
-                  <div>
-                    <t t-if="state.activeTimerId and state.timerStartIso">
-                      <span class="active-timer-running">
-                        <i class="fa fa-clock-o"/>
-                        #<t t-out="state.activeTimerId"/>
-                      </span>
-                    </t>
-                  </div>
-
-                  <t t-if="state.timerStartIso">
-                    <span class="startTimeCount" t-out="formattedTimer"/>
-                  </t>
-                </th>
-
-                <th class="priority-col">Priority</th>
-                <th class="stage-col">Stage</th>
-
-                <th class="item-col">
-                  <div class="item-header-title">
-                    <t t-out="itemLabelPlural"/> [<t t-out="filteredIssues.length"/>]
-                  </div>
-                  <label class="allIssues">
-                    <input
-                      id="showAllIssues"
-                      type="checkbox"
-                      t-att-checked="state.allIssues"
-                      t-on-input="(ev) => updateShowAllPreference(ev.target.checked)"
-                    />
-                    Show for everyone
-                  </label>
-                </th>
-
-                <t t-if="state.dataSource === 'project.task'">
-                  <th>Hours Spent</th>
-                  <th>Remaining Hours</th>
-                </t>
-
-                <th class="project-col">Project</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              <t t-if="filteredIssues.length">
-                <t
-                  t-foreach="filteredIssues"
-                  t-as="issue"
-                  t-key="issue.id"
-                >
-                  <tr
-                    t-att-class="state.activeTimerId === issue.id ? 'active-row' : ''"
-                  >
-                    <td class="text-center px-2 td-btn action-col">
-                      <t t-if="!state.activeTimerId">
-                        <i
-                          class="fa fa-play-circle action-btn pointer"
-                          title="Start the timer for the selected item"
-                          t-on-click="() => startTimer(issue)"
-                        />
-                      </t>
-
-                      <t t-if="state.activeTimerId === issue.id">
-                        <i
-                          class="text-danger fa fa-stop-circle action-btn pointer"
-                          title="Stop timer and record the time to Odoo timesheets"
-                          t-on-click="() => stopTimer(issue)"
-                        />
-                      </t>
-                    </td>
-
-                    <td class="priority-cell">
-                      <t t-if="issue.priority_level.length">
-                        <t
-                          t-foreach="issue.priority_level"
-                          t-as="priority"
-                          t-key="priority + '_' + issue.id"
-                        >
-                          <span class="fa fa-star checked"/>
-                        </t>
-                      </t>
-                      <t t-if="!issue.priority_level.length">
-                        <i class="fa fa-star-o"/>
-                      </t>
-                    </td>
-
-                    <td class="stage-cell">
-                      <ReadMore
-                        text="relationLabel(issue.stage_id)"
-                        limit="15"
-                      />
-                    </td>
-
-                    <td class="issue-desc-cell">
-                      <ReadMore
-                        text="issueLabel(issue)"
-                        limit="70"
-                        href="issueHref(issue)"
-                      />
-                    </td>
-
-                    <t t-if="state.dataSource === 'project.task'">
-                      <td>
-                        <ReadMore
-                          text="normalizeText(formatHours(issue.effective_hours))"
-                          limit="9"
-                        />
-                      </td>
-                      <td>
-                        <ReadMore
-                          text="normalizeText(formatHours(issue.remaining_hours))"
-                          limit="9"
-                        />
-                      </td>
-                    </t>
-
-                    <td class="project-cell">
-                      <ReadMore
-                        text="relationLabel(issue.project_id)"
-                        limit="15"
-                      />
-                    </td>
-                  </tr>
-                </t>
-              </t>
-
-              <t t-if="!filteredIssues.length">
-                <tr>
-                  <td
-                    class="text-center text-danger"
-                    t-att-colspan="state.dataSource === 'project.task' ? 7 : 5"
-                  >
-                    No matching items are currently available
-                  </td>
-                </tr>
-              </t>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="container footer info-footer">
-          <div class="row">
-            <div class="remote-info-block col-md-12">
-              <span><b>Odoo:</b> <t t-out="state.serverVersion || 'Unknown'"/></span><br/>
-              <span><b>Host:</b> <t t-out="state.currentHost || '-'"/></span><br/>
-              <span><b>Database:</b> <t t-out="state.currentDatabase || '-'"/></span><br/>
-              <span><b>Current User:</b> <t t-out="state.user ? state.user.display_name : '-'"/></span><br/>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </t>
 </templates>
