@@ -107,7 +107,7 @@
             t-on-input="(ev) => { state.searchQuery = ev.target.value; }"/>
           <t t-if="isHelpdeskSource">
             <select id="stageFilter" t-att-value="state.stageFilter"
-              t-on-change="(ev) => updateStageFilter(ev.target.value)">
+              t-on-change="(ev) => { state.stageFilter = ev.target.value; }">
               <option value="">All stages</option>
               <t t-foreach="stageOptions || []" t-as="stage" t-key="stage.id">
                 <option t-att-value="'' + stage.id"
@@ -168,11 +168,19 @@
             <thead>
               <tr>
                 <th class="action-col">
-                  <div>
-                    <t t-if="state.timerStartIso">
+                  <!-- THERP UX: inline discard active timer -->
+                  <t t-if="state.timerStartIso">
+                    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;">
                       <span class="startTimeCount"><t t-esc="formattedTimer"/></span>
-                    </t>
-                  </div>
+                      <button type="button"
+                        title="Discard active timer without recording a timesheet"
+                        aria-label="Discard active timer without recording a timesheet"
+                        t-on-click="resetTimer"
+                        style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:50%;cursor:pointer;background:#dc3545;color:#fff;line-height:1;">
+                        <i class="fa fa-times" style="font-size:11px;"/>
+                      </button>
+                    </div>
+                  </t>
                 </th>
                 <t t-if="isHelpdeskSource">
                   <t t-if="showHelpdeskTherpLink">
@@ -343,6 +351,14 @@
             <div t-att-title="allowedCompanyLabels"><b>Allowed Companies:</b> <t t-esc="allowedCompanyLabels || '—'"/></div>
           </div>
         </div>
+        <!-- THERP UX: secondary Options shortcut: same-context, no new browser tab. -->
+        <div style="display:flex;justify-content:flex-end;align-items:center;padding:8px 16px 12px;">
+          <a href="options_main_page.html" title="Open Options" aria-label="Open Options"
+            style="width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;border:1px solid currentColor;border-radius:50%;text-decoration:none;">
+            <i class="fa fa-hand-o-right" style="font-size:22px;"/>
+          </a>
+        </div>
+
       </div>
     </div>
   </t>

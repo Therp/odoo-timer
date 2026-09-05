@@ -39,8 +39,8 @@
         </ul>
         <hr/>
         <div class="footer-app">
-          <a href="popup.html" class="back-left">
-            <i class="fa fa-arrow-circle-left fa-2x"/>
+          <a href="popup.html" class="back-left" title="Back to timer">
+            <i class="fa fa-hand-o-left fa-2x"/>
           </a>
         </div>
       </div>

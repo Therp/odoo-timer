@@ -131,6 +131,7 @@ class PopupApp extends Component {
         this.togglePassword              = this.togglePassword.bind(this);
         this.updateLimitPreference       = this.updateLimitPreference.bind(this);
         this.updateShowAllPreference     = this.updateShowAllPreference.bind(this);
+        this.updateStageFilter             = this.updateStageFilter.bind(this);
         this.showHelpdeskTimesheetInfo = this.showHelpdeskTimesheetInfo.bind(this);
 
         onMounted(() => {

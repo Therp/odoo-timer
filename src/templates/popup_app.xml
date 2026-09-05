@@ -205,13 +205,7 @@
                 title="Log out"
                 t-on-click="logout"
               />
-              <a
-                href="options_main_page.html"
-                class="options-btn"
-                title="Go To options"
-              >
-                <i class="fa fa-cogs fa-2x"/>
-              </a>
+              <a href="options_main_page.html" class="options-btn" title="Go To options"><i class="fa fa-cogs fa-2x"/></a>
             </div>
           </div>
         </div>
@@ -224,10 +218,18 @@
             <thead>
               <tr>
                 <th class="action-col">
-                  <div/>
-
+                  <!-- THERP UX: inline discard active timer -->
                   <t t-if="state.timerStartIso">
-                    <span class="startTimeCount" t-out="formattedTimer"/>
+                    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;">
+                      <span class="startTimeCount" t-out="formattedTimer"/>
+                      <button type="button"
+                        title="Discard active timer without recording a timesheet"
+                        aria-label="Discard active timer without recording a timesheet"
+                        t-on-click="resetTimer"
+                        style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:50%;cursor:pointer;background:#dc3545;color:#fff;line-height:1;">
+                        <i class="fa fa-times" style="font-size:11px;"/>
+                      </button>
+                    </div>
                   </t>
                 </th>
 
@@ -366,6 +368,14 @@
             </div>
           </div>
         </div>
+        <!-- THERP UX: secondary Options shortcut: same-context, no new browser tab. -->
+        <div style="display:flex;justify-content:flex-end;align-items:center;padding:8px 16px 12px;">
+          <a href="options_main_page.html" title="Open Options" aria-label="Open Options"
+            style="width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;border:1px solid currentColor;border-radius:50%;text-decoration:none;">
+            <i class="fa fa-hand-o-right" style="font-size:22px;"/>
+          </a>
+        </div>
+
       </div>
     </div>
   </t>
