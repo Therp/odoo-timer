@@ -1,4 +1,24 @@
 #!/usr/bin/env bash
+# compile_owl_templates.sh — Compile OWL XML templates from src/templates/ into
+# templates.js and distribute to one or more dist targets.
+#
+# Usage:
+#   bash scripts/compile_owl_templates.sh [OPTIONS]
+#
+# Options:
+#   --target=all          Copy to chrome, firefox, and desktop (default)
+#   --target=chrome       Copy only to dist/chrome/js/templates.js
+#   --target=firefox      Copy only to dist/firefox/js/templates.js
+#   --target=desktop      Copy only to dist/desktop/renderer/js/templates.js
+#   --owl-version=2.8.2   OWL version tag to use (default: 2.8.2)
+#   --owl-git-branch=...  OWL branch to fall back to (default: owl-2.x)
+#   --owl-remote=...      OWL git remote URL
+#
+# Examples:
+#   bash scripts/compile_owl_templates.sh
+#   bash scripts/compile_owl_templates.sh --target=desktop
+#   bash scripts/compile_owl_templates.sh --target=all --owl-version=2.8.3
+
 set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -8,237 +28,151 @@ OWL_VERSION="2.8.2"
 OWL_GIT_BRANCH="owl-2.x"
 OWL_REMOTE="https://github.com/odoo/owl.git"
 OWL_DIR="$PROJECT_ROOT/owl"
+TARGET="all"
 
 usage() {
     cat <<EOF
-Usage:
-  $0 [--owl-version=2.8.2] [--owl-git-branch=owl-2.x] [--owl-remote=https://github.com/odoo/owl.git]
+Usage: $0 [--target=all|chrome|firefox|desktop] [--owl-version=2.8.2] [--owl-git-branch=owl-2.x] [--owl-remote=URL]
 
-Examples:
-  $0
-  $0 --owl-version=2.8.3 --owl-git-branch=owl-2.x
-  $0 --owl-version=2.8.2 --owl-git-branch=owl-2.x --owl-remote=https://github.com/odoo/owl.git
+Targets:
+  all      chrome + firefox + desktop (default)
+  chrome   dist/chrome/js/templates.js only
+  firefox  dist/firefox/js/templates.js only
+  desktop  dist/desktop/renderer/js/templates.js only
 
 Defaults:
   --owl-version=2.8.2
   --owl-git-branch=owl-2.x
   --owl-remote=https://github.com/odoo/owl.git
-
-Behavior:
-  - clones or reuses: ./owl
-  - prefers exact tag: v<version>
-  - falls back to branch if the tag is unavailable
-  - compiles XML templates from: src/templates
-  - copies output to:
-      dist/chrome/js/templates.js
-      dist/firefox/js/templates.js
 EOF
 }
 
 for arg in "$@"; do
     case "$arg" in
-        --owl-version=*)
-            OWL_VERSION="${arg#*=}"
-            ;;
-        --owl-git-branch=*)
-            OWL_GIT_BRANCH="${arg#*=}"
-            ;;
-        --owl-remote=*)
-            OWL_REMOTE="${arg#*=}"
-            ;;
-        -h|--help)
-            usage
-            exit 0
-            ;;
-        *)
-            echo "Error: unknown argument: $arg"
-            echo
-            usage
-            exit 1
-            ;;
+        --target=*)          TARGET="${arg#*=}" ;;
+        --owl-version=*)     OWL_VERSION="${arg#*=}" ;;
+        --owl-git-branch=*)  OWL_GIT_BRANCH="${arg#*=}" ;;
+        --owl-remote=*)      OWL_REMOTE="${arg#*=}" ;;
+        -h|--help) usage; exit 0 ;;
+        *) echo "Error: unknown argument: $arg"; echo; usage; exit 1 ;;
     esac
 done
 
+# Validate target
+case "$TARGET" in
+    all|chrome|firefox|desktop) ;;
+    *) echo "Error: unknown target '$TARGET'. Use: all, chrome, firefox, or desktop."; exit 1 ;;
+esac
+
 OWL_TAG="v$OWL_VERSION"
 
+# ── Resolve output paths based on target ──────────────────────────────────────
+declare -a OUTPUT_FILES
+case "$TARGET" in
+    all)
+        OUTPUT_FILES=(
+            "$PROJECT_ROOT/dist/chrome/js/templates.js"
+            "$PROJECT_ROOT/dist/firefox/js/templates.js"
+            "$PROJECT_ROOT/dist/desktop/renderer/js/templates.js"
+        )
+        ;;
+    chrome)  OUTPUT_FILES=("$PROJECT_ROOT/dist/chrome/js/templates.js") ;;
+    firefox) OUTPUT_FILES=("$PROJECT_ROOT/dist/firefox/js/templates.js") ;;
+    desktop) OUTPUT_FILES=("$PROJECT_ROOT/dist/desktop/renderer/js/templates.js") ;;
+esac
+
 if [[ ! -d "$TEMPLATE_DIR" ]]; then
-    echo "Error: template directory not found:"
-    echo "  $TEMPLATE_DIR"
-    exit 1
+    echo "Error: template directory not found: $TEMPLATE_DIR"; exit 1
 fi
 
 XML_COUNT="$(find "$TEMPLATE_DIR" -maxdepth 1 -type f -name '*.xml' | wc -l | tr -d ' ')"
 if [[ "$XML_COUNT" -eq 0 ]]; then
-    echo "Error: no XML template files found in:"
-    echo "  $TEMPLATE_DIR"
-    exit 1
+    echo "Error: no XML template files found in $TEMPLATE_DIR"; exit 1
 fi
 
 echo "============================================================"
 echo "OWL template compilation"
 echo "============================================================"
-echo "Project root     : $PROJECT_ROOT"
-echo "Template dir     : $TEMPLATE_DIR"
-echo "OWL repo dir     : $OWL_DIR"
-echo "OWL remote       : $OWL_REMOTE"
-echo "OWL version      : $OWL_VERSION"
-echo "OWL git branch   : $OWL_GIT_BRANCH"
-echo "Preferred git tag: $OWL_TAG"
-echo "XML files found  : $XML_COUNT"
+echo "Project root  : $PROJECT_ROOT"
+echo "Template dir  : $TEMPLATE_DIR"
+echo "XML files     : $XML_COUNT"
+echo "OWL version   : $OWL_VERSION  (tag $OWL_TAG)"
+echo "Target        : $TARGET"
+printf "Output files  :\n"
+for f in "${OUTPUT_FILES[@]}"; do printf "  %s\n" "$f"; done
 echo "============================================================"
 echo
 
+# ── Clone / update OWL repo ───────────────────────────────────────────────────
 if [[ ! -d "$OWL_DIR/.git" ]]; then
-    if [[ -e "$OWL_DIR" ]]; then
-        echo "Error: $OWL_DIR exists but is not a git repository."
-        exit 1
-    fi
-
-    echo "Cloning OWL repository into:"
-    echo "  $OWL_DIR"
+    [[ -e "$OWL_DIR" ]] && { echo "Error: $OWL_DIR exists but is not a git repo."; exit 1; }
+    echo "Cloning OWL…"
     git clone "$OWL_REMOTE" "$OWL_DIR"
-    echo
 fi
-
-if [[ ! -f "$OWL_DIR/package.json" ]]; then
-    echo "Error: invalid OWL repository, expected file missing:"
-    echo "  $OWL_DIR/package.json"
-    exit 1
-fi
+[[ ! -f "$OWL_DIR/package.json" ]] && { echo "Error: invalid OWL clone."; exit 1; }
 
 cd "$OWL_DIR"
-
-echo "Fetching OWL repository updates..."
+echo "Fetching OWL updates…"
 git fetch origin "$OWL_GIT_BRANCH" --tags
-echo
 
 if git rev-parse -q --verify "refs/tags/$OWL_TAG" >/dev/null 2>&1; then
-    echo "Checking out exact OWL tag: $OWL_TAG"
+    echo "Checking out tag $OWL_TAG…"
     git checkout -f "$OWL_TAG"
 elif git show-ref --verify --quiet "refs/remotes/origin/$OWL_GIT_BRANCH"; then
-    echo "Exact tag $OWL_TAG not found."
-    echo "Falling back to branch: $OWL_GIT_BRANCH"
+    echo "Tag $OWL_TAG not found; using branch $OWL_GIT_BRANCH…"
     git checkout -f "$OWL_GIT_BRANCH"
     git reset --hard "origin/$OWL_GIT_BRANCH"
 else
-    echo "Error: neither tag $OWL_TAG nor remote branch origin/$OWL_GIT_BRANCH was found."
-    exit 1
+    echo "Error: neither tag $OWL_TAG nor branch $OWL_GIT_BRANCH found."; exit 1
 fi
-echo
 
-CURRENT_COMMIT="$(git rev-parse --short HEAD)"
 CURRENT_REF="$(git describe --tags --always 2>/dev/null || git rev-parse --abbrev-ref HEAD)"
+echo "Using OWL: $CURRENT_REF"
 
-echo "Using OWL source:"
-echo "  ref    : $CURRENT_REF"
-echo "  commit : $CURRENT_COMMIT"
-echo
+echo "Installing OWL npm deps…"; npm install
+echo "Building OWL runtime…";   npm run build:runtime
+echo "Building OWL compiler…";  npm run build:compiler
 
-echo "Installing npm dependencies..."
-npm install
-echo
+rm -f "$TEMPLATE_DIR/templates.js" "$OWL_DIR/templates.js"
 
-echo "Building OWL runtime..."
-npm run build:runtime
-echo
-
-echo "Building OWL compiler..."
-npm run build:compiler
-echo
-
-echo "Cleaning old generated templates..."
-rm -f "$TEMPLATE_DIR/templates.js"
-rm -f "$OWL_DIR/templates.js"
-echo
-
-COMPILE_LOG="$(mktemp)"
-TMP_CHROME="$(mktemp)"
-TMP_FIREFOX="$(mktemp)"
-
-cleanup() {
-    rm -f "$COMPILE_LOG" "$TMP_CHROME" "$TMP_FIREFOX"
-}
+COMPILE_LOG="$(mktemp)"; TMP_COMPILED="$(mktemp)"
+cleanup() { rm -f "$COMPILE_LOG" "$TMP_COMPILED"; }
 trap cleanup EXIT
 
-echo "Compiling XML templates from:"
-echo "  $TEMPLATE_DIR"
-echo
-
+echo "Compiling XML templates…"
 set +e
 npm run compile_templates -- "$TEMPLATE_DIR" 2>&1 | tee "$COMPILE_LOG"
 COMPILE_EXIT="${PIPESTATUS[0]}"
 set -e
 
-if [[ "$COMPILE_EXIT" -ne 0 ]]; then
-    echo
-    echo "Error: OWL compile command failed."
-    echo "Aborting without copying templates.js."
-    exit 1
+if [[ "$COMPILE_EXIT" -ne 0 ]] || grep -q "Error while compiling" "$COMPILE_LOG"; then
+    echo "Error: template compilation failed."; exit 1
 fi
 
-if grep -q "Error while compiling" "$COMPILE_LOG"; then
-    echo
-    echo "Error: one or more XML templates failed to compile."
-    echo "Aborting without copying templates.js."
-    exit 1
-fi
-
-COMPILED_COUNT="$(
-    grep -Eo '[0-9]+ templates compiled' "$COMPILE_LOG" \
-        | tail -n 1 \
-        | awk '{print $1}'
-)"
-
+COMPILED_COUNT="$(grep -Eo '[0-9]+ templates compiled' "$COMPILE_LOG" | tail -n 1 | awk '{print $1}')"
 if [[ -z "$COMPILED_COUNT" ]]; then
-    echo
-    echo "Error: could not determine compiled template count."
-    echo "Aborting without copying templates.js."
-    exit 1
+    echo "Error: could not determine compiled template count."; exit 1
 fi
-
 if [[ "$COMPILED_COUNT" != "$XML_COUNT" ]]; then
-    echo
-    echo "Error: compiled template count does not match XML file count."
-    echo "  XML files    : $XML_COUNT"
-    echo "  Compiled     : $COMPILED_COUNT"
-    echo "Aborting without copying templates.js."
-    exit 1
+    echo "Error: compiled $COMPILED_COUNT but expected $XML_COUNT templates."; exit 1
 fi
 
 GENERATED_FILE=""
-if [[ -f "$TEMPLATE_DIR/templates.js" ]]; then
-    GENERATED_FILE="$TEMPLATE_DIR/templates.js"
-elif [[ -f "$OWL_DIR/templates.js" ]]; then
-    GENERATED_FILE="$OWL_DIR/templates.js"
-fi
+[[ -f "$TEMPLATE_DIR/templates.js" ]] && GENERATED_FILE="$TEMPLATE_DIR/templates.js"
+[[ -z "$GENERATED_FILE" && -f "$OWL_DIR/templates.js" ]] && GENERATED_FILE="$OWL_DIR/templates.js"
+[[ -z "$GENERATED_FILE" ]] && { echo "Error: generated templates.js not found."; exit 1; }
 
-if [[ -z "$GENERATED_FILE" || ! -f "$GENERATED_FILE" ]]; then
-    echo
-    echo "Error: could not find generated templates.js after successful compilation."
-    exit 1
-fi
+# Append the global registry assignment
+cp "$GENERATED_FILE" "$TMP_COMPILED"
+printf '\n// Added by scripts/compile_owl_templates.sh\nglobalThis.__THERP_TIMER_TEMPLATES__ = templates;\n' >> "$TMP_COMPILED"
+
+# ── Distribute to targets ──────────────────────────────────────────────────────
+echo
+for OUTPUT in "${OUTPUT_FILES[@]}"; do
+    mkdir -p "$(dirname "$OUTPUT")"
+    cp "$TMP_COMPILED" "$OUTPUT"
+    echo "Copied → $OUTPUT"
+done
 
 echo
-echo "Generated templates file:"
-echo "  $GENERATED_FILE"
-echo
-
-cp "$GENERATED_FILE" "$TMP_CHROME"
-cp "$GENERATED_FILE" "$TMP_FIREFOX"
-
-printf '\n// Added by scripts/compile_owl_templates.sh\nglobalThis.__THERP_TIMER_TEMPLATES__ = templates;\n' >> "$TMP_CHROME"
-printf '\n// Added by scripts/compile_owl_templates.sh\nglobalThis.__THERP_TIMER_TEMPLATES__ = templates;\n' >> "$TMP_FIREFOX"
-
-mkdir -p "$PROJECT_ROOT/dist/chrome/js" "$PROJECT_ROOT/dist/firefox/js"
-
-mv "$TMP_CHROME" "$PROJECT_ROOT/dist/chrome/js/templates.js"
-mv "$TMP_FIREFOX" "$PROJECT_ROOT/dist/firefox/js/templates.js"
-
-echo "Copied compiled templates to:"
-echo "  $PROJECT_ROOT/dist/chrome/js/templates.js"
-echo "  $PROJECT_ROOT/dist/firefox/js/templates.js"
-echo
-echo "Success."
-echo
-echo "Recommended .gitignore entry:"
-echo "  /owl/"
+echo "Success. $COMPILED_COUNT templates compiled for target: $TARGET"
