@@ -465,7 +465,7 @@ class PopupApp extends Component {
             projects: [],
             issues: [],
             searchQuery: '',
-            helpdeskStageFilter: '',
+            stageFilter: '',
             limitTo: DEFAULTS.searchLimit,
             allIssues: false,
             autoDownloadIssueTimesheet: false,
@@ -503,6 +503,7 @@ class PopupApp extends Component {
         this.togglePassword = this.togglePassword.bind(this);
         this.updateLimitPreference = this.updateLimitPreference.bind(this);
         this.updateShowAllPreference = this.updateShowAllPreference.bind(this);
+        this.updateStageFilter = this.updateStageFilter.bind(this);
         this.showHelpdeskTimesheetInfo = this.showHelpdeskTimesheetInfo.bind(this);
 
         onMounted(() => {
@@ -587,20 +588,24 @@ class PopupApp extends Component {
     get showHelpdeskProject() { return this.isHelpdeskSource && Boolean(this.state.sourceCapabilities.projectField); }
     get showHelpdeskHours() { return this.isHelpdeskSource && Boolean(this.state.sourceCapabilities.hoursField); }
 
-    get helpdeskStageOptions() {
-        if (!this.isHelpdeskSource) return [];
+    get stageOptions() {
+        // THERP UX FIX: stage options are always iterable during reactive bootstrap.
         const stages = new Map();
-        for (const issue of this.state.issues) {
+        const records = Array.isArray(this.state.issues) ? this.state.issues : [];
+        for (const issue of records) {
             const value = issue?.stage_id;
             if (!Array.isArray(value) || !value[0]) continue;
             const id = Number(value[0]);
+            if (!id) continue;
             const candidate = {
                 id,
                 name: this.normalizeText(value[1]) || `#${id}`,
                 sequence: Number(issue.stage_sequence ?? 9999),
             };
-            const current = stages.get(id);
-            if (!current || candidate.sequence < current.sequence) stages.set(id, candidate);
+            const previous = stages.get(id);
+            if (!previous || candidate.sequence < previous.sequence) {
+                stages.set(id, candidate);
+            }
         }
         return [...stages.values()].sort((a, b) =>
             a.sequence - b.sequence || a.name.localeCompare(b.name)
@@ -832,8 +837,8 @@ class PopupApp extends Component {
         await storage.set(STORAGE_KEYS.searchLimit, value);
     }
 
-    updateHelpdeskStageFilter(value) {
-        this.state.helpdeskStageFilter = String(value || '');
+    updateStageFilter(value) {
+        this.state.stageFilter = String(value || '');
     }
 
     async updateShowAllPreference(value) {
@@ -848,7 +853,7 @@ class PopupApp extends Component {
     get filteredIssues() {
         const limit = this.state.limitTo ? Number(this.state.limitTo) : null;
         const query = (this.state.searchQuery || '').trim();
-        let issues = [...this.state.issues];
+        let issues = Array.isArray(this.state.issues) ? [...this.state.issues] : [];
 
         issues.sort((a, b) => {
             if (this.isActiveTimerItem(a)) return -1;
@@ -860,11 +865,18 @@ class PopupApp extends Component {
             return a.id - b.id;
         });
 
-        if (this.isHelpdeskSource && this.state.helpdeskStageFilter) {
-            const stageId = Number(this.state.helpdeskStageFilter);
-            issues = issues.filter((issue) =>
-                this.isActiveTimerItem(issue) || Number(issue.stage_id?.[0]) === stageId
-            );
+        // THERP UX PATCH: generic dynamic stage filter.
+        // Only apply a stored selection when that stage is present in the
+        // currently loaded source. This prevents a stage selected on one
+        // remote/source from hiding everything after switching remotes.
+        if (this.state.stageFilter) {
+            const stageId = Number(this.state.stageFilter);
+            const availableStageIds = new Set(this.stageOptions.map((stage) => Number(stage.id)));
+            if (availableStageIds.has(stageId)) {
+                issues = issues.filter((issue) =>
+                    this.isActiveTimerItem(issue) || Number(issue.stage_id?.[0]) === stageId
+                );
+            }
         }
 
         const matchesSearch = (issue) => this.matchesCurrentSearch(issue, query);

@@ -15,6 +15,13 @@
           </li>
           <li
             class="chooser list-group-item"
+            t-att-class="state.activePage === 'privacy' ? 'selected' : 'notselected'"
+            t-on-click="() => state.activePage = 'privacy'"
+          >
+            <i class="fa fa-shield"/> <span>Privacy &amp; License</span>
+          </li>
+          <li
+            class="chooser list-group-item"
             t-att-class="state.activePage === 'options' ? 'selected' : 'notselected'"
             t-on-click="() => state.activePage = 'options'"
           >
@@ -23,8 +30,8 @@
         </ul>
         <hr/>
         <div class="footer-app">
-          <a href="popup.html" class="back-left">
-            <i class="fa fa-arrow-circle-left fa-2x"/>
+          <a href="popup.html" class="back-left" title="Back to timer">
+            <i class="fa fa-hand-o-left fa-2x"/>
           </a>
         </div>
       </div>
@@ -60,6 +67,17 @@
               <li class="list-group-item">Switch between remote sessions and download timesheets as CSV</li>
             </ul>
           </div>
+          <!-- THERP UX PATCH: supported-version matrix. -->
+          <h4 class="title-app text-center" style="margin-top:16px;">Supported Odoo Versions</h4>
+          <hr/>
+          <div class="timer-features">
+            <ul class="list-group">
+              <li class="list-group-item"><b>Issues (project.issue):</b> Odoo 8.0–10.0 when the legacy Issue Tracking module is installed.</li>
+              <li class="list-group-item"><b>Project Tasks (project.task):</b> Odoo 14.0–19.0 is the current supported/tested compatibility range.</li>
+              <li class="list-group-item"><b>Helpdesk Tickets (helpdesk.ticket):</b> target compatibility is Odoo 16.0–19.0 when Helpdesk is installed; Helpdesk timesheet recording additionally requires a compatible server-side timesheet integration. Current acceptance testing focuses on 18.0–19.0.</li>
+              <li class="list-group-item"><i class="fa fa-info-circle"/> The timer also detects fields/capabilities from the connected server, so installed modules and customizations can affect what is available.</li>
+            </ul>
+          </div>
           <h4 class="title-app text-center" style="margin-top:16px;">Helpdesk notes</h4>
           <hr/>
           <ul class="list-group">
@@ -68,6 +86,48 @@
             <li class="list-group-item">Odoo normally requires an active employee linked to the current user in the ticket/project company. The extension checks this when the server permits it; Odoo remains the final authority.</li>
             <li class="list-group-item">When available, the Therp Task button opens the ticket's linked Therp task. Tickets without a link simply show an empty cell.</li>
           </ul>
+        </div>
+      </div>
+
+      <!-- THERP UX PATCH: privacy-license-page -->
+      <div
+        class="options-box box"
+        t-att-class="state.activePage === 'privacy' ? 'active_page' : 'inactive_page'"
+      >
+        <div class="about-app">
+          <h4 class="title-app text-center"><i class="fa fa-shield"/> Privacy &amp; License</h4>
+          <hr/>
+          <div class="timer-features">
+            <ul class="list-group">
+              <li class="list-group-item"><b>Local configuration:</b> saved Odoo remotes, data-source choices, preferences and optional remote logos are stored in browser-extension storage.</li>
+              <li class="list-group-item"><b>Odoo communication:</b> the extension communicates with the Odoo hosts you configure in order to authenticate, load work items and create/read timesheets.</li>
+              <li class="list-group-item"><b>Sessions:</b> after login the extension uses the Odoo session for subsequent RPC calls; do not share browser profiles containing active sessions.</li>
+              <li class="list-group-item"><b>Exports:</b> CSV files are produced only when you request a download.</li>
+              <li class="list-group-item"><b>Security:</b> keep Odoo permissions, employee/company access and browser profiles appropriately restricted for the people using this timer.</li>
+            </ul>
+          </div>
+          <h4 class="title-app text-center" style="margin-top:16px;">License</h4>
+          <hr/>
+          <p>
+            Therp Timer is distributed under the repository's <b>Therp Timer License</b>.
+            The full license text, conditions, warranty disclaimer and liability terms are maintained with the source code.
+          </p>
+          <p class="text-center">
+            <a href="https://github.com/Therp/odoo-timer/blob/master/LICENSE.md" target="_blank" rel="noreferrer">
+              <i class="fa fa-file-text-o"/> Read the full software license
+            </a>
+          </p>
+          <hr/>
+          <p class="text-muted" style="font-size:12px;line-height:1.5;">
+            This page is a product-oriented summary. For the current and authoritative
+            Therp privacy statement, including how Therp B.V. processes personal data,
+            retention, data-subject rights and contact information, use the link below.
+          </p>
+          <p class="text-center">
+            <a href="https://therp.nl/terms-and-conditions#Therp-Privacy-Statement" target="_blank" rel="noreferrer">
+              <i class="fa fa-external-link"/> Open the current Therp Privacy Statement
+            </a>
+          </p>
         </div>
       </div>
 
@@ -193,10 +253,11 @@
                 <div style="min-width:220px;flex:1;">
                   <input id="remote-logo" type="file" class="form-control"
                     accept="image/png,image/jpeg,image/webp,image/gif"
-                    t-on-change="onRemoteLogoChange"/>
+                    t-on-change="onRemoteLogoChange"
+                  t-on-click="onRemoteLogoPickerClick"/>
                   <div style="margin-top:5px;font-size:11px;color:#7b8794;line-height:1.35;">
                     PNG, JPEG, WebP or GIF; maximum 512 KB.
-                    <br/><b>Browser tip:</b> if choosing a file closes the extension popup, open Inspect/DevTools for the popup first and then choose the logo.
+                    <br/><b>Logo files are selected from this persistent Options tab, so the page remains open while the browser file picker is active.</b> if choosing a file closes the extension popup, open Inspect/DevTools for the popup first and then choose the logo.
                   </div>
                   <button type="button" class="btn btn-sm btn-default"
                     style="margin-top:7px;" t-on-click="clearRemoteLogo">

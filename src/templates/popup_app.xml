@@ -153,17 +153,19 @@
             t-att-value="state.searchQuery"
             t-on-input="(ev) => state.searchQuery = ev.target.value"
           />
-          <t t-if="isHelpdeskSource">
+          <!-- THERP UX PATCH: one dynamic stage filter for all supported sources. -->
+          <t t-if="(stageOptions || []).length">
             <select
-              id="helpdeskStageFilter"
-              t-att-value="state.helpdeskStageFilter"
-              t-on-change="(ev) => updateHelpdeskStageFilter(ev.target.value)"
+              id="stageFilter"
+              aria-label="Filter by stage"
+              t-att-value="state.stageFilter"
+              t-on-change="(ev) => { state.stageFilter = ev.target.value; }"
             >
               <option value="">All stages</option>
-              <t t-foreach="helpdeskStageOptions" t-as="stage" t-key="stage.id">
+              <t t-foreach="stageOptions || []" t-as="stage" t-key="stage.id">
                 <option
                   t-att-value="'' + stage.id"
-                  t-att-selected="state.helpdeskStageFilter === '' + stage.id"
+                  t-att-selected="state.stageFilter === '' + stage.id"
                 ><t t-out="stage.name"/></option>
               </t>
             </select>
@@ -208,13 +210,7 @@
                 title="Log out"
                 t-on-click="logout"
               />
-              <a
-                href="options_main_page.html"
-                class="options-btn"
-                title="Go To options"
-              >
-                <i class="fa fa-cogs fa-2x"/>
-              </a>
+              <a href="options_main_page.html" class="options-btn" title="Go To options"><i class="fa fa-cogs fa-2x"/></a>
             </div>
           </div>
         </div>
@@ -227,9 +223,18 @@
             <thead>
               <tr>
                 <th class="action-col">
-                  <div/>
+                  <!-- THERP UX: inline discard active timer -->
                   <t t-if="state.timerStartIso">
-                    <span class="startTimeCount" t-out="formattedTimer"/>
+                    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;">
+                      <span class="startTimeCount" t-out="formattedTimer"/>
+                      <button type="button"
+                        title="Discard active timer without recording a timesheet"
+                        aria-label="Discard active timer without recording a timesheet"
+                        t-on-click="resetTimer"
+                        style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:50%;cursor:pointer;background:#dc3545;color:#fff;line-height:1;">
+                        <i class="fa fa-times" style="font-size:11px;"/>
+                      </button>
+                    </div>
                   </t>
                 </th>
 
@@ -419,7 +424,12 @@
               <t t-if="!filteredIssues.length">
                 <tr>
                   <td class="text-center text-danger" t-att-colspan="tableColumnCount">
-                    No matching items are currently available
+                    <t t-if="state.stageFilter and !state.allIssues">
+                      No matching items assigned to you for this stage. Turn on &quot;Show for everyone&quot; to include other users' items.
+                    </t>
+                    <t t-if="!state.stageFilter or state.allIssues">
+                      No matching items are currently available
+                    </t>
                   </td>
                 </tr>
               </t>
@@ -429,7 +439,7 @@
 
         <div class="container footer info-footer">
           <div class="row">
-            <div class="remote-info-block col-md-12">
+            <div class="remote-info-block col-md-12" style="position:relative;padding-right:68px;">
               <span><b>Odoo:</b> <span class="remote-value" t-out="state.serverVersion || 'Unknown'"/></span><br/>
               <span><b>OWL:</b> <span class="remote-value" t-out="state.odooOWLVersion || 'Unknown'"/></span><br/>
               <span><b>Host:</b> <span class="remote-value" t-out="state.currentHost || '-'"/></span><br/>
@@ -437,9 +447,18 @@
               <span><b>Current User:</b> <span class="remote-value" t-out="state.user ? state.user.display_name : '-'"/></span><br/>
               <span><b>Current Company:</b> <span class="remote-value" t-out="currentCompanyLabel"/></span><br/>
               <span t-att-title="allowedCompanyLabels"><b>Allowed Companies:</b> <span class="remote-value" t-out="allowedCompanyLabels || '-'"/></span>
-            </div>
+            
+              <!-- THERP UX: Options shortcut inside info footer -->
+              <a href="options_main_page.html"
+                title="Open Options" aria-label="Open Options"
+                style="position:absolute;right:14px;top:50%;transform:translateY(-50%);width:42px;height:42px;display:inline-flex;align-items:center;justify-content:center;border:2px solid #1aa7d7;border-radius:50%;background:#fff;color:#1aa7d7;text-decoration:none;box-sizing:border-box;">
+                <i class="fa fa-hand-o-right" style="font-size:23px;"/>
+              </a>
+</div>
           </div>
         </div>
+
+
       </div>
     </div>
   </t>

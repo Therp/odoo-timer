@@ -9,7 +9,7 @@ export const templates = {
   const comp4 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
   const comp5 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
   
-  let block1 = createBlock(`<div><!-- ── Left navigation sidebar ─────────────────────────────────── --><div id="navigation"><h1 class="title-app">Timer Options</h1><ul class="list-group"><li class="chooser list-group-item" block-attribute-0="class" block-handler-1="click"><i class="fa fa-info-circle"/> <span>About Timer</span></li><li class="chooser list-group-item" block-attribute-2="class" block-handler-3="click"><i class="fa fa-cogs"/> <span>Options</span></li></ul><hr/><div class="footer-app"><a href="popup.html" class="back-left"><i class="fa fa-arrow-circle-left fa-2x"/></a></div></div><!-- ── About page ──────────────────────────────────────────────── --><div class="options-box box" block-attribute-4="class"><h1><div class="logo"><img src="/img/logo.png"/></div></h1><hr/><div class="about-app"><h4 class="title-app text-center">Description</h4><hr/> This is the Owl browser extension for posting work hours to Odoo timesheets. It supports Project Tasks, legacy Issues and Helpdesk Tickets across saved Odoo remotes. <hr/><h4 class="title-app text-center">Features</h4><hr/><div class="timer-features"><ul class="list-group"><li class="list-group-item">Project Tasks, legacy Issues and Helpdesk Tickets</li><li class="list-group-item">Start/stop timing and create native Odoo timesheet lines</li><li class="list-group-item">Helpdesk stage filtering plus a readiness check before starting a ticket timer</li><li class="list-group-item">A blue info icon explains when Odoo company/employee configuration prevents Helpdesk timesheets</li><li class="list-group-item">Show assigned items or everyone's items</li><li class="list-group-item">Save the same Odoo database as separate Task, Issue or Helpdesk remotes</li><li class="list-group-item">Optional company logo per remote, with the Therp logo as fallback</li><li class="list-group-item">Switch between remote sessions and download timesheets as CSV</li></ul></div><h4 class="title-app text-center" style="margin-top:16px;">Helpdesk notes</h4><hr/><ul class="list-group"><li class="list-group-item">Choose <b>From Helpdesk Tickets</b> on the saved remote. The same host/database can also have a separate <b>From Tasks</b> remote.</li><li class="list-group-item">If a blue <i class="fa fa-info-circle"/> appears instead of Play, click it for the exact reason that Odoo cannot currently create a Helpdesk timesheet.</li><li class="list-group-item">Odoo normally requires an active employee linked to the current user in the ticket/project company. The extension checks this when the server permits it; Odoo remains the final authority.</li><li class="list-group-item">When available, the Therp Task button opens the ticket's linked Therp task. Tickets without a link simply show an empty cell.</li></ul></div></div><!-- ── Options / remotes page ──────────────────────────────────── --><div class="options-box box" block-attribute-5="class"><div class="form remote-options-form"><form block-handler-6="submit.prevent"><!-- [FIX #38] General Settings ──────────────────────────── --><h4 class="remote-title text-info">General Settings</h4><hr/><div class="form-group" style="padding:0 2px;"><label class="general-setting-label" style="display:flex;align-items:center;gap:8px;margin:0;line-height:1.35;"><input type="checkbox" class="defaultCheckbox" style="margin:0;position:static;flex:0 0 auto;" block-property-7="checked" block-handler-8="change"/><span>Auto Download Current Item Timesheet</span></label><p class="inline-help" style="margin:6px 0 0 24px;line-height:1.35;"> Store the timesheet locally each time you stop the timer on an item. </p></div><hr/><!-- Add Remote form ─────────────────────────────────────── --><h4 class="remote-title text-info">Add Remote</h4><hr/><div class="form-group"><label for="remote-host">Odoo Host</label><input type="text" class="form-control" id="remote-host" placeholder="https://your-odoo-host.example" block-property-9="value" block-handler-10="input"/></div><div class="form-group"><label for="remote-name">Display Name</label><input type="text" class="form-control" id="remote-name" placeholder="Therp" block-property-11="value" block-handler-12="input"/></div><div class="form-group"><label for="remote-database">Odoo Database</label><input type="text" class="form-control" id="remote-database" placeholder="someodoodatabase" block-property-13="value" block-handler-14="input"/></div><div class="form-group"><label class="label">Data Source</label><ul class="data-source-list list-group"><li class="list-group-item"><div class="form-check"><input class="form-check-input" type="radio" value="project.issue" id="FromIssues" block-property-15="checked" block-handler-16="change"/><label class="form-check-label" for="FromIssues">From Issues</label></div></li><li class="list-group-item"><div class="form-check"><input class="form-check-input" type="radio" value="project.task" id="FromTasks" block-property-17="checked" block-handler-18="change"/><label class="form-check-label" for="FromTasks">From Tasks</label></div></li><li class="list-group-item"><div class="form-check"><input class="form-check-input" type="radio" value="helpdesk.ticket" id="FromHelpdeskTickets" block-property-19="checked" block-handler-20="change"/><label class="form-check-label" for="FromHelpdeskTickets">From Helpdesk Tickets</label></div></li></ul></div><div class="form-group"><label for="remote-logo">Company Logo <span class="text-muted">(optional)</span></label><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><img block-attribute-21="src" alt="Remote logo preview" style="width:76px;height:54px;object-fit:contain;border:1px solid #dbe3ea;border-radius:6px;background:#fff;padding:4px;"/><div style="min-width:220px;flex:1;"><input id="remote-logo" type="file" class="form-control" accept="image/png,image/jpeg,image/webp,image/gif" block-handler-22="change"/><div style="margin-top:5px;font-size:11px;color:#7b8794;line-height:1.35;"> PNG, JPEG, WebP or GIF; maximum 512 KB. <br/><b>Browser tip:</b> if choosing a file closes the extension popup, open Inspect/DevTools for the popup first and then choose the logo. </div><button type="button" class="btn btn-sm btn-default" style="margin-top:7px;" block-handler-23="click"> Use Therp default logo </button></div></div></div><span class="caption-remotes">Controls</span><div class="remotes-control-btns col-md-12 text-center text-info pointer"><i title="Add a remote host" class="fa fa-2x fa-plus-circle" block-handler-24="click"/><i title="Refresh list of remotes" class="fa fa-2x fa-refresh" block-handler-25="click"/><i title="View list of remotes" class="fa fa-2x fa-eye" block-handler-26="click"/><i title="Remove all remotes" class="fa fa-2x fa-minus-circle" block-handler-27="click"/></div><block-child-0/></form><!-- Saved remotes table ──────────────────────────────────── --><block-child-1/></div></div></div>`);
+  let block1 = createBlock(`<div><!-- ── Left navigation sidebar ─────────────────────────────────── --><div id="navigation"><h1 class="title-app">Timer Options</h1><ul class="list-group"><li class="chooser list-group-item" block-attribute-0="class" block-handler-1="click"><i class="fa fa-info-circle"/> <span>About Timer</span></li><li class="chooser list-group-item" block-attribute-2="class" block-handler-3="click"><i class="fa fa-shield"/> <span>Privacy &amp; License</span></li><li class="chooser list-group-item" block-attribute-4="class" block-handler-5="click"><i class="fa fa-cogs"/> <span>Options</span></li></ul><hr/><div class="footer-app"><a href="popup.html" class="back-left" title="Back to timer"><i class="fa fa-hand-o-left fa-2x"/></a></div></div><!-- ── About page ──────────────────────────────────────────────── --><div class="options-box box" block-attribute-6="class"><h1><div class="logo"><img src="/img/logo.png"/></div></h1><hr/><div class="about-app"><h4 class="title-app text-center">Description</h4><hr/> This is the Owl browser extension for posting work hours to Odoo timesheets. It supports Project Tasks, legacy Issues and Helpdesk Tickets across saved Odoo remotes. <hr/><h4 class="title-app text-center">Features</h4><hr/><div class="timer-features"><ul class="list-group"><li class="list-group-item">Project Tasks, legacy Issues and Helpdesk Tickets</li><li class="list-group-item">Start/stop timing and create native Odoo timesheet lines</li><li class="list-group-item">Helpdesk stage filtering plus a readiness check before starting a ticket timer</li><li class="list-group-item">A blue info icon explains when Odoo company/employee configuration prevents Helpdesk timesheets</li><li class="list-group-item">Show assigned items or everyone's items</li><li class="list-group-item">Save the same Odoo database as separate Task, Issue or Helpdesk remotes</li><li class="list-group-item">Optional company logo per remote, with the Therp logo as fallback</li><li class="list-group-item">Switch between remote sessions and download timesheets as CSV</li></ul></div><!-- THERP UX PATCH: supported-version matrix. --><h4 class="title-app text-center" style="margin-top:16px;">Supported Odoo Versions</h4><hr/><div class="timer-features"><ul class="list-group"><li class="list-group-item"><b>Issues (project.issue):</b> Odoo 8.0–10.0 when the legacy Issue Tracking module is installed.</li><li class="list-group-item"><b>Project Tasks (project.task):</b> Odoo 14.0–19.0 is the current supported/tested compatibility range.</li><li class="list-group-item"><b>Helpdesk Tickets (helpdesk.ticket):</b> target compatibility is Odoo 16.0–19.0 when Helpdesk is installed; Helpdesk timesheet recording additionally requires a compatible server-side timesheet integration. Current acceptance testing focuses on 18.0–19.0.</li><li class="list-group-item"><i class="fa fa-info-circle"/> The timer also detects fields/capabilities from the connected server, so installed modules and customizations can affect what is available.</li></ul></div><h4 class="title-app text-center" style="margin-top:16px;">Helpdesk notes</h4><hr/><ul class="list-group"><li class="list-group-item">Choose <b>From Helpdesk Tickets</b> on the saved remote. The same host/database can also have a separate <b>From Tasks</b> remote.</li><li class="list-group-item">If a blue <i class="fa fa-info-circle"/> appears instead of Play, click it for the exact reason that Odoo cannot currently create a Helpdesk timesheet.</li><li class="list-group-item">Odoo normally requires an active employee linked to the current user in the ticket/project company. The extension checks this when the server permits it; Odoo remains the final authority.</li><li class="list-group-item">When available, the Therp Task button opens the ticket's linked Therp task. Tickets without a link simply show an empty cell.</li></ul></div></div><!-- THERP UX PATCH: privacy-license-page --><div class="options-box box" block-attribute-7="class"><div class="about-app"><h4 class="title-app text-center"><i class="fa fa-shield"/> Privacy &amp; License</h4><hr/><div class="timer-features"><ul class="list-group"><li class="list-group-item"><b>Local configuration:</b> saved Odoo remotes, data-source choices, preferences and optional remote logos are stored in browser-extension storage.</li><li class="list-group-item"><b>Odoo communication:</b> the extension communicates with the Odoo hosts you configure in order to authenticate, load work items and create/read timesheets.</li><li class="list-group-item"><b>Sessions:</b> after login the extension uses the Odoo session for subsequent RPC calls; do not share browser profiles containing active sessions.</li><li class="list-group-item"><b>Exports:</b> CSV files are produced only when you request a download.</li><li class="list-group-item"><b>Security:</b> keep Odoo permissions, employee/company access and browser profiles appropriately restricted for the people using this timer.</li></ul></div><h4 class="title-app text-center" style="margin-top:16px;">License</h4><hr/><p> Therp Timer is distributed under the repository's <b>Therp Timer License</b>. The full license text, conditions, warranty disclaimer and liability terms are maintained with the source code. </p><p class="text-center"><a href="https://github.com/Therp/odoo-timer/blob/master/LICENSE.md" target="_blank" rel="noreferrer"><i class="fa fa-file-text-o"/> Read the full software license </a></p><hr/><p class="text-muted" style="font-size:12px;line-height:1.5;"> This page is a product-oriented summary. For the current and authoritative Therp privacy statement, including how Therp B.V. processes personal data, retention, data-subject rights and contact information, use the link below. </p><p class="text-center"><a href="https://therp.nl/terms-and-conditions#Therp-Privacy-Statement" target="_blank" rel="noreferrer"><i class="fa fa-external-link"/> Open the current Therp Privacy Statement </a></p></div></div><!-- ── Options / remotes page ──────────────────────────────────── --><div class="options-box box" block-attribute-8="class"><div class="form remote-options-form"><form block-handler-9="submit.prevent"><!-- [FIX #38] General Settings ──────────────────────────── --><h4 class="remote-title text-info">General Settings</h4><hr/><div class="form-group" style="padding:0 2px;"><label class="general-setting-label" style="display:flex;align-items:center;gap:8px;margin:0;line-height:1.35;"><input type="checkbox" class="defaultCheckbox" style="margin:0;position:static;flex:0 0 auto;" block-property-10="checked" block-handler-11="change"/><span>Auto Download Current Item Timesheet</span></label><p class="inline-help" style="margin:6px 0 0 24px;line-height:1.35;"> Store the timesheet locally each time you stop the timer on an item. </p></div><hr/><!-- Add Remote form ─────────────────────────────────────── --><h4 class="remote-title text-info">Add Remote</h4><hr/><div class="form-group"><label for="remote-host">Odoo Host</label><input type="text" class="form-control" id="remote-host" placeholder="https://your-odoo-host.example" block-property-12="value" block-handler-13="input"/></div><div class="form-group"><label for="remote-name">Display Name</label><input type="text" class="form-control" id="remote-name" placeholder="Therp" block-property-14="value" block-handler-15="input"/></div><div class="form-group"><label for="remote-database">Odoo Database</label><input type="text" class="form-control" id="remote-database" placeholder="someodoodatabase" block-property-16="value" block-handler-17="input"/></div><div class="form-group"><label class="label">Data Source</label><ul class="data-source-list list-group"><li class="list-group-item"><div class="form-check"><input class="form-check-input" type="radio" value="project.issue" id="FromIssues" block-property-18="checked" block-handler-19="change"/><label class="form-check-label" for="FromIssues">From Issues</label></div></li><li class="list-group-item"><div class="form-check"><input class="form-check-input" type="radio" value="project.task" id="FromTasks" block-property-20="checked" block-handler-21="change"/><label class="form-check-label" for="FromTasks">From Tasks</label></div></li><li class="list-group-item"><div class="form-check"><input class="form-check-input" type="radio" value="helpdesk.ticket" id="FromHelpdeskTickets" block-property-22="checked" block-handler-23="change"/><label class="form-check-label" for="FromHelpdeskTickets">From Helpdesk Tickets</label></div></li></ul></div><div class="form-group"><label for="remote-logo">Company Logo <span class="text-muted">(optional)</span></label><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><img block-attribute-24="src" alt="Remote logo preview" style="width:76px;height:54px;object-fit:contain;border:1px solid #dbe3ea;border-radius:6px;background:#fff;padding:4px;"/><div style="min-width:220px;flex:1;"><input id="remote-logo" type="file" class="form-control" accept="image/png,image/jpeg,image/webp,image/gif" block-handler-25="change" block-handler-26="click"/><div style="margin-top:5px;font-size:11px;color:#7b8794;line-height:1.35;"> PNG, JPEG, WebP or GIF; maximum 512 KB. <br/><b>Logo files are selected from this persistent Options tab, so the page remains open while the browser file picker is active.</b> if choosing a file closes the extension popup, open Inspect/DevTools for the popup first and then choose the logo. </div><button type="button" class="btn btn-sm btn-default" style="margin-top:7px;" block-handler-27="click"> Use Therp default logo </button></div></div></div><span class="caption-remotes">Controls</span><div class="remotes-control-btns col-md-12 text-center text-info pointer"><i title="Add a remote host" class="fa fa-2x fa-plus-circle" block-handler-28="click"/><i title="Refresh list of remotes" class="fa fa-2x fa-refresh" block-handler-29="click"/><i title="View list of remotes" class="fa fa-2x fa-eye" block-handler-30="click"/><i title="Remove all remotes" class="fa fa-2x fa-minus-circle" block-handler-31="click"/></div><block-child-0/></form><!-- Saved remotes table ──────────────────────────────────── --><block-child-1/></div></div></div>`);
   let block2 = createBlock(`<div class="remote-error"><block-child-0/></div>`);
   let block4 = createBlock(`<div class="remotes-table-info"><table class="table table-bordered"><caption class="text-info caption-remotes"> List of Available Remotes </caption><thead><tr><th scope="col" style="width:64px">Logo</th><th scope="col">Remote</th><th scope="col">Host</th><th scope="col">Database</th><th scope="col">Source</th><th scope="col">State</th><th/></tr></thead><tbody><block-child-0/></tbody></table></div>`);
   let block6 = createBlock(`<tr><td class="text-center" style="width:64px"><img block-attribute-0="src" alt="Remote logo" style="width:48px;height:34px;object-fit:contain;background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:2px;"/></td><td class="text-info"><block-child-0/></td><td><block-child-1/></td><td><block-child-2/></td><td><block-child-3/></td><td><block-child-4/></td><td class="remote-row-actions"><i class="fa fa-pencil text-primary" title="Edit remote" style="margin-right: 10px; cursor: pointer;" block-handler-1="click"/><i class="fa fa-trash text-danger" title="Remove remote" style="cursor: pointer;" block-handler-2="click"/></td></tr>`);
@@ -19,40 +19,45 @@ export const templates = {
     let attr1 = ctx['state'].activePage==='about'?'selected':'notselected';
     const v1 = ctx['state'];
     let hdlr1 = [()=>v1.activePage='about', ctx];
-    let attr2 = ctx['state'].activePage==='options'?'selected':'notselected';
+    let attr2 = ctx['state'].activePage==='privacy'?'selected':'notselected';
     const v2 = ctx['state'];
-    let hdlr2 = [()=>v2.activePage='options', ctx];
-    let attr3 = ctx['state'].activePage==='about'?'active_page':'inactive_page';
-    let attr4 = ctx['state'].activePage==='options'?'active_page':'inactive_page';
-    let hdlr3 = ["prevent", ctx['addRemote'], ctx];
-    let prop1 = new Boolean(ctx['state'].autoDownloadIssueTimesheet);
-    let hdlr4 = [ctx['toggleAutoDownload'], ctx];
-    let prop2 = new String((ctx['state'].form.remote_host) === 0 ? 0 : ((ctx['state'].form.remote_host) || ""));
+    let hdlr2 = [()=>v2.activePage='privacy', ctx];
+    let attr3 = ctx['state'].activePage==='options'?'selected':'notselected';
     const v3 = ctx['state'];
-    let hdlr5 = [(_ev)=>v3.form.remote_host=_ev.target.value, ctx];
-    let prop3 = new String((ctx['state'].form.remote_name) === 0 ? 0 : ((ctx['state'].form.remote_name) || ""));
+    let hdlr3 = [()=>v3.activePage='options', ctx];
+    let attr4 = ctx['state'].activePage==='about'?'active_page':'inactive_page';
+    let attr5 = ctx['state'].activePage==='privacy'?'active_page':'inactive_page';
+    let attr6 = ctx['state'].activePage==='options'?'active_page':'inactive_page';
+    let hdlr4 = ["prevent", ctx['addRemote'], ctx];
+    let prop1 = new Boolean(ctx['state'].autoDownloadIssueTimesheet);
+    let hdlr5 = [ctx['toggleAutoDownload'], ctx];
+    let prop2 = new String((ctx['state'].form.remote_host) === 0 ? 0 : ((ctx['state'].form.remote_host) || ""));
     const v4 = ctx['state'];
-    let hdlr6 = [(_ev)=>v4.form.remote_name=_ev.target.value, ctx];
-    let prop4 = new String((ctx['state'].form.remote_database) === 0 ? 0 : ((ctx['state'].form.remote_database) || ""));
+    let hdlr6 = [(_ev)=>v4.form.remote_host=_ev.target.value, ctx];
+    let prop3 = new String((ctx['state'].form.remote_name) === 0 ? 0 : ((ctx['state'].form.remote_name) || ""));
     const v5 = ctx['state'];
-    let hdlr7 = [(_ev)=>v5.form.remote_database=_ev.target.value, ctx];
-    let prop5 = new Boolean(ctx['state'].form.remote_datasrc==='project.issue');
+    let hdlr7 = [(_ev)=>v5.form.remote_name=_ev.target.value, ctx];
+    let prop4 = new String((ctx['state'].form.remote_database) === 0 ? 0 : ((ctx['state'].form.remote_database) || ""));
     const v6 = ctx['state'];
-    let hdlr8 = [()=>v6.form.remote_datasrc='project.issue', ctx];
-    let prop6 = new Boolean(ctx['state'].form.remote_datasrc==='project.task');
+    let hdlr8 = [(_ev)=>v6.form.remote_database=_ev.target.value, ctx];
+    let prop5 = new Boolean(ctx['state'].form.remote_datasrc==='project.issue');
     const v7 = ctx['state'];
-    let hdlr9 = [()=>v7.form.remote_datasrc='project.task', ctx];
-    let prop7 = new Boolean(ctx['state'].form.remote_datasrc==='helpdesk.ticket');
+    let hdlr9 = [()=>v7.form.remote_datasrc='project.issue', ctx];
+    let prop6 = new Boolean(ctx['state'].form.remote_datasrc==='project.task');
     const v8 = ctx['state'];
-    let hdlr10 = [()=>v8.form.remote_datasrc='helpdesk.ticket', ctx];
-    let attr5 = ctx['formLogoSrc'];
-    let hdlr11 = [ctx['onRemoteLogoChange'], ctx];
-    let hdlr12 = [ctx['clearRemoteLogo'], ctx];
-    let hdlr13 = [ctx['addRemote'], ctx];
-    let hdlr14 = [ctx['loadRemotes'], ctx];
+    let hdlr10 = [()=>v8.form.remote_datasrc='project.task', ctx];
+    let prop7 = new Boolean(ctx['state'].form.remote_datasrc==='helpdesk.ticket');
     const v9 = ctx['state'];
-    let hdlr15 = [()=>v9.showList=!v9.showList, ctx];
-    let hdlr16 = [ctx['removeAllRemotes'], ctx];
+    let hdlr11 = [()=>v9.form.remote_datasrc='helpdesk.ticket', ctx];
+    let attr7 = ctx['formLogoSrc'];
+    let hdlr12 = [ctx['onRemoteLogoChange'], ctx];
+    let hdlr13 = [ctx['onRemoteLogoPickerClick'], ctx];
+    let hdlr14 = [ctx['clearRemoteLogo'], ctx];
+    let hdlr15 = [ctx['addRemote'], ctx];
+    let hdlr16 = [ctx['loadRemotes'], ctx];
+    const v10 = ctx['state'];
+    let hdlr17 = [()=>v10.showList=!v10.showList, ctx];
+    let hdlr18 = [ctx['removeAllRemotes'], ctx];
     if (ctx['state'].error) {
       const b3 = safeOutput(ctx['state'].error);
       b2 = block2([], [b3]);
@@ -63,25 +68,25 @@ export const templates = {
       for (let i1 = 0; i1 < l_block5; i1++) {
         ctx[`remote`] = k_block5[i1];
         const key1 = ctx['remoteKey'](ctx['remote']);
-        let attr6 = ctx['remoteLogoSrc'](ctx['remote']);
+        let attr8 = ctx['remoteLogoSrc'](ctx['remote']);
         const b7 = comp1({text: ctx['remote'].name,limit: 18}, key + `__1__${key1}`, node, this, null);
         const b8 = comp2({text: ctx['remote'].url,limit: 25}, key + `__2__${key1}`, node, this, null);
         const b9 = comp3({text: ctx['remote'].database,limit: 18}, key + `__3__${key1}`, node, this, null);
         const b10 = comp4({text: ctx['remote'].datasrc||'project.issue',limit: 18}, key + `__4__${key1}`, node, this, null);
         const b11 = comp5({text: ctx['remote'].state||'Inactive',limit: 18}, key + `__5__${key1}`, node, this, null);
-        const v10 = ctx['editRemote'];
-        const v11 = ctx['remote'];
-        let hdlr17 = [()=>v10(v11), ctx];
-        const v12 = ctx['removeRemote'];
-        const v13 = ctx['remote'];
-        let hdlr18 = [()=>v12(v13), ctx];
-        c_block5[i1] = withKey(block6([attr6, hdlr17, hdlr18], [b7, b8, b9, b10, b11]), key1);
+        const v11 = ctx['editRemote'];
+        const v12 = ctx['remote'];
+        let hdlr19 = [()=>v11(v12), ctx];
+        const v13 = ctx['removeRemote'];
+        const v14 = ctx['remote'];
+        let hdlr20 = [()=>v13(v14), ctx];
+        c_block5[i1] = withKey(block6([attr8, hdlr19, hdlr20], [b7, b8, b9, b10, b11]), key1);
       }
       ctx = ctx.__proto__;
       const b5 = list(c_block5);
       b4 = block4([], [b5]);
     }
-    return block1([attr1, hdlr1, attr2, hdlr2, attr3, attr4, hdlr3, prop1, hdlr4, prop2, hdlr5, prop3, hdlr6, prop4, hdlr7, prop5, hdlr8, prop6, hdlr9, prop7, hdlr10, attr5, hdlr11, hdlr12, hdlr13, hdlr14, hdlr15, hdlr16], [b2, b4]);
+    return block1([attr1, hdlr1, attr2, hdlr2, attr3, hdlr3, attr4, attr5, attr6, hdlr4, prop1, hdlr5, prop2, hdlr6, prop3, hdlr7, prop4, hdlr8, prop5, hdlr9, prop6, hdlr10, prop7, hdlr11, attr7, hdlr12, hdlr13, hdlr14, hdlr15, hdlr16, hdlr17, hdlr18], [b2, b4]);
   }
 },
 
@@ -100,7 +105,7 @@ export const templates = {
   const comp9 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
   const comp10 = app.createComponent(`ReadMore`, true, false, false, ["text","limit"]);
   
-  let block1 = createBlock(`<div class="app-root"><div id="loader-container" block-attribute-0="class"><div class="loader-card"><div class="loader-text"><block-child-0/></div><div class="loader-subtext"> Please wait — or grab a cup of coffee ☕ </div><i class="fa fa-cog fa-spin fa-5x"/></div></div><div id="login" class="login-view" block-attribute-1="class"><div class="popup-login-shell"><div class="form"><div class="logo"><img block-attribute-2="src" alt="Remote logo"/></div><block-child-1/><block-child-2/><block-child-3/></div></div><div class="cta forgotpwd footer-app-opts login-footer-bar"><a href="options_main_page.html"><i class="fa fa-cogs"/> Options </a></div></div><div id="wrapper" block-attribute-3="class"><block-child-4/><div class="toolbar-row"><input id="searchIssue" type="text" placeholder="Search by ID, name, user, priority, stage..." block-property-4="value" block-handler-5="input"/><block-child-5/><select id="limitTo" block-property-6="value" block-handler-7="change" block-handler-8="change"><option value="10">10</option><option value="15">15</option><option value="25">25</option><option value="">All</option></select></div><div class="container footer top-actions"><div class="row"><div class="mx-3 col-md-12 footer-btns pointer"><i class="fa fa-download fa-2x" title="Download current month timesheet" block-handler-9="click"/><i class="fa fa-hand-o-left fa-2x" title="Switch between remotes" block-handler-10="click"/><i class="fa fa-refresh fa-2x" title="Refresh current items" block-handler-11="click"/><i class="fa fa-clock-o fa-2x" title="Discard the active timer" block-handler-12="click"/><i class="fa fa-sign-out fa-2x" title="Log out" block-handler-13="click"/><a href="options_main_page.html" class="options-btn" title="Go To options"><i class="fa fa-cogs fa-2x"/></a></div></div></div><div class="table-scroll"><table id="table-task-issues" class="table table-responsive-sm table-bordered table-fixed"><thead><tr><th class="action-col"><div/><block-child-6/></th><block-child-7/><block-child-8/></tr></thead><tbody><block-child-9/><block-child-9/><block-child-10/></tbody></table></div><div class="container footer info-footer"><div class="row"><div class="remote-info-block col-md-12"><span><b>Odoo:</b> <span class="remote-value"><block-child-11/></span></span><br/><span><b>OWL:</b> <span class="remote-value"><block-child-12/></span></span><br/><span><b>Host:</b> <span class="remote-value"><block-child-13/></span></span><br/><span><b>Database:</b> <span class="remote-value"><block-child-14/></span></span><br/><span><b>Current User:</b> <span class="remote-value"><block-child-15/></span></span><br/><span><b>Current Company:</b> <span class="remote-value"><block-child-16/></span></span><br/><span block-attribute-14="title"><b>Allowed Companies:</b> <span class="remote-value"><block-child-17/></span></span></div></div></div></div></div>`);
+  let block1 = createBlock(`<div class="app-root"><div id="loader-container" block-attribute-0="class"><div class="loader-card"><div class="loader-text"><block-child-0/></div><div class="loader-subtext"> Please wait — or grab a cup of coffee ☕ </div><i class="fa fa-cog fa-spin fa-5x"/></div></div><div id="login" class="login-view" block-attribute-1="class"><div class="popup-login-shell"><div class="form"><div class="logo"><img block-attribute-2="src" alt="Remote logo"/></div><block-child-1/><block-child-2/><block-child-3/></div></div><div class="cta forgotpwd footer-app-opts login-footer-bar"><a href="options_main_page.html"><i class="fa fa-cogs"/> Options </a></div></div><div id="wrapper" block-attribute-3="class"><block-child-4/><div class="toolbar-row"><input id="searchIssue" type="text" placeholder="Search by ID, name, user, priority, stage..." block-property-4="value" block-handler-5="input"/><!-- THERP UX PATCH: one dynamic stage filter for all supported sources. --><block-child-5/><select id="limitTo" block-property-6="value" block-handler-7="change" block-handler-8="change"><option value="10">10</option><option value="15">15</option><option value="25">25</option><option value="">All</option></select></div><div class="container footer top-actions"><div class="row"><div class="mx-3 col-md-12 footer-btns pointer"><i class="fa fa-download fa-2x" title="Download current month timesheet" block-handler-9="click"/><i class="fa fa-hand-o-left fa-2x" title="Switch between remotes" block-handler-10="click"/><i class="fa fa-refresh fa-2x" title="Refresh current items" block-handler-11="click"/><i class="fa fa-clock-o fa-2x" title="Discard the active timer" block-handler-12="click"/><i class="fa fa-sign-out fa-2x" title="Log out" block-handler-13="click"/><a href="options_main_page.html" class="options-btn" title="Go To options"><i class="fa fa-cogs fa-2x"/></a></div></div></div><div class="table-scroll"><table id="table-task-issues" class="table table-responsive-sm table-bordered table-fixed"><thead><tr><th class="action-col"><!-- THERP UX: inline discard active timer --><block-child-6/></th><block-child-7/><block-child-8/></tr></thead><tbody><block-child-9/><block-child-9/><block-child-10/></tbody></table></div><div class="container footer info-footer"><div class="row"><div class="remote-info-block col-md-12" style="position:relative;padding-right:68px;"><span><b>Odoo:</b> <span class="remote-value"><block-child-11/></span></span><br/><span><b>OWL:</b> <span class="remote-value"><block-child-12/></span></span><br/><span><b>Host:</b> <span class="remote-value"><block-child-13/></span></span><br/><span><b>Database:</b> <span class="remote-value"><block-child-14/></span></span><br/><span><b>Current User:</b> <span class="remote-value"><block-child-15/></span></span><br/><span><b>Current Company:</b> <span class="remote-value"><block-child-16/></span></span><br/><span block-attribute-14="title"><b>Allowed Companies:</b> <span class="remote-value"><block-child-17/></span></span><!-- THERP UX: Options shortcut inside info footer --><a href="options_main_page.html" title="Open Options" aria-label="Open Options" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);width:42px;height:42px;display:inline-flex;align-items:center;justify-content:center;border:2px solid #1aa7d7;border-radius:50%;background:#fff;color:#1aa7d7;text-decoration:none;box-sizing:border-box;"><i class="fa fa-hand-o-right" style="font-size:23px;"/></a></div></div></div></div></div>`);
   let block3 = createBlock(`<div><p class="odooError"><block-child-0/></p></div>`);
   let block5 = createBlock(`<div class="container no-remotes-set"><div class="alert alert-warning"> Hello <span class="fun-man">😉</span>, you have not configured any remotes. Open <b><i class="fa fa-cogs"/> Options</b> below and add one. </div></div>`);
   let block6 = createBlock(`<form block-handler-0="submit.prevent"><block-child-0/><block-child-1/><div class="password-field"><block-child-2/><block-child-3/></div><select id="remote-selection" class="form-control" block-handler-1="change"><block-child-4/></select><div class="checkbox"><label><input type="checkbox" block-property-2="checked" block-handler-3="change"/> Use Existing Session </label></div><button class="login" type="submit"> Login <block-child-5/></button><block-child-6/></form>`);
@@ -112,9 +117,9 @@ export const templates = {
   let block15 = createBlock(`<i class="fa fa-cog fa-spin"/>`);
   let block16 = createBlock(`<div class="remote-info small-note"> Host: <block-child-0/><span class="current-source-chip"><block-child-1/></span></div>`);
   let block19 = createBlock(`<div class="odooError source-warning"><block-child-0/></div>`);
-  let block21 = createBlock(`<select id="helpdeskStageFilter" block-property-0="value" block-handler-1="change"><option value="">All stages</option><block-child-0/></select>`);
+  let block21 = createBlock(`<select id="stageFilter" aria-label="Filter by stage" block-property-0="value" block-handler-1="change"><option value="">All stages</option><block-child-0/></select>`);
   let block23 = createBlock(`<option block-attribute-0="value" block-property-1="selected"><block-child-0/></option>`);
-  let block25 = createBlock(`<span class="startTimeCount"><block-child-0/></span>`);
+  let block25 = createBlock(`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;"><span class="startTimeCount"><block-child-0/></span><button type="button" title="Discard active timer without recording a timesheet" aria-label="Discard active timer without recording a timesheet" style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:50%;cursor:pointer;background:#dc3545;color:#fff;line-height:1;" block-handler-0="click"><i class="fa fa-times" style="font-size:11px;"/></button></div>`);
   let block28 = createBlock(`<th class="text-center" style="width:72px">Therp Task</th>`);
   let block29 = createBlock(`<th class="priority-col">Priority</th>`);
   let block30 = createBlock(`<th class="item-col" style="width:280px"><div class="item-header-title"><block-child-0/> [<block-child-1/>] </div><label class="allIssues"><input id="showAllIssues" type="checkbox" block-property-0="checked" block-handler-1="input"/> Show for everyone </label></th>`);
@@ -149,10 +154,10 @@ export const templates = {
   let block80 = createBlock(`<td class="text-center"><block-child-0/></td>`);
   let block82 = createBlock(`<td class="text-center"><block-child-0/></td>`);
   let block84 = createBlock(`<td class="project-cell"><block-child-0/></td>`);
-  let block86 = createBlock(`<tr><td class="text-center text-danger" block-attribute-0="colspan"> No matching items are currently available </td></tr>`);
+  let block86 = createBlock(`<tr><td class="text-center text-danger" block-attribute-0="colspan"><block-child-0/><block-child-1/></td></tr>`);
   
   return function template(ctx, node, key = "") {
-    let b2, b3, b5, b6, b19, b21, b25, b27, b36, b47, b86, b87, b88, b89, b90, b91, b92, b93;
+    let b2, b3, b5, b6, b19, b21, b25, b27, b36, b47, b86, b89, b90, b91, b92, b93, b94, b95;
     let attr1 = ctx['state'].view==='loading'?'':'hide';
     b2 = safeOutput(ctx['state'].busyMessage);
     let attr2 = ctx['state'].view==='login'?'login-view':'login-view hide';
@@ -223,17 +228,17 @@ export const templates = {
     let prop5 = new String((ctx['state'].searchQuery) === 0 ? 0 : ((ctx['state'].searchQuery) || ""));
     const v4 = ctx['state'];
     let hdlr7 = [(_ev)=>v4.searchQuery=_ev.target.value, ctx];
-    if (ctx['isHelpdeskSource']) {
-      let prop6 = new String((ctx['state'].helpdeskStageFilter) === 0 ? 0 : ((ctx['state'].helpdeskStageFilter) || ""));
-      const v5 = ctx['updateHelpdeskStageFilter'];
-      let hdlr8 = [(_ev)=>v5(_ev.target.value), ctx];
+    if ((ctx['stageOptions']||[]).length) {
+      let prop6 = new String((ctx['state'].stageFilter) === 0 ? 0 : ((ctx['state'].stageFilter) || ""));
+      const v5 = ctx['state'];
+      let hdlr8 = [(_ev)=>{v5.stageFilter=_ev.target.value;}, ctx];
       ctx = Object.create(ctx);
-      const [k_block22, v_block22, l_block22, c_block22] = prepareList(ctx['helpdeskStageOptions']);;
+      const [k_block22, v_block22, l_block22, c_block22] = prepareList(ctx['stageOptions']||[]);;
       for (let i1 = 0; i1 < l_block22; i1++) {
         ctx[`stage`] = k_block22[i1];
         const key1 = ctx['stage'].id;
         let attr8 = ''+ctx['stage'].id;
-        let prop7 = new Boolean(ctx['state'].helpdeskStageFilter===''+ctx['stage'].id);
+        let prop7 = new Boolean(ctx['state'].stageFilter===''+ctx['stage'].id);
         const b24 = safeOutput(ctx['stage'].name);
         c_block22[i1] = withKey(block23([attr8, prop7], [b24]), key1);
       }
@@ -254,7 +259,8 @@ export const templates = {
     let hdlr15 = [ctx['logout'], ctx];
     if (ctx['state'].timerStartIso) {
       const b26 = safeOutput(ctx['formattedTimer']);
-      b25 = block25([], [b26]);
+      let hdlr16 = [ctx['resetTimer'], ctx];
+      b25 = block25([hdlr16], [b26]);
     }
     if (ctx['isHelpdeskSource']) {
       let b28, b29, b30, b33, b34, b35;
@@ -266,8 +272,8 @@ export const templates = {
       const b32 = safeOutput(ctx['filteredIssues'].length);
       let prop9 = new Boolean(ctx['state'].allIssues);
       const v7 = ctx['updateShowAllPreference'];
-      let hdlr16 = [(_ev)=>v7(_ev.target.checked), ctx];
-      b30 = block30([prop9, hdlr16], [b31, b32]);
+      let hdlr17 = [(_ev)=>v7(_ev.target.checked), ctx];
+      b30 = block30([prop9, hdlr17], [b31, b32]);
       b33 = block33();
       if (ctx['showHelpdeskAssignee']) {
         b34 = block34();
@@ -284,8 +290,8 @@ export const templates = {
       const b41 = safeOutput(ctx['filteredIssues'].length);
       let prop10 = new Boolean(ctx['state'].allIssues);
       const v8 = ctx['updateShowAllPreference'];
-      let hdlr17 = [(_ev)=>v8(_ev.target.checked), ctx];
-      b39 = block39([prop10, hdlr17], [b40, b41]);
+      let hdlr18 = [(_ev)=>v8(_ev.target.checked), ctx];
+      b39 = block39([prop10, hdlr18], [b40, b41]);
       if (ctx['state'].dataSource==='project.task') {
         const b43 = block43();
         const b44 = block44();
@@ -309,21 +315,21 @@ export const templates = {
             let attr10 = ctx['helpdeskTimesheetBlockMessage'](ctx['issue']);
             const v9 = ctx['showHelpdeskTimesheetInfo'];
             const v10 = ctx['issue'];
-            let hdlr18 = [()=>v9(v10), ctx];
-            b50 = block50([attr10, hdlr18]);
+            let hdlr19 = [()=>v9(v10), ctx];
+            b50 = block50([attr10, hdlr19]);
           } else {
             const v11 = ctx['startTimer'];
             const v12 = ctx['issue'];
-            let hdlr19 = [()=>v11(v12), ctx];
-            b51 = block51([hdlr19]);
+            let hdlr20 = [()=>v11(v12), ctx];
+            b51 = block51([hdlr20]);
           }
           b49 = multi([b50, b51]);
         }
         if (ctx['isActiveTimerItem'](ctx['issue'])) {
           const v13 = ctx['stopTimer'];
           const v14 = ctx['issue'];
-          let hdlr20 = [()=>v13(v14), ctx];
-          b52 = block52([hdlr20]);
+          let hdlr21 = [()=>v13(v14), ctx];
+          b52 = block52([hdlr21]);
         }
         if (ctx['isHelpdeskSource']) {
           let b54, b56, b60, b64, b66, b68;
@@ -408,18 +414,25 @@ export const templates = {
       b47 = list(c_block47);
     }
     if (!ctx['filteredIssues'].length) {
+      let b87, b88;
       let attr12 = ctx['tableColumnCount'];
-      b86 = block86([attr12]);
+      if (ctx['state'].stageFilter&&!ctx['state'].allIssues) {
+        b87 = text(` No matching items assigned to you for this stage. Turn on "Show for everyone" to include other users' items. `);
+      }
+      if (!ctx['state'].stageFilter||ctx['state'].allIssues) {
+        b88 = text(` No matching items are currently available `);
+      }
+      b86 = block86([attr12], [b87, b88]);
     }
-    b87 = safeOutput(ctx['state'].serverVersion||'Unknown');
-    b88 = safeOutput(ctx['state'].odooOWLVersion||'Unknown');
-    b89 = safeOutput(ctx['state'].currentHost||'-');
-    b90 = safeOutput(ctx['state'].currentDatabase||'-');
-    b91 = safeOutput(ctx['state'].user?ctx['state'].user.display_name:'-');
-    b92 = safeOutput(ctx['currentCompanyLabel']);
+    b89 = safeOutput(ctx['state'].serverVersion||'Unknown');
+    b90 = safeOutput(ctx['state'].odooOWLVersion||'Unknown');
+    b91 = safeOutput(ctx['state'].currentHost||'-');
+    b92 = safeOutput(ctx['state'].currentDatabase||'-');
+    b93 = safeOutput(ctx['state'].user?ctx['state'].user.display_name:'-');
+    b94 = safeOutput(ctx['currentCompanyLabel']);
     let attr13 = ctx['allowedCompanyLabels'];
-    b93 = safeOutput(ctx['allowedCompanyLabels']||'-');
-    return block1([attr1, attr2, attr3, attr7, prop5, hdlr7, prop8, hdlr9, hdlr10, hdlr11, hdlr12, hdlr13, hdlr14, hdlr15, attr13], [b2, b3, b5, b6, b19, b21, b25, b27, b36, b47, b86, b87, b88, b89, b90, b91, b92, b93]);
+    b95 = safeOutput(ctx['allowedCompanyLabels']||'-');
+    return block1([attr1, attr2, attr3, attr7, prop5, hdlr7, prop8, hdlr9, hdlr10, hdlr11, hdlr12, hdlr13, hdlr14, hdlr15, attr13], [b2, b3, b5, b6, b19, b21, b25, b27, b36, b47, b86, b89, b90, b91, b92, b93, b94, b95]);
   }
 },
 

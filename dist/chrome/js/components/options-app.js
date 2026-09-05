@@ -197,6 +197,7 @@ class OptionsApp extends Component {
       showList: true,
       error: '',
       autoDownloadIssueTimesheet: false,
+      logoPickerNeedsPersistentTab: false,
       form: {
         remote_host: '',
         remote_name: '',
@@ -208,6 +209,18 @@ class OptionsApp extends Component {
 
     onWillStart(async () => {
       await this.loadRemotes();
+      // THERP UX: Firefox popup logo picker bridge.
+      try {
+        const firefox = globalThis.browser?.runtime?.getBrowserInfo
+          && globalThis.browser?.tabs?.getCurrent;
+        if (firefox) {
+          const currentTab = await globalThis.browser.tabs.getCurrent();
+          this.state.logoPickerNeedsPersistentTab = !currentTab;
+        }
+      } catch (err) {
+        this.state.logoPickerNeedsPersistentTab = false;
+        console.debug('[OptionsApp] Could not inspect Firefox Options context.', err);
+      }
       const saved = await storage.get('auto_download_issue_timesheet', false);
       this.state.autoDownloadIssueTimesheet = !!saved;
     });
@@ -241,6 +254,21 @@ class OptionsApp extends Component {
       reader.onerror = () => reject(new Error('Could not read the selected company logo.'));
       reader.readAsDataURL(file);
     });
+  }
+
+  /** THERP UX: Firefox popup logo picker bridge: only redirect from Firefox's temporary toolbar popup. */
+  onRemoteLogoPickerClick(ev) {
+    if (!this.state.logoPickerNeedsPersistentTab) {
+      return;
+    }
+    ev?.preventDefault?.();
+    ev?.stopPropagation?.();
+    const runtime = globalThis.browser?.runtime;
+    if (runtime?.openOptionsPage) {
+      Promise.resolve(runtime.openOptionsPage()).catch((err) => {
+        console.debug('[OptionsApp] Could not open persistent Firefox Options page.', err);
+      });
+    }
   }
 
   async onRemoteLogoChange(ev) {
@@ -405,46 +433,112 @@ class OptionsApp extends Component {
       const nameId = `edit-remote-name-${inputSuffix}`;
       const databaseId = `edit-remote-database-${inputSuffix}`;
       const datasourceId = `edit-remote-datasource-${inputSuffix}`;
-      const html = `
-        <div style="min-width:340px;max-width:520px;text-align:left;">
-          <div style="margin-bottom:14px;font-weight:700;font-size:18px;color:#42475a;text-align:center;">Edit Remote</div>
-          <div style="display:flex;flex-direction:column;gap:12px;">
-            <label style="display:flex;flex-direction:column;gap:6px;font-weight:600;color:#334155;">
-              <span>Odoo Host</span>
-              <input id="${hostId}" type="text" value="${escapeHtml(currentHost)}" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #cbd5e1;border-radius:4px;font:14px Arial,Helvetica,sans-serif;color:#111827;background:#fff;" />
-            </label>
-            <label style="display:flex;flex-direction:column;gap:6px;font-weight:600;color:#334155;">
-              <span>Display Name</span>
-              <input id="${nameId}" type="text" value="${escapeHtml(currentName)}" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #cbd5e1;border-radius:4px;font:14px Arial,Helvetica,sans-serif;color:#111827;background:#fff;" />
-            </label>
-            <label style="display:flex;flex-direction:column;gap:6px;font-weight:600;color:#334155;">
-              <span>Odoo Database</span>
-              <input id="${databaseId}" type="text" value="${escapeHtml(currentDatabase)}" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #cbd5e1;border-radius:4px;font:14px Arial,Helvetica,sans-serif;color:#111827;background:#fff;" />
-            </label>
-            <label style="display:flex;flex-direction:column;gap:6px;font-weight:600;color:#334155;">
-              <span>Data Source</span>
-              <select id="${datasourceId}" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #cbd5e1;border-radius:4px;font:14px Arial,Helvetica,sans-serif;color:#111827;background:#fff;">
-                <option value="project.issue" ${currentDatasource === DEFAULT_DATA_SOURCE ? 'selected' : ''}>From Issues</option>
-                <option value="project.task" ${currentDatasource === 'project.task' ? 'selected' : ''}>From Tasks</option>
-                <option value="helpdesk.ticket" ${currentDatasource === 'helpdesk.ticket' ? 'selected' : ''}>From Helpdesk Tickets</option>
-              </select>
-            </label>
-            <div style="display:flex;gap:12px;align-items:center;">
-              <img src="${escapeHtml(this.remoteLogoSrc(remote))}" alt="Remote logo" style="width:64px;height:48px;object-fit:contain;border:1px solid #e2e8f0;border-radius:5px;background:#fff;padding:3px;"/>
-              <div style="flex:1;">
-                <div style="font-weight:600;color:#334155;margin-bottom:6px;">Company Logo <span style="font-weight:400;color:#94a3b8;">(optional)</span></div>
-                <input id="edit-remote-logo-${inputSuffix}" type="file" accept="image/png,image/jpeg,image/webp,image/gif" style="width:100%;font-size:13px;"/>
-                <label style="display:block;margin-top:7px;font-size:12px;color:#64748b;font-weight:400;">
-                  <input id="edit-remote-remove-logo-${inputSuffix}" type="checkbox"/> Use the default Therp logo
-                </label>
-                <div style="margin-top:4px;font-size:11px;color:#94a3b8;">PNG, JPEG, WebP or GIF; maximum 512 KB.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
+      // THERP UX FIX: build Edit Remote dialog with DOM APIs.
+      // alert.js intentionally does not parse dynamic HTML strings.
+      const dialog = document.createElement('div');
+      dialog.style.cssText = 'min-width:340px;max-width:520px;text-align:left;';
 
-      const result = await customAlert.show(html, ['Cancel', 'Save']);
+      const dialogTitle = document.createElement('div');
+      dialogTitle.style.cssText =
+        'margin-bottom:14px;font-weight:700;font-size:18px;color:#42475a;text-align:center;';
+      dialogTitle.textContent = 'Edit Remote';
+
+      const form = document.createElement('div');
+      form.style.cssText = 'display:flex;flex-direction:column;gap:12px;';
+
+      const inputStyle =
+        'width:100%;box-sizing:border-box;padding:10px;border:1px solid #cbd5e1;' +
+        'border-radius:4px;font:14px Arial,Helvetica,sans-serif;color:#111827;background:#fff;';
+
+      const addField = (captionText, control) => {
+        const label = document.createElement('label');
+        label.style.cssText =
+          'display:flex;flex-direction:column;gap:6px;font-weight:600;color:#334155;';
+        const caption = document.createElement('span');
+        caption.textContent = captionText;
+        label.append(caption, control);
+        form.appendChild(label);
+      };
+
+      const hostInput = document.createElement('input');
+      hostInput.id = hostId;
+      hostInput.type = 'text';
+      hostInput.value = currentHost;
+      hostInput.style.cssText = inputStyle;
+      addField('Odoo Host', hostInput);
+
+      const nameInput = document.createElement('input');
+      nameInput.id = nameId;
+      nameInput.type = 'text';
+      nameInput.value = currentName;
+      nameInput.style.cssText = inputStyle;
+      addField('Display Name', nameInput);
+
+      const databaseInput = document.createElement('input');
+      databaseInput.id = databaseId;
+      databaseInput.type = 'text';
+      databaseInput.value = currentDatabase;
+      databaseInput.style.cssText = inputStyle;
+      addField('Odoo Database', databaseInput);
+
+      const datasourceSelect = document.createElement('select');
+      datasourceSelect.id = datasourceId;
+      datasourceSelect.style.cssText = inputStyle;
+      for (const [value, caption] of [
+        ['project.issue', 'From Issues'],
+        ['project.task', 'From Tasks'],
+        ['helpdesk.ticket', 'From Helpdesk Tickets'],
+      ]) {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = caption;
+        option.selected = currentDatasource === value;
+        datasourceSelect.appendChild(option);
+      }
+      addField('Data Source', datasourceSelect);
+
+      const logoRow = document.createElement('div');
+      logoRow.style.cssText = 'display:flex;gap:12px;align-items:center;';
+
+      const logoPreview = document.createElement('img');
+      logoPreview.src = this.remoteLogoSrc(remote);
+      logoPreview.alt = 'Remote logo';
+      logoPreview.style.cssText =
+        'width:64px;height:48px;object-fit:contain;border:1px solid #e2e8f0;' +
+        'border-radius:5px;background:#fff;padding:3px;';
+
+      const logoBox = document.createElement('div');
+      logoBox.style.cssText = 'flex:1;';
+
+      const logoHeading = document.createElement('div');
+      logoHeading.style.cssText = 'font-weight:600;color:#334155;margin-bottom:6px;';
+      logoHeading.textContent = 'Company Logo (optional)';
+
+      const logoInput = document.createElement('input');
+      logoInput.id = `edit-remote-logo-${inputSuffix}`;
+      logoInput.type = 'file';
+      logoInput.addEventListener('click', this.onRemoteLogoPickerClick.bind(this));
+      logoInput.accept = 'image/png,image/jpeg,image/webp,image/gif';
+      logoInput.style.cssText = 'width:100%;font-size:13px;';
+
+      const removeLabel = document.createElement('label');
+      removeLabel.style.cssText =
+        'display:block;margin-top:7px;font-size:12px;color:#64748b;font-weight:400;';
+      const removeInput = document.createElement('input');
+      removeInput.id = `edit-remote-remove-logo-${inputSuffix}`;
+      removeInput.type = 'checkbox';
+      removeLabel.append(removeInput, document.createTextNode(' Use the default Therp logo'));
+
+      const logoHelp = document.createElement('div');
+      logoHelp.style.cssText = 'margin-top:4px;font-size:11px;color:#94a3b8;';
+      logoHelp.textContent = 'PNG, JPEG, WebP or GIF; maximum 512 KB.';
+
+      logoBox.append(logoHeading, logoInput, removeLabel, logoHelp);
+      logoRow.append(logoPreview, logoBox);
+      form.appendChild(logoRow);
+
+      dialog.append(dialogTitle, form);
+      const result = await customAlert.show(dialog, ['Cancel', 'Save']);
       if (result !== 'Save') {
         return;
       }
