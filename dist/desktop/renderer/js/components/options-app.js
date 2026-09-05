@@ -155,60 +155,70 @@ class OptionsApp extends Component {
         this.state.error = '';
         const pfx = `therp-edit-${Date.now()}`;
 
-        const html = `
-<div style="min-width:420px;max-width:560px;text-align:left;font-family:Arial,Helvetica,sans-serif;">
-  <div style="margin-bottom:16px;font-weight:700;font-size:17px;color:#42475a;text-align:center;">Edit Remote</div>
+        // THERP UX FIX: build Edit Remote dialog with DOM APIs.
+        const dialog = document.createElement('div');
+        dialog.style.cssText =
+            'min-width:420px;max-width:560px;text-align:left;font-family:Arial,Helvetica,sans-serif;';
 
-  <div style="margin-bottom:10px;">
-    <label style="display:block;font-size:13px;margin-bottom:4px;color:#555;">Display Name</label>
-    <input id="${pfx}-name" value="${escapeHtml(remote.name || '')}"
-      style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:4px;box-sizing:border-box;font-size:14px;"/>
-  </div>
+        const title = document.createElement('div');
+        title.style.cssText =
+            'margin-bottom:16px;font-weight:700;font-size:17px;color:#42475a;text-align:center;';
+        title.textContent = 'Edit Remote';
 
-  <div style="margin-bottom:10px;">
-    <label style="display:block;font-size:13px;margin-bottom:4px;color:#555;">Odoo Host</label>
-    <input id="${pfx}-host" value="${escapeHtml(remote.url || '')}"
-      style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:4px;box-sizing:border-box;font-size:14px;"/>
-  </div>
+        const form = document.createElement('div');
+        const style =
+            'width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:4px;' +
+            'box-sizing:border-box;font-size:14px;';
 
-  <div style="margin-bottom:10px;">
-    <label style="display:block;font-size:13px;margin-bottom:4px;color:#555;">Database</label>
-    <input id="${pfx}-database" value="${escapeHtml(remote.database || '')}"
-      style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:4px;box-sizing:border-box;font-size:14px;"/>
-  </div>
+        const addField = (caption, control) => {
+            const wrap = document.createElement('div');
+            wrap.style.cssText = 'margin-bottom:10px;';
+            const label = document.createElement('label');
+            label.style.cssText = 'display:block;font-size:13px;margin-bottom:4px;color:#555;';
+            label.textContent = caption;
+            control.style.cssText = style;
+            wrap.append(label, control);
+            form.appendChild(wrap);
+        };
 
-  <div style="margin-bottom:10px;">
-    <label style="display:block;font-size:13px;margin-bottom:4px;color:#555;">Odoo Version <span style="color:#999;">(e.g. 16.0)</span></label>
-    <input id="${pfx}-version" value="${escapeHtml(remote.odooVersion || '')}" placeholder="16.0"
-      style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:4px;box-sizing:border-box;font-size:14px;"/>
-  </div>
+        const nameInput = document.createElement('input');
+        nameInput.id = `${pfx}-name`;
+        nameInput.value = remote.name || '';
+        addField('Display Name', nameInput);
 
-  <div style="margin-bottom:10px;">
-    <label style="display:block;font-size:13px;margin-bottom:4px;color:#555;">Data Source</label>
-    <select id="${pfx}-datasrc"
-      style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:4px;box-sizing:border-box;font-size:14px;">
-      <option value="project.issue"${(remote.datasrc || 'project.issue') === 'project.issue' ? ' selected' : ''}>From Issues (project.issue)</option>
-      <option value="project.task"${remote.datasrc === 'project.task' ? ' selected' : ''}>From Tasks (project.task)</option>
-      <option value="helpdesk.ticket"${remote.datasrc === 'helpdesk.ticket' ? ' selected' : ''}>From Helpdesk Tickets (helpdesk.ticket)</option>
-    </select>
-  </div>
+        const hostInput = document.createElement('input');
+        hostInput.id = `${pfx}-host`;
+        hostInput.value = remote.url || '';
+        addField('Odoo Host', hostInput);
 
-  <div style="margin-bottom:4px;">
-    <label style="display:block;font-size:13px;margin-bottom:6px;color:#555;">Company Logo <span style="color:#94a3b8;font-weight:400;">(optional)</span></label>
-    <div style="display:flex;gap:12px;align-items:center;">
-      <img src="${escapeHtml(this.remoteLogoSrc(remote))}" alt="Remote logo" style="width:64px;height:48px;object-fit:contain;border:1px solid #e2e8f0;border-radius:5px;background:#fff;padding:3px;"/>
-      <div style="flex:1;">
-        <input id="${pfx}-logo" type="file" accept="image/png,image/jpeg,image/webp,image/gif" style="width:100%;font-size:13px;"/>
-        <label style="display:block;margin-top:7px;font-size:12px;color:#64748b;font-weight:400;">
-          <input id="${pfx}-remove-logo" type="checkbox"/> Use the default Therp logo
-        </label>
-        <div style="margin-top:4px;font-size:11px;color:#94a3b8;">PNG, JPEG, WebP or GIF; maximum 512 KB.</div>
-      </div>
-    </div>
-  </div>
-</div>`;
+        const dbInput = document.createElement('input');
+        dbInput.id = `${pfx}-database`;
+        dbInput.value = remote.database || '';
+        addField('Database', dbInput);
 
-        const result = await alert.show(html, ['Cancel', 'Save'], { accentColor: 'orange' });
+        const versionInput = document.createElement('input');
+        versionInput.id = `${pfx}-version`;
+        versionInput.value = remote.odooVersion || '';
+        versionInput.placeholder = '16.0';
+        addField('Odoo Version (e.g. 16.0)', versionInput);
+
+        const sourceSelect = document.createElement('select');
+        sourceSelect.id = `${pfx}-datasrc`;
+        for (const [value, caption] of [
+            ['project.issue', 'From Issues (project.issue)'],
+            ['project.task', 'From Tasks (project.task)'],
+            ['helpdesk.ticket', 'From Helpdesk Tickets (helpdesk.ticket)'],
+        ]) {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = caption;
+            option.selected = (remote.datasrc || 'project.issue') === value;
+            sourceSelect.appendChild(option);
+        }
+        addField('Data Source', sourceSelect);
+
+        dialog.append(title, form);
+        const result = await alert.show(dialog, ['Cancel', 'Save'], { accentColor: 'orange' });
         if (result !== 'Save') return;
 
         const get      = (id) => document.getElementById(id)?.value ?? '';

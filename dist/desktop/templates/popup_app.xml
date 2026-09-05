@@ -106,12 +106,12 @@
             t-att-value="state.searchQuery"
             t-on-input="(ev) => { state.searchQuery = ev.target.value; }"/>
           <t t-if="isHelpdeskSource">
-            <select id="helpdeskStageFilter" t-att-value="state.helpdeskStageFilter"
-              t-on-change="(ev) => updateHelpdeskStageFilter(ev.target.value)">
+            <select id="stageFilter" t-att-value="state.stageFilter"
+              t-on-change="(ev) => updateStageFilter(ev.target.value)">
               <option value="">All stages</option>
-              <t t-foreach="helpdeskStageOptions" t-as="stage" t-key="stage.id">
+              <t t-foreach="stageOptions || []" t-as="stage" t-key="stage.id">
                 <option t-att-value="'' + stage.id"
-                  t-att-selected="state.helpdeskStageFilter === '' + stage.id">
+                  t-att-selected="state.stageFilter === '' + stage.id">
                   <t t-esc="stage.name"/>
                 </option>
               </t>

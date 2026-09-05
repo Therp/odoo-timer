@@ -311,7 +311,7 @@ export const templates = {
   let block11 = createBlock(`<i class="fa fa-cog fa-spin"/>`);
   let block12 = createBlock(`<div class="remote-info small-note"> Host: <block-text-0/><span class="current-source-chip"><block-text-1/></span></div>`);
   let block13 = createBlock(`<div class="odooError source-warning"><block-text-0/></div>`);
-  let block14 = createBlock(`<select id="helpdeskStageFilter" block-property-0="value" block-handler-1="change"><option value="">All stages</option><block-child-0/></select>`);
+  let block14 = createBlock(`<select id="stageFilter" block-property-0="value" block-handler-1="change"><option value="">All stages</option><block-child-0/></select>`);
   let block16 = createBlock(`<option block-attribute-0="value" block-property-1="selected"><block-text-2/></option>`);
   let block17 = createBlock(`<span class="startTimeCount"><block-text-0/></span>`);
   let block19 = createBlock(`<th class="text-center" style="width:72px">Therp Task</th>`);
@@ -420,16 +420,16 @@ export const templates = {
     const v4 = ctx['state'];
     let hdlr7 = [(_ev)=>{v4.searchQuery=_ev.target.value;}, ctx];
     if (ctx['isHelpdeskSource']) {
-      let prop6 = new String((ctx['state'].helpdeskStageFilter) === 0 ? 0 : ((ctx['state'].helpdeskStageFilter) || ""));
-      const v5 = ctx['updateHelpdeskStageFilter'];
+      let prop6 = new String((ctx['state'].stageFilter) === 0 ? 0 : ((ctx['state'].stageFilter) || ""));
+      const v5 = ctx['updateStageFilter'];
       let hdlr8 = [(_ev)=>v5(_ev.target.value), ctx];
       ctx = Object.create(ctx);
-      const [k_block15, v_block15, l_block15, c_block15] = prepareList(ctx['helpdeskStageOptions']);;
+      const [k_block15, v_block15, l_block15, c_block15] = prepareList(ctx['stageOptions']||[]);;
       for (let i1 = 0; i1 < l_block15; i1++) {
         ctx[`stage`] = k_block15[i1];
         const key1 = ctx['stage'].id;
         let attr8 = ''+ctx['stage'].id;
-        let prop7 = new Boolean(ctx['state'].helpdeskStageFilter===''+ctx['stage'].id);
+        let prop7 = new Boolean(ctx['state'].stageFilter===''+ctx['stage'].id);
         let txt8 = ctx['stage'].name;
         c_block15[i1] = withKey(block16([attr8, prop7, txt8]), key1);
       }

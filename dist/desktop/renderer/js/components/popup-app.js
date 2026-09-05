@@ -88,7 +88,7 @@ class PopupApp extends Component {
             projects:          [],
             issues:            [],
             searchQuery:       '',
-            helpdeskStageFilter: '',
+            stageFilter: '',
             limitTo:           DEFAULTS.searchLimit,
             allIssues:         false,
             autoDownloadIssueTimesheet: false,
@@ -221,7 +221,7 @@ class PopupApp extends Component {
     get showHelpdeskProject() { return this.isHelpdeskSource && Boolean(this.state.sourceCapabilities.projectField); }
     get showHelpdeskHours() { return this.isHelpdeskSource && Boolean(this.state.sourceCapabilities.hoursField); }
 
-    get helpdeskStageOptions() {
+    get stageOptions() {
         if (!this.isHelpdeskSource) return [];
         const stages = new Map();
         for (const issue of this.state.issues) {
@@ -481,8 +481,8 @@ class PopupApp extends Component {
         await storage.set(STORAGE_KEYS.searchLimit, value);
     }
 
-    updateHelpdeskStageFilter(value) {
-        this.state.helpdeskStageFilter = String(value || '');
+    updateStageFilter(value) {
+        this.state.stageFilter = String(value || '');
     }
 
     async updateShowAllPreference(value) {
@@ -496,7 +496,7 @@ class PopupApp extends Component {
     get filteredIssues() {
         const limit = this.state.limitTo ? Number(this.state.limitTo) : null;
         const query = (this.state.searchQuery || '').trim();
-        let issues = [...this.state.issues];
+        let issues = Array.isArray(this.state.issues) ? [...this.state.issues] : [];
 
         issues.sort((a, b) => {
             if (this.isActiveTimerItem(a)) return -1;
@@ -508,8 +508,8 @@ class PopupApp extends Component {
             return a.id - b.id;
         });
 
-        if (this.isHelpdeskSource && this.state.helpdeskStageFilter) {
-            const stageId = Number(this.state.helpdeskStageFilter);
+        if (this.isHelpdeskSource && this.state.stageFilter) {
+            const stageId = Number(this.state.stageFilter);
             issues = issues.filter((issue) =>
                 this.isActiveTimerItem(issue) || Number(issue.stage_id?.[0]) === stageId
             );
